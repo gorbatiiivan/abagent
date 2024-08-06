@@ -21,7 +21,8 @@ Is a small little features that allows you to set a timer for shutting down, res
 
 Favorites
 
-![Снимок3](https://github.com/gorbatiiivan/abagent/assets/84850541/487ebc2b-7811-46a8-b20f-70a52917ec03)
+![Снимок](https://github.com/user-attachments/assets/10eb8a0e-8c95-48e5-83d6-a8656f60f58e)
+
 
 
 Is a good features that allows you to added your favorites apps, personal folders, system folders and 
