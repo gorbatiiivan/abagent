@@ -3,7 +3,7 @@ object LNK_Form: TLNK_Form
   Top = 0
   BorderIcons = []
   ClientHeight = 461
-  ClientWidth = 627
+  ClientWidth = 700
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,9 +21,9 @@ object LNK_Form: TLNK_Form
   object Tabs: TTabControl
     AlignWithMargins = True
     Left = 3
-    Top = 46
-    Width = 621
-    Height = 412
+    Top = 87
+    Width = 694
+    Height = 371
     Align = alClient
     BiDiMode = bdLeftToRight
     ParentBiDiMode = False
@@ -32,8 +32,8 @@ object LNK_Form: TLNK_Form
     object List: TListView
       Left = 4
       Top = 6
-      Width = 613
-      Height = 402
+      Width = 686
+      Height = 361
       Align = alClient
       BorderStyle = bsNone
       Columns = <
@@ -61,8 +61,8 @@ object LNK_Form: TLNK_Form
   object Panel: TPanel
     Left = 0
     Top = 0
-    Width = 627
-    Height = 43
+    Width = 700
+    Height = 84
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
@@ -79,8 +79,8 @@ object LNK_Form: TLNK_Form
       OnClick = SpeedButton3Click
     end
     object HideButton: TSpeedButton
-      Left = 556
-      Top = 2
+      Left = 673
+      Top = 6
       Width = 20
       Height = 20
       Hint = 'Hide (Esc)'
@@ -149,8 +149,8 @@ object LNK_Form: TLNK_Form
       OnDropDownClick = Button2DropDownClick
     end
     object ToolBar1: TToolBar
-      Left = 217
-      Top = 3
+      Left = 0
+      Top = 44
       Width = 272
       Height = 43
       Align = alNone
@@ -159,6 +159,14 @@ object LNK_Form: TLNK_Form
       Caption = 'ToolBar1'
       Images = ImageList1
       TabOrder = 2
+    end
+    object FindEdit: TEdit
+      Left = 218
+      Top = 11
+      Width = 135
+      Height = 21
+      TabOrder = 3
+      OnChange = FindEditChange
     end
   end
   object PopupMenu: TPopupMenu
@@ -269,12 +277,62 @@ object LNK_Form: TLNK_Form
       Caption = 'Hide when opening'
       OnClick = N24Click
     end
+    object N22: TMenuItem
+      Caption = 'Prevent moving off screen'
+      OnClick = N22Click
+    end
     object N12: TMenuItem
       Caption = '-'
     end
     object N28: TMenuItem
-      Caption = 'Show large icons'
+      Caption = 'View icons size'
       OnClick = N28Click
+      object N26: TMenuItem
+        AutoCheck = True
+        Caption = 'Small'
+        Hint = '1'
+        RadioItem = True
+        OnClick = N26Click
+      end
+      object N30: TMenuItem
+        AutoCheck = True
+        Caption = 'Normal'
+        Hint = '0'
+        RadioItem = True
+        OnClick = N26Click
+      end
+      object N31: TMenuItem
+        AutoCheck = True
+        Caption = 'Extra Large'
+        Hint = '2'
+        RadioItem = True
+        OnClick = N26Click
+      end
+      object N71: TMenuItem
+        AutoCheck = True
+        Caption = 'Jumbo'
+        Hint = '4'
+        RadioItem = True
+        OnClick = N26Click
+      end
+    end
+    object N32: TMenuItem
+      Caption = 'View Style'
+      OnClick = N32Click
+      object N33: TMenuItem
+        AutoCheck = True
+        Caption = 'Icon'
+        Hint = '0'
+        RadioItem = True
+        OnClick = N33Click
+      end
+      object N34: TMenuItem
+        AutoCheck = True
+        Caption = 'Tile'
+        Hint = '1'
+        RadioItem = True
+        OnClick = N33Click
+      end
     end
     object N18: TMenuItem
       Caption = '-'
@@ -299,5 +357,13 @@ object LNK_Form: TLNK_Form
     Width = 32
     Left = 139
     Top = 323
+  end
+  object ImageList2: TImageList
+    ColorDepth = cd32Bit
+    DrawingStyle = dsTransparent
+    Height = 32
+    Width = 32
+    Left = 219
+    Top = 326
   end
 end

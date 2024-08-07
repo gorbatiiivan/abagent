@@ -123,7 +123,7 @@ uses Utils, SystemUtils, ShutdownUnit, SPGetSid, lnkForm, HotKeyChanger,
 
 {$R *.dfm}
 
-// form functions/procedure
+// GENERAL FUNCTIONS
 //------------------------------------------------------------------------------
 
 procedure TMainForm.WMSysCommand(var Message: TWMSysCommand);
@@ -192,7 +192,7 @@ if EnableHotKey = True then  //Daca este false in bosshotkey nu se deschide/ascu
  end;
 end;
 
-// ini file
+// INI FILE
 //------------------------------------------------------------------------------
 
 function TMainForm.GetFConfig: TMemIniFile;
@@ -338,7 +338,7 @@ if Write = true then
  end;
 end;
 
-//MainForm
+// FORM ACTIONS
 //------------------------------------------------------------------------------
 
 procedure TMainForm.MyExcept(Sender:TObject; E:Exception);
@@ -442,7 +442,7 @@ if TextToHotKey('Shift+Ctrl+Alt+F12',True) = HotKey then
 
 //Get TimerForm HotKey
 if TextToHotKey(FConfig.ReadString('General','TimerForm_Timer_Key',''),True) = HotKey then
-   TimerTrayIconClick(MainForm);
+    TimerTrayIconClick(Self);
 
 //Get Lnk_Form HotKey
 if TextToHotKey(FConfig.ReadString('General','LNKForm_Favorites_Key',''),True) = HotKey then
@@ -808,11 +808,7 @@ if MessageDlg('Do you really want to delete selected tab?', mtConfirmation, [mbY
 end;
 
 procedure TMainForm.FavTrayClick(Sender: TObject);
-var
- Input: TInput;
 begin
-ZeroMemory(@Input, SizeOf(Input));
-SendInput(1, Input, SizeOf(Input));
 with LNK_Form do
 if isWindowVisible(Handle) then
  begin
@@ -828,21 +824,14 @@ LNK_Form.ActiveControl := LNK_Form.List;
 end;
 
 procedure TMainForm.TimerTrayIconClick(Sender: TObject);
-var
- Input: TInput;
 begin
-ZeroMemory(@Input, SizeOf(Input));
-SendInput(1, Input, SizeOf(Input));
 with ShutdownForm do
 if Visible = False then
  begin
   Position := poDesktopCenter;
   Show;
   SetForegroundWindow(Handle);
- end else
-  begin
-   Hide;
-  end;
+ end else Hide;
 end;
 
 end.

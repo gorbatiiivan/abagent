@@ -1,7 +1,7 @@
 object LNK_ActionForm: TLNK_ActionForm
   Left = 191
   Top = 107
-  BorderIcons = []
+  BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'LNK_ActionForm'
   ClientHeight = 105

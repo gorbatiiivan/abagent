@@ -1,7 +1,7 @@
 object Properties: TProperties
   Left = 191
   Top = 107
-  BorderIcons = []
+  BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Properties'
   ClientHeight = 321

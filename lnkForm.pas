@@ -54,6 +54,16 @@ type
     N25: TMenuItem;
     N27: TMenuItem;
     N29: TMenuItem;
+    N22: TMenuItem;
+    FindEdit: TEdit;
+    ImageList2: TImageList;
+    N26: TMenuItem;
+    N30: TMenuItem;
+    N31: TMenuItem;
+    N71: TMenuItem;
+    N32: TMenuItem;
+    N33: TMenuItem;
+    N34: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -67,7 +77,6 @@ type
     procedure N1Click(Sender: TObject);
     procedure N23Click(Sender: TObject);
     procedure N24Click(Sender: TObject);
-    procedure N28Click(Sender: TObject);
     procedure N2Click(Sender: TObject);
     procedure N4Click(Sender: TObject);
     procedure N5Click(Sender: TObject);
@@ -90,6 +99,12 @@ type
     procedure SpeedButton1Click(Sender: TObject);
     procedure N27Click(Sender: TObject);
     procedure N29Click(Sender: TObject);
+    procedure N22Click(Sender: TObject);
+    procedure FindEditChange(Sender: TObject);
+    procedure N26Click(Sender: TObject);
+    procedure N28Click(Sender: TObject);
+    procedure N32Click(Sender: TObject);
+    procedure N33Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -98,24 +113,25 @@ type
     function GetFLists: TMemIniFile;
     procedure ListPath;
     procedure RegIni(Write: Boolean);
-    function ChangeIcons(ifLarge: Boolean): Boolean;
+    procedure ChangeIcons(Size: Integer);
     procedure DriveOnClick(Sender: TObject);
     procedure ControlPanelOnClick(Sender: TObject);
     procedure ToolBarOnClick(Sender: TObject);
   protected
     procedure WndProc(var Msg: TMessage); message WM_ACTIVATE;
     procedure CreateParams(var Params: TCreateParams); override;
+    procedure WMMoving(var Msg: TWMMoving); message WM_MOVING;
     procedure WMDropFiles(var Msg: TWMDropFiles); message wm_DropFiles;
   end;
 
 var
   LNK_Form: TLNK_Form;
   AClose: Boolean = False;
+  PosLocked: Boolean = True;
   ON_DragOnDrop: Boolean = False;
-  SysImageList:uint;
-  SFI:TSHFileInfo;
-  ImageListHandle: THandle;
   CurrentTab: Integer;//Ctrl+Tab
+  CurrentIconSize: Integer = 0;
+  CurrentIconStyle: Integer = 0;
 
 implementation
 
@@ -140,6 +156,33 @@ begin
   inherited CreateParams(Params);
   with Params do
     Style := (Style OR WS_POPUP) AND NOT WS_DLGFRAME;
+end;
+
+procedure TLNK_Form.WMMoving(var Msg: TWMMoving) ;
+var
+  workArea: TRect;
+begin
+if PosLocked = True then
+ begin
+  workArea := Screen.WorkareaRect;
+
+  with Msg.DragRect^ do
+  begin
+    if Left < workArea.Left then
+      OffsetRect(Msg.DragRect^, workArea.Left - Left, 0) ;
+
+    if Top < workArea.Top then
+      OffsetRect(Msg.DragRect^, 0, workArea.Top - Top) ;
+
+    if Right > workArea.Right then
+      OffsetRect(Msg.DragRect^, workArea.Right - Right, 0) ;
+
+    if Bottom > workArea.Bottom then
+      OffsetRect(Msg.DragRect^, 0, workArea.Bottom - Bottom) ;
+  end;
+ end;
+
+  inherited;
 end;
 
 procedure TLNK_Form.WMDropFiles(var Msg: TWMDropFiles);
@@ -183,18 +226,35 @@ end;
 
 //Some functions and procedure.................................................
 
-function TLNK_Form.ChangeIcons(ifLarge: Boolean): Boolean;
+procedure TLNK_Form.ChangeIcons(Size: Integer);
 begin
-with LNK_Form do
-if ifLarge then
+case Size of
+0:
  begin
-   ImageListHandle:=SHGetFileInfo('',0,SFI,SizeOf(TSHFileInfo),SHGFI_TYPENAME or SHGFI_SYSICONINDEX or SHGFI_LARGEICON);
-   SendMessage(List.Handle, LVM_SETIMAGELIST, LVSIL_NORMAL, ImageListHandle);
- end else
- begin
-   ImageListHandle:=SHGetFileInfo('',0,SFI,SizeOf(TSHFileInfo),SHGFI_TYPENAME or SHGFI_SYSICONINDEX or SHGFI_SMALLICON);
-   SendMessage(List.Handle, LVM_SETIMAGELIST, LVSIL_NORMAL, ImageListHandle);
+  ImageList2.Height := 32;
+  ImageList2.Width := 32;
+  CurrentIconSize := SHIL_LARGE;
  end;
+1:
+ begin
+  ImageList2.Height := 16;
+  ImageList2.Width := 16;
+  CurrentIconSize := SHIL_SMALL;
+ end;
+2:
+ begin
+  ImageList2.Height := 48;
+  ImageList2.Width := 48;
+  CurrentIconSize := SHIL_EXTRALARGE;
+ end;
+4:
+ begin
+  ImageList2.Height := 256;
+  ImageList2.Width := 256;
+  CurrentIconSize := SHIL_JUMBO;
+ end;
+end;
+SendMessage(List.Handle, LVM_SETIMAGELIST, LVSIL_NORMAL, ImageList2.Handle);
 end;
 
 procedure TLNK_Form.ListPath;
@@ -203,16 +263,21 @@ var
  StringList: TStringList;
 begin
  StringList := TStringList.Create;
- List.Items.Clear;
- FLists.ReadSection(Tabs.Tabs[Tabs.TabIndex],StringList);
-  for I := 0 to StringList.Count - 1 do
-  begin
-   InsertItem := List.Items.Add;
-   InsertItem.Caption:= StringList[I];
-   StrToList(FLists.ReadString(Tabs.Tabs[Tabs.TabIndex], StringList[I], ''),'|',InsertItem.SubItems);
-   InsertItem.ImageIndex := GetIconIndex(InsertItem.SubItems[2], FILE_ATTRIBUTE_NORMAL);
+  try
+   List.Items.Clear;
+   ImageList2.Clear;
+   FLists.ReadSection(Tabs.Tabs[Tabs.TabIndex],StringList);
+   for I := 0 to StringList.Count - 1 do
+   begin
+    InsertItem := List.Items.Add;
+    InsertItem.Caption:= StringList[I];
+    StrToList(FLists.ReadString(Tabs.Tabs[Tabs.TabIndex], StringList[I], ''),'|',InsertItem.SubItems);
+    AddIconsToList(InsertItem.SubItems[2],ImageList2);
+    InsertItem.ImageIndex := i;
+   end;
+  finally
+   StringList.Free;
   end;
- StringList.Free;
 end;
 
 //Save/Load config from INI....................................................
@@ -233,9 +298,11 @@ if Write = true then
   MainForm.FConfig.WriteInteger('General','LNKForm_Width',Width);
   MainForm.FConfig.WriteInteger('General','LNKForm_Height',Height);
   MainForm.FConfig.WriteString('General','LNKForm_Section',Caption);
+  MainForm.FConfig.WriteBool('General','LNKForm_OffScreenPos',N22.Checked);
   MainForm.FConfig.WriteBool('General','LNKForm_DragOnDrop',N23.Checked);
   MainForm.FConfig.WriteBool('General','LNKForm_HideWhenRun',N24.Checked);
-  MainForm.FConfig.WriteBool('General','LNKForm_ifLargeIcons',N28.Checked);
+  MainForm.FConfig.WriteInteger('General','LNKForm_IconSize',CurrentIconSize);
+  MainForm.FConfig.WriteInteger('General','LNKForm_IconStyle',CurrentIconStyle);
   MainForm.FConfig.UpdateFile;
  end else
  begin
@@ -245,11 +312,18 @@ if Write = true then
   Height := MainForm.FConfig.ReadInteger('General','LNKForm_Height',Height);
   Caption := MainForm.FConfig.ReadString('General','LNKForm_Section','');
   Tabs.TabIndex := FindString(Tabs.Tabs,Caption);
+  N22.Checked := MainForm.FConfig.ReadBool('General','LNKForm_OffScreenPos',True);
+  PosLocked := MainForm.FConfig.ReadBool('General','LNKForm_OffScreenPos',True);
   N23.Checked := MainForm.FConfig.ReadBool('General','LNKForm_DragOnDrop',False);
   ON_DragOnDrop := MainForm.FConfig.ReadBool('General','LNKForm_DragOnDrop',False);
   N24.Checked := MainForm.FConfig.ReadBool('General','LNKForm_HideWhenRun',False);
-  N28.Checked := MainForm.FConfig.ReadBool('General','LNKForm_ifLargeIcons',False);
-  ChangeIcons(MainForm.FConfig.ReadBool('General','LNKForm_ifLargeIcons',False));
+  ChangeIcons(MainForm.FConfig.ReadInteger('General','LNKForm_IconSize',0));
+  CurrentIconSize := MainForm.FConfig.ReadInteger('General','LNKForm_IconSize',0);
+  CurrentIconStyle := MainForm.FConfig.ReadInteger('General','LNKForm_IconStyle',0);
+    case CurrentIconStyle of
+     0: List.ViewStyle := vsIcon;
+     1: List.ViewStyle := vsTile;
+    end;
  end;
 end;
 
@@ -281,7 +355,6 @@ if Tabs.Tabs.Count = 0 then
  end;
 TabsChange(Sender);
 DragAcceptFiles(LNK_Form.Handle,true);
-MainForm.FavTray.Hint := Caption;
 GetPersonalFolders(ToolBar1);
 AddIconsToImgList(ImageList1);
 end;
@@ -364,10 +437,11 @@ procedure TLNK_Form.TabsChange(Sender: TObject);
 begin
 if Tabs.Tabs.Count <> -1 then
  begin
+  ChangeIcons(CurrentIconSize);
   ListPath;
-  ChangeIcons(N28.Checked);
   Caption := Tabs.Tabs[Tabs.TabIndex];
   MainForm.FavTray.Hint := Tabs.Tabs[Tabs.TabIndex];
+  FindEdit.Text := '';
  end;
 end;
 
@@ -431,6 +505,19 @@ begin
   Perform( wm_SysCommand, sc_DragMove, 0 );
 end;
 
+procedure TLNK_Form.FindEditChange(Sender: TObject);
+begin
+if FindEdit.Text = '' then TabsChange(Self) else
+ begin
+  FindTextFromTXT(ExtractFilePath(Application.ExeName) + CurrentUserName + '.ablst',
+                  FindEdit.Text, List, FLists);
+  List.SortType := stText;
+  ChangeIcons(CurrentIconSize);
+  Caption := Tabs.Tabs[Tabs.TabIndex];
+  MainForm.FavTray.Hint := Tabs.Tabs[Tabs.TabIndex];
+ end;
+end;
+
 //Menu items....................................................................
 
 procedure TLNK_Form.N10Click(Sender: TObject);
@@ -446,7 +533,11 @@ with Properties do
    Edit4.Text := List.Selected.SubItems[2];
    Edit5.Text := List.Selected.SubItems[3];
    Index := 0;
-   Image1.Picture.Icon.Handle := ExtractAssociatedIcon(hInstance,PChar(Edit1.Text),Index);
+   // if icon location is empty to load icon from exe
+   if Edit4.Text = '' then
+   Image1.Picture.Icon.Handle := ExtractAssociatedIcon(hInstance,PChar(Edit1.Text),Index)
+   else
+   Image1.Picture.Icon.Handle := ExtractAssociatedIcon(hInstance,PChar(Edit4.Text),Index);
    if (ShowModal <> mrCancel) and (Edit1.Text <> '') and (Edit2.Text <> '') then
     begin
      FLists.DeleteKey(LNK_Form.Caption,List.Selected.Caption);
@@ -600,6 +691,15 @@ with LNK_ActionForm do
   end;
 end;
 
+procedure TLNK_Form.N22Click(Sender: TObject);
+begin
+with Sender as TMenuItem do
+  begin
+    Checked := not Checked;
+    PosLocked := Checked;
+  end;
+end;
+
 procedure TLNK_Form.N23Click(Sender: TObject);
 begin
 with Sender as TMenuItem do
@@ -616,10 +716,45 @@ end;
 
 procedure TLNK_Form.N28Click(Sender: TObject);
 begin
+ case MainForm.FConfig.ReadInteger('General','LNKForm_IconSize',0) of
+  0: N30.Checked := True;
+  1: N26.Checked := True;
+  2: N31.Checked := True;
+  4: N71.Checked := True;
+ end;
+end;
+
+procedure TLNK_Form.N26Click(Sender: TObject);
+begin
 with Sender as TMenuItem do
   begin
-    Checked := not Checked;
-    ChangeIcons(Checked);
+    CurrentIconSize := StrToInt(Hint);
+    TabsChange(Self);
+    MainForm.FConfig.WriteInteger('General','LNKForm_IconSize',CurrentIconSize);
+    MainForm.FConfig.UpdateFile;
+  end;
+end;
+
+procedure TLNK_Form.N32Click(Sender: TObject);
+begin
+ case MainForm.FConfig.ReadInteger('General','LNKForm_IconStyle',0) of
+  0: N33.Checked := True;
+  1: N34.Checked := True;
+ end;
+end;
+
+procedure TLNK_Form.N33Click(Sender: TObject);
+begin
+ with Sender as TMenuItem do
+  begin
+    CurrentIconStyle := StrToInt(Hint);
+    case CurrentIconStyle of
+     0: List.ViewStyle := vsIcon;
+     1: List.ViewStyle := vsTile;
+    end;
+    ChangeIcons(CurrentIconSize);
+    MainForm.FConfig.WriteInteger('General','LNKForm_IconStyle',CurrentIconStyle);
+    MainForm.FConfig.UpdateFile;
   end;
 end;
 
@@ -810,8 +945,8 @@ else
   Tabs.Tabs.Add('System apps');
   Tabs.TabIndex := FindString(Tabs.Tabs,'System apps');
   List.Clear;
-  AddSystemApps(0);
-  ChangeIcons(N28.Checked);
+  AddSystemApps(List, 0);
+  ChangeIcons(CurrentIconSize);
   for I := 0 to List.Items.Count-1 do
    begin
     FLists.WriteString('System apps',PChar(List.Items[I].Caption),
@@ -833,8 +968,8 @@ else
   Tabs.Tabs.Add('System folders');
   Tabs.TabIndex := FindString(Tabs.Tabs,'System folders');
   List.Clear;
-  AddSystemApps(1);
-  ChangeIcons(N28.Checked);
+  AddSystemApps(List, 1);
+  ChangeIcons(CurrentIconSize);
   for I := 0 to List.Items.Count-1 do
    begin
     FLists.WriteString('System folders',PChar(List.Items[I].Caption),

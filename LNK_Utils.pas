@@ -127,12 +127,6 @@ type
   ID: Integer;
  end;
 
-type
-  TListView = class(ComCtrls.TListView)
-  protected
-    procedure WndProc(var Message: TMessage); override;
-  end;
-
 function GetIconIndex(const AFile: string; Attrs: DWORD): integer;
 procedure AddItem(Section, FileName, FilePath, Parameters, IconLocation, WorkingDir: string);
 function ReadDirectory(List : TStrings; Config: TMemIniFile): Integer;
@@ -148,15 +142,19 @@ function DiskSizeString(Drive: Char;Units: Boolean): string;
 procedure ADDListDrives(PopupMenu: TPopupMenu);
 procedure ADDControlPanelList(PopupMenu: TPopupMenu);
 function GetNotepad: String;
-procedure AddSystemApps(AIndex: Integer);
+procedure AddSystemApps(ListView: TListView; AIndex: Integer);
 procedure GetPersonalFolders(ToolBar: TToolBar);
 procedure LoadPngFromRes(PngName: String; ImageList: TImageList);
 function LoadImageResource(const ResName: string): TPngImage;
 procedure AddIconsToImgList(ImageList: TImageList);
+procedure FindTextFromTXT(const fileName, searchText: string; ListView: TListView; Config: TMemIniFile);
+function GetImageListSH(SHIL_FLAG:Cardinal): HIMAGELIST;
+procedure GetIconFromFile( aFile: string; var aIcon: TIcon;SHIL_FLAG: Cardinal );
+procedure AddIconsToList(IconPath: String; ImageList: TImageList);
 
 implementation
 
-uses lnkForm;
+uses lnkForm, Utils;
 
 function GetIconIndex(const AFile: string; Attrs: DWORD): integer;
 var
@@ -166,30 +164,23 @@ begin
   Result := SFI.iIcon;
 end;
 
-procedure TListView.WndProc(var Message: TMessage);
-begin
-  if Message.Msg = WM_ERASEBKGND then
-    DefaultHandler(Message)
-  else
-    inherited;
-end;
-
 procedure AddItem(Section, FileName, FilePath, Parameters, IconLocation, WorkingDir: string);
 begin
 with lnk_Form do
  begin
-  if not (FLists.ValueExists(lnk_Form.Caption,FileName)) then
-  begin
-   FLists.WriteString(Section,FileName,FilePath+'|'+Parameters+'|'+
+   if not (FLists.ValueExists(lnk_Form.Caption,FileName)) then
+    begin
+     FLists.WriteString(Section,FileName,FilePath+'|'+Parameters+'|'+
                       IconLocation+'|'+WorkingDir+'|');
-   FLists.UpdateFile;
-   InsertItem := List.Items.Add;
-   InsertItem.Caption:= FileName;
-   InsertItem.SubItems.Add(FilePath);
-   InsertItem.SubItems.Add(Parameters);
-   InsertItem.SubItems.Add(IconLocation);
-   InsertItem.SubItems.Add(WorkingDir);
-   InsertItem.ImageIndex := GetIconIndex(PChar(IconLocation), FILE_ATTRIBUTE_NORMAL);
+     FLists.UpdateFile;
+     InsertItem := List.Items.Add;
+     InsertItem.Caption:= FileName;
+     InsertItem.SubItems.Add(FilePath);
+     InsertItem.SubItems.Add(Parameters);
+     InsertItem.SubItems.Add(IconLocation);
+     InsertItem.SubItems.Add(WorkingDir);
+     AddIconsToList(IconLocation,ImageList2);
+     InsertItem.ImageIndex := ImageList2.Count-1;
   end;
 end;
 end;
@@ -459,20 +450,21 @@ begin
   Result := GetSpecialFolderLocation(-1, FOLDERID_System)+'notepad.exe';
 end;
 
-procedure AddSystemApps(AIndex: Integer);
+procedure AddSystemApps(ListView: TListView; AIndex: Integer);
 
 function InsertItem(ACaption, Path, Param: String;
          const WorkingDir: String = ''): Boolean;
 var
  InsItem: TListItem;
 begin
- InsItem := lnk_Form.List.Items.Add;
+ InsItem := ListView.Items.Add;
  InsItem.Caption:= ACaption;
  InsItem.SubItems.Add(WideUpperCase(Path));
  InsItem.SubItems.Add(Param);
  InsItem.SubItems.Add(WideUpperCase(Path)); //insert icon path
  Insitem.SubItems.Add(WideUpperCase(WorkingDir)); //insert workdir
- InsItem.ImageIndex := GetIconIndex(PChar(InsItem.SubItems.Strings[2]), FILE_ATTRIBUTE_NORMAL);
+ AddIconsToList(PChar(InsItem.SubItems.Strings[2]), lnk_Form.ImageList2);
+ Insitem.ImageIndex := lnk_Form.ImageList2.Count-1;
 end;
 
 begin
@@ -595,13 +587,13 @@ end;
 
 procedure GetPersonalFolders(ToolBar: TToolBar);
 begin
-  AddButtonToToolbar(LNK_Form.ToolBar1,'Desktop',GetSpecialFolderLocation(-1, FOLDERID_Desktop),3,0);
-  AddButtonToToolbar(LNK_Form.ToolBar1,'Documents',GetSpecialFolderLocation(-1, FOLDERID_Documents),4,1);
-  AddButtonToToolbar(LNK_Form.ToolBar1,'Downloads',GetSpecialFolderLocation(-1, FOLDERID_Downloads),5,2);
-  AddButtonToToolbar(LNK_Form.ToolBar1,'Music',GetSpecialFolderLocation(-1, FOLDERID_Music),6,3);
-  AddButtonToToolbar(LNK_Form.ToolBar1,'Pictures',GetSpecialFolderLocation(-1, FOLDERID_Pictures),7,4);
-  AddButtonToToolbar(LNK_Form.ToolBar1,'Saved Games',GetSpecialFolderLocation(-1, FOLDERID_SavedGames),8,5);
-  AddButtonToToolbar(LNK_Form.ToolBar1,'Videos',GetSpecialFolderLocation(-1, FOLDERID_Videos),9,6);
+  AddButtonToToolbar(ToolBar,'Desktop',GetSpecialFolderLocation(-1, FOLDERID_Desktop),3,0);
+  AddButtonToToolbar(ToolBar,'Documents',GetSpecialFolderLocation(-1, FOLDERID_Documents),4,1);
+  AddButtonToToolbar(ToolBar,'Downloads',GetSpecialFolderLocation(-1, FOLDERID_Downloads),5,2);
+  AddButtonToToolbar(ToolBar,'Music',GetSpecialFolderLocation(-1, FOLDERID_Music),6,3);
+  AddButtonToToolbar(ToolBar,'Pictures',GetSpecialFolderLocation(-1, FOLDERID_Pictures),7,4);
+  AddButtonToToolbar(ToolBar,'Saved Games',GetSpecialFolderLocation(-1, FOLDERID_SavedGames),8,5);
+  AddButtonToToolbar(ToolBar,'Videos',GetSpecialFolderLocation(-1, FOLDERID_Videos),9,6);
 end;
 
 procedure LoadPngFromRes(PngName: String; ImageList: TImageList);
@@ -673,6 +665,109 @@ begin
  finally
   Icon.Free;
 end;
+end;
+
+// Find items from ListView
+//-----------------------------------------------------------------------------
+procedure FindTextFromTXT(const fileName, searchText: string; ListView: TListView; Config: TMemIniFile);
+var
+  sl,sl2,sl3,sl4: TStringList;
+  i,h: Integer;
+  ListItem: TListItem;
+begin
+  ListView.Items.Clear;
+  sl := TStringList.Create;
+  sl2 := TStringList.Create;// for caption
+  sl3 := TStringList.Create;// for subitems
+  sl4 := TStringList.Create;// delete sections from sl
+  try
+   ListView.Items.BeginUpdate;
+    sl.LoadFromFile(fileName);
+
+    //delete sections names
+    Config.ReadSections(sl4);
+    for h := 0 to sl4.Count -1 do
+    sl.Delete(FindString(sl,'['+sl4[h]+']'));
+    
+    for i := sl.Count-1 downto 0 do
+      if Pos(String(WideUpperCase(searchText)), String(WideUpperCase(sl[i])))<>0 then
+       begin
+        StrToList(sl[i],'=',sl2);
+        StrToList(sl[i],'|',sl3);
+        ListItem := ListView.Items.Add;
+        ListItem.Caption := sl2[0];
+        ListItem.SubItems := sl3;
+        ListItem.SubItems[0] := StringReplace(ListItem.SubItems[0],
+                          ListItem.Caption+'=','',[rfReplaceAll, rfIgnoreCase]);
+        AddIconsToList(PChar(ListItem.SubItems.Strings[2]), lnk_Form.ImageList2);
+        ListItem.ImageIndex := lnk_Form.ImageList2.Count-1;
+       end;
+
+  finally
+    ListView.Items.EndUpdate;
+    sl.Free;
+    sl2.Free;
+    sl3.Free;
+    sl4.Free;
+  end;
+end;
+
+// ADD ICONS TO ListView
+//-----------------------------------------------------------------------------
+function GetImageListSH(SHIL_FLAG:Cardinal): HIMAGELIST;
+const
+ IID_IImageList: TGUID = '{46EB5926-582E-4017-9FDF-E8998DAA0950}';
+type
+  _SHGetImageList = function (iImageList: integer; const riid: TGUID; var ppv: Pointer): hResult; stdcall;
+var
+  Handle: THandle;
+  SHGetImageList: _SHGetImageList;
+begin
+  Result:= 0;
+  Handle:= LoadLibrary('Shell32.dll');
+  if Handle<>S_OK then
+  try
+    SHGetImageList:=GetProcAddress(Handle, PChar(727));
+    if Assigned(SHGetImageList) and (Win32Platform=VER_PLATFORM_WIN32_NT) then
+      SHGetImageList(SHIL_FLAG, IID_IImageList, Pointer(Result));
+  finally
+    FreeLibrary(Handle);
+  end;
+end;
+
+procedure GetIconFromFile( aFile: string; var aIcon: TIcon;SHIL_FLAG: Cardinal );
+var
+  aImgList: HIMAGELIST;
+  SFI: TSHFileInfo;
+  aIndex: integer;
+begin // Get the index of the imagelist
+  SHGetFileInfo( PChar( aFile ), FILE_ATTRIBUTE_NORMAL, SFI, SizeOf( TSHFileInfo ),
+    SHGFI_ICON or SHGFI_LARGEICON or SHGFI_SHELLICONSIZE or SHGFI_SYSICONINDEX or SHGFI_TYPENAME or SHGFI_DISPLAYNAME );
+  if not Assigned( aIcon ) then
+    aIcon := TIcon.Create;
+  // get the imagelist
+  aImgList := GetImageListSH( SHIL_FLAG );
+  // get index
+  //aIndex := Pred( ImageList_GetImageCount( aImgList ) );
+  aIndex := SFI.iIcon;
+  // extract the icon handle
+  aIcon.Handle := ImageList_GetIcon( aImgList, aIndex, ILD_NORMAL );
+end;
+
+procedure AddIconsToList(IconPath: String; ImageList: TImageList);
+var
+ hicon: TIcon;
+begin
+ hicon:= TIcon.Create;
+  try
+   if ExtractFileExt(IconPath) <> '.ICO' then
+    GetIconFromFile(IconPath,hicon,CurrentIconSize)
+   else
+    hicon.LoadFromFile(IconPath);
+   ImageList.AddIcon(hicon);
+  finally
+   hicon.Free;
+  end;
 end;
 
 end.
