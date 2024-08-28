@@ -1,5 +1,6 @@
 # abagent
 Portable open source application for Windows that can easily hide any window in the background with hotkey.
+(Please, I need help to improve the application, I will always be glad to any help.)
 
 ![Снимок](https://github.com/gorbatiiivan/abagent/assets/84850541/50ce69eb-4449-4380-8725-ab124915e170)
 
