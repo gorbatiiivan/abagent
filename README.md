@@ -9,7 +9,7 @@ Portable open source application for Windows that can easily hide any window in 
 
 Features:
 * Run your selected process from file and hide with the same hotkey.
-* Close all processes using your mouse.
+* Hide all processes using your mouse.
 * End all running processes when task manager starts.
 * Clear the history of all running processes from the registry, from special folders, and network usage statistics.
 * And many others features.
