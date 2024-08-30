@@ -21,6 +21,8 @@ Timer
 
 Is a small little features that allows you to set a timer for shutting down, restarting, etc. your PC.
 
+------------------------------------------------------------------------------------------------------
+
 Favorites
 
 ![Снимок](https://github.com/user-attachments/assets/10eb8a0e-8c95-48e5-83d6-a8656f60f58e)
@@ -30,7 +32,7 @@ Favorites
 Is a good features that allows you to added your favorites apps, personal folders, system folders and 
 apps in one form and in one click.
 
-
+------------------------------------------------------------------------------------------------------
 
 Run with parameters
 -    Enabled timer '--enable'.
