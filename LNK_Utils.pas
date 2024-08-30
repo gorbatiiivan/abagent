@@ -139,8 +139,8 @@ function GetSpecialFolderLocation(const Folder: Integer; const FolderNew: TGUID)
 function DiskFloatToString(Number: Double;Units: Boolean): string;
 function DiskFreeString(Drive: Char;Units: Boolean): string;
 function DiskSizeString(Drive: Char;Units: Boolean): string;
-procedure ADDListDrives(PopupMenu: TPopupMenu);
-procedure ADDControlPanelList(PopupMenu: TPopupMenu);
+procedure ADDListDrives(PopupMenu: TPopupMenu; OnClick: TNotifyEvent);
+procedure ADDControlPanelList(PopupMenu: TPopupMenu; OnClick: TNotifyEvent);
 function GetNotepad: String;
 procedure AddSystemApps(ListView: TListView; AIndex: Integer);
 procedure GetPersonalFolders(ToolBar: TToolBar);
@@ -151,6 +151,7 @@ procedure FindTextFromTXT(const fileName, searchText: string; ListView: TListVie
 function GetImageListSH(SHIL_FLAG:Cardinal): HIMAGELIST;
 procedure GetIconFromFile( aFile: string; var aIcon: TIcon;SHIL_FLAG: Cardinal );
 procedure AddIconsToList(IconPath: String; ImageList: TImageList);
+procedure AddMenuItem(Menu: TMenuItem; Tabs: TTabControl; OnClick: TNotifyEvent);
 
 implementation
 
@@ -310,6 +311,12 @@ begin
         //GigaBytes
         Number    := Number / (1024);
         TypeSpace := ' GB';
+        if Number >= 1024 then
+        begin
+          //TeraBytes
+          Number    := Number / (1024);
+          TypeSpace := ' TB';
+        end;
       end;
     end;
   end;
@@ -334,7 +341,7 @@ begin
   Result := DiskFloatToString(Size,Units);
 end;
 
-procedure ADDListDrives(PopupMenu: TPopupMenu);
+procedure ADDListDrives(PopupMenu: TPopupMenu; OnClick: TNotifyEvent);
 var
   i, j, k: integer;
   buf: array [0..499] of char;
@@ -362,13 +369,13 @@ begin
     MenuItem := TMenuItem.Create(PopupMenu);
     MenuItem.Caption := DrvStr+'    '+DiskFreeString(DrvStr2,True)+' free of '+DiskSizeString(DrvStr2, True);
     MenuItem.Hint := DrvStr;
-    MenuItem.OnClick := lnk_Form.DriveOnClick;
+    MenuItem.OnClick := OnClick;
     PopupMenu.Items.Add(MenuItem);
   until
     ((buf[i-1] = #0) and (buf[i] = #0)) or (i > 499);
 end;
 
-procedure ADDControlPanelList(PopupMenu: TPopupMenu);
+procedure ADDControlPanelList(PopupMenu: TPopupMenu; OnClick: TNotifyEvent);
 var
   MenuItem : TMenuItem;
 begin
@@ -377,19 +384,19 @@ begin
   MenuItem := TMenuItem.Create(PopupMenu);
   MenuItem.Caption := 'Control Panel (category view)';
   MenuItem.Hint := '/root,"shell:::{26EE0668-A00A-44D7-9371-BEB064C98683}"';
-  MenuItem.OnClick := lnk_Form.ControlPanelOnClick;
+  MenuItem.OnClick := OnClick;
   PopupMenu.Items.Add(MenuItem);
 
   MenuItem := TMenuItem.Create(PopupMenu);
   MenuItem.Caption := 'Control Panel (icons view)';
   MenuItem.Hint := '/root,"shell:::{21EC2020-3AEA-1069-A2DD-08002B30309D}"';
-  MenuItem.OnClick := lnk_Form.ControlPanelOnClick;
+  MenuItem.OnClick := OnClick;
   PopupMenu.Items.Add(MenuItem);
 
   MenuItem := TMenuItem.Create(PopupMenu);
   MenuItem.Caption := 'Control Panel (all tasks)';
   MenuItem.Hint := '/root,"shell:::{ED7BA470-8E54-465E-825C-99712043E01C}"';
-  MenuItem.OnClick := lnk_Form.ControlPanelOnClick;
+  MenuItem.OnClick := OnClick;
   PopupMenu.Items.Add(MenuItem);
 
   MenuItem := TMenuItem.Create(PopupMenu);
@@ -399,13 +406,13 @@ begin
   MenuItem := TMenuItem.Create(PopupMenu);
   MenuItem.Caption := 'Device Manager';
   MenuItem.Hint := '/root,"shell:::{74246bfc-4c96-11d0-abef-0020af6b0b7a}"';
-  MenuItem.OnClick := lnk_Form.ControlPanelOnClick;
+  MenuItem.OnClick := OnClick;
   PopupMenu.Items.Add(MenuItem);
 
   MenuItem := TMenuItem.Create(PopupMenu);
   MenuItem.Caption := 'System';
   MenuItem.Hint := '/root,"shell:::{BB06C0E4-D293-4f75-8A90-CB05B6477EEE}"';
-  MenuItem.OnClick := lnk_Form.ControlPanelOnClick;
+  MenuItem.OnClick := OnClick;
   PopupMenu.Items.Add(MenuItem);
 end;
 
@@ -764,10 +771,31 @@ begin
     GetIconFromFile(IconPath,hicon,CurrentIconSize)
    else
     hicon.LoadFromFile(IconPath);
+
+   //if icon not loading or exist extractfrom imageres.dll
+   if hicon.Handle = 0 then
+   hicon.Handle := ExtractIcon(hInstance,PChar(
+              GetSpecialFolderLocation(-1, FOLDERID_System)+'imageres.dll'),2);
+
    ImageList.AddIcon(hicon);
   finally
    hicon.Free;
   end;
+end;
+
+procedure AddMenuItem(Menu: TMenuItem; Tabs: TTabControl; OnClick: TNotifyEvent);
+var
+ menuItem : TMenuItem;
+ i: Integer;
+begin
+Menu.Clear;
+for I := 0 to tabs.Tabs.Count-1 do
+ begin
+  menuItem := TMenuItem.Create(Menu);
+  menuItem.Caption := tabs.Tabs[i];
+  menuItem.OnClick := OnClick;
+  Menu.Add(menuItem);
+ end;
 end;
 
 end.

@@ -125,7 +125,6 @@ object LNK_Form: TLNK_Form
       Width = 54
       Height = 32
       Hint = 'My Computer'
-      DropDownMenu = CustomPopupMenu
       ImageIndex = 0
       Images = ImageList1
       Style = bsSplitButton
@@ -140,7 +139,6 @@ object LNK_Form: TLNK_Form
       Width = 54
       Height = 32
       Hint = 'Settings'
-      DropDownMenu = CustomPopupMenu
       ImageIndex = 1
       Images = ImageList1
       Style = bsSplitButton
@@ -171,8 +169,8 @@ object LNK_Form: TLNK_Form
   end
   object PopupMenu: TPopupMenu
     OnPopup = PopupMenuPopup
-    Left = 56
-    Top = 320
+    Left = 48
+    Top = 104
     object Open1: TMenuItem
       Caption = 'Open'
       Default = True
@@ -203,6 +201,15 @@ object LNK_Form: TLNK_Form
     object N3: TMenuItem
       Caption = '-'
     end
+    object N7: TMenuItem
+      Caption = 'Copy to'
+    end
+    object N8: TMenuItem
+      Caption = 'Move to'
+    end
+    object N6: TMenuItem
+      Caption = '-'
+    end
     object Addtoprocesslist1: TMenuItem
       Caption = 'Add to process list'
       ShortCut = 16464
@@ -218,37 +225,69 @@ object LNK_Form: TLNK_Form
     end
     object N5: TMenuItem
       Caption = 'Delete tab'
-      ShortCut = 8238
-      OnClick = N5Click
     end
     object N25: TMenuItem
       Caption = '-'
     end
     object N21: TMenuItem
-      Caption = 'Get system to tab'
+      Caption = 'Import from system'
       object N27: TMenuItem
-        Caption = 'System apps'
+        Caption = 'Apps'
         OnClick = N27Click
       end
       object N29: TMenuItem
-        Caption = 'System folders'
+        Caption = 'Folders'
         OnClick = N29Click
       end
     end
-    object N6: TMenuItem
+    object N9: TMenuItem
       Caption = '-'
     end
-    object N7: TMenuItem
-      Caption = 'Copy'
-      ShortCut = 16451
-      OnClick = N7Click
+    object Iconssize1: TMenuItem
+      Caption = 'Icons size'
+      OnClick = N28Click
+      object Small1: TMenuItem
+        Caption = 'Small'
+        Hint = '1'
+        RadioItem = True
+        OnClick = N26Click
+      end
+      object Normal1: TMenuItem
+        Caption = 'Normal'
+        Hint = '0'
+        RadioItem = True
+        OnClick = N26Click
+      end
+      object ExtraLarge1: TMenuItem
+        Caption = 'Extra Large'
+        Hint = '2'
+        RadioItem = True
+        OnClick = N26Click
+      end
+      object Jumbo1: TMenuItem
+        Caption = 'Jumbo'
+        Hint = '4'
+        RadioItem = True
+        OnClick = N26Click
+      end
     end
-    object N8: TMenuItem
-      Caption = 'Move'
-      ShortCut = 16472
-      OnClick = N8Click
+    object IconsStyle1: TMenuItem
+      Caption = 'Icons style'
+      OnClick = N32Click
+      object Icon1: TMenuItem
+        Caption = 'Icon'
+        Hint = '0'
+        RadioItem = True
+        OnClick = N33Click
+      end
+      object Tile1: TMenuItem
+        Caption = 'Tile'
+        Hint = '1'
+        RadioItem = True
+        OnClick = N33Click
+      end
     end
-    object N9: TMenuItem
+    object N26: TMenuItem
       Caption = '-'
     end
     object N10: TMenuItem
@@ -259,8 +298,8 @@ object LNK_Form: TLNK_Form
   end
   object GeneralMenu: TPopupMenu
     OnPopup = GeneralMenuPopup
-    Left = 96
-    Top = 320
+    Left = 48
+    Top = 160
     object N14: TMenuItem
       Caption = 'Show'
       Default = True
@@ -281,59 +320,6 @@ object LNK_Form: TLNK_Form
       Caption = 'Prevent moving off screen'
       OnClick = N22Click
     end
-    object N12: TMenuItem
-      Caption = '-'
-    end
-    object N28: TMenuItem
-      Caption = 'View icons size'
-      OnClick = N28Click
-      object N26: TMenuItem
-        AutoCheck = True
-        Caption = 'Small'
-        Hint = '1'
-        RadioItem = True
-        OnClick = N26Click
-      end
-      object N30: TMenuItem
-        AutoCheck = True
-        Caption = 'Normal'
-        Hint = '0'
-        RadioItem = True
-        OnClick = N26Click
-      end
-      object N31: TMenuItem
-        AutoCheck = True
-        Caption = 'Extra Large'
-        Hint = '2'
-        RadioItem = True
-        OnClick = N26Click
-      end
-      object N71: TMenuItem
-        AutoCheck = True
-        Caption = 'Jumbo'
-        Hint = '4'
-        RadioItem = True
-        OnClick = N26Click
-      end
-    end
-    object N32: TMenuItem
-      Caption = 'View Style'
-      OnClick = N32Click
-      object N33: TMenuItem
-        AutoCheck = True
-        Caption = 'Icon'
-        Hint = '0'
-        RadioItem = True
-        OnClick = N33Click
-      end
-      object N34: TMenuItem
-        AutoCheck = True
-        Caption = 'Tile'
-        Hint = '1'
-        RadioItem = True
-        OnClick = N33Click
-      end
-    end
     object N18: TMenuItem
       Caption = '-'
     end
@@ -346,24 +332,20 @@ object LNK_Form: TLNK_Form
       OnClick = N16Click
     end
   end
-  object CustomPopupMenu: TPopupMenu
-    Left = 179
-    Top = 323
-  end
   object ImageList1: TImageList
     ColorDepth = cd32Bit
     DrawingStyle = dsTransparent
     Height = 32
     Width = 32
-    Left = 139
-    Top = 323
+    Left = 51
+    Top = 219
   end
   object ImageList2: TImageList
     ColorDepth = cd32Bit
     DrawingStyle = dsTransparent
     Height = 32
     Width = 32
-    Left = 219
-    Top = 326
+    Left = 51
+    Top = 278
   end
 end

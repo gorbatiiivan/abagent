@@ -158,9 +158,6 @@
             <Form>LNK_Form</Form>
         </DCCReference>
         <DCCReference Include="LNK_Utils.pas"/>
-        <DCCReference Include="LNK_Action.pas">
-            <Form>LNK_ActionForm</Form>
-        </DCCReference>
         <DCCReference Include="LNK_Properties.pas">
             <Form>Properties</Form>
         </DCCReference>
@@ -191,6 +188,10 @@
         <RcItem Include="images\time\time24.png">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>time24</ResourceId>
+        </RcItem>
+        <RcItem Include="abagent.Artwork\Windows\main24.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>main24</ResourceId>
         </RcItem>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
@@ -227,6 +228,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Win64\Release\abmanager.exe" Configuration="Release" Class="ProjectOutput"/>
+                <DeployFile LocalName="abagent.Artwork\Windows\main24.png" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="images\log\log24.png" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>

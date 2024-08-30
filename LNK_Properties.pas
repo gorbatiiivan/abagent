@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, Vcl.Mask, ShellAPI;
+  Dialogs, StdCtrls, ExtCtrls, ShellAPI, Vcl.Mask;
 
 type
   TProperties = class(TForm)

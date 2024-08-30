@@ -32,11 +32,8 @@ type
     GeneralMenu: TPopupMenu;
     N23: TMenuItem;
     N24: TMenuItem;
-    N12: TMenuItem;
-    N28: TMenuItem;
     N18: TMenuItem;
     N15: TMenuItem;
-    CustomPopupMenu: TPopupMenu;
     ImageList1: TImageList;
     Bevel1: TBevel;
     Button2: TButton;
@@ -57,13 +54,15 @@ type
     N22: TMenuItem;
     FindEdit: TEdit;
     ImageList2: TImageList;
+    Iconssize1: TMenuItem;
+    Jumbo1: TMenuItem;
+    ExtraLarge1: TMenuItem;
+    Normal1: TMenuItem;
+    Small1: TMenuItem;
     N26: TMenuItem;
-    N30: TMenuItem;
-    N31: TMenuItem;
-    N71: TMenuItem;
-    N32: TMenuItem;
-    N33: TMenuItem;
-    N34: TMenuItem;
+    IconsStyle1: TMenuItem;
+    Tile1: TMenuItem;
+    Icon1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -79,9 +78,6 @@ type
     procedure N24Click(Sender: TObject);
     procedure N2Click(Sender: TObject);
     procedure N4Click(Sender: TObject);
-    procedure N5Click(Sender: TObject);
-    procedure N7Click(Sender: TObject);
-    procedure N8Click(Sender: TObject);
     procedure PopupMenuPopup(Sender: TObject);
     procedure N15Click(Sender: TObject);
     procedure GeneralMenuPopup(Sender: TObject);
@@ -110,6 +106,7 @@ type
   public
     InsertItem: TListItem;
     FLists: TMemIniFile;
+    FPopup: TPopupMenu;
     function GetFLists: TMemIniFile;
     procedure ListPath;
     procedure RegIni(Write: Boolean);
@@ -117,6 +114,9 @@ type
     procedure DriveOnClick(Sender: TObject);
     procedure ControlPanelOnClick(Sender: TObject);
     procedure ToolBarOnClick(Sender: TObject);
+    procedure copyitemclick(Sender: TObject);
+    procedure moveitemclick(Sender: TObject);
+    procedure deleteitemclick(Sender: TObject);
   protected
     procedure WndProc(var Msg: TMessage); message WM_ACTIVATE;
     procedure CreateParams(var Params: TCreateParams); override;
@@ -135,7 +135,7 @@ var
 
 implementation
 
-uses LNK_Utils, LNK_Action, LNK_Properties, Unit1, ShutdownUnit, Utils,
+uses LNK_Utils, LNK_Properties, Unit1, ShutdownUnit, Utils,
      HotKeyChanger, HotKeyManager;
 
 {$R *.dfm}
@@ -339,6 +339,9 @@ end;
 
 procedure TLNK_Form.FormCreate(Sender: TObject);
 begin
+FPopup := TPopupMenu.Create(Self);
+Button1.DropDownMenu := FPopup;
+Button2.DropDownMenu := FPopup;
 LNK_Form.ScaleForPPI(110);
 List.ShowColumnHeaders := False;
 InsertItem := List.Items.Add;
@@ -363,6 +366,7 @@ procedure TLNK_Form.FormDestroy(Sender: TObject);
 begin
 RegIni(True);
 FLists.Free;
+FPopup.Free;
 end;
 
 procedure TLNK_Form.FormResize(Sender: TObject);
@@ -424,12 +428,9 @@ if Shift = [ssCtrl] then
    Ord('N'): N1Click(Sender);
    Ord('P'): Addtoprocesslist1Click(Sender);
    Ord('F'): N4Click(Sender);
-   Ord('C'): N7Click(Sender);
-   Ord('X'): N8Click(Sender);
    Ord('L'): N17Click(Sender);
   end;
  end;
-if (Shift = [ssShift]) and (Key = ORD(VK_DELETE)) then N1Click(Sender);
 if (Shift = [ssAlt]) and (Key = ORD(VK_RETURN)) then N10Click(Sender);
 end;
 
@@ -588,107 +589,83 @@ if (MessageBox(LNK_Form.Handle,PChar('Do you really want to remove '+List.Select
 end;
 
 procedure TLNK_Form.N4Click(Sender: TObject);
+var
+ NewTabStr: String;
 begin
-with LNK_ActionForm do
-  begin
-    Caption := 'Create new tab';
-    Label1.Caption := 'Name:';
-    ActiveControl := ComboBoxEx;
-    PathCombo;
-    ComboBoxEx.Style := csExDropDown;
-    ComboBoxEx.ItemIndex := 0;
-    ComboBoxEx.Text := '';
-    if (Showmodal <> mrCancel) and (ComboBoxEx.Text <> '') and
-       (ComboBoxEx.Text <> LNK_Form.Caption) then
-      begin
-        FLists.WriteString(ComboBoxEx.Text,'Temp','');
-        FLists.DeleteKey(ComboBoxEx.Text,'Temp');
-        FLists.UpdateFile;
-        Tabs.Tabs.Add(ComboBoxEx.Text);
-        if (Tabs.Tabs.Count <> -1 ) then
-          begin
-            LNK_Form.Caption := ComboBoxEx.Text;
-            MainForm.FavTray.Hint := ComboBoxEx.Text;
-            Tabs.TabIndex := FindString(Tabs.Tabs,LNK_Form.Caption);
-            TabsChange(Sender)
-          end;
-      end;
-  end;
+if InputQuery('Create new tab', 'Name:', NewTabStr) then
+if FLists.SectionExists(NewTabStr) then
+ShowMessage('There is already a tab with this name, choose another name.') else
+ begin
+  FLists.WriteString(NewTabStr,'Temp','');
+  FLists.DeleteKey(NewTabStr,'Temp');
+  FLists.UpdateFile;
+  Tabs.Tabs.Add(NewTabStr);
+  if (Tabs.Tabs.Count <> -1 ) then
+   begin
+    LNK_Form.Caption := NewTabStr;
+    MainForm.FavTray.Hint := NewTabStr;
+    Tabs.TabIndex := FindString(Tabs.Tabs,LNK_Form.Caption);
+    TabsChange(Sender)
+   end;
+ end;
 end;
 
-procedure TLNK_Form.N5Click(Sender: TObject);
+procedure TLNK_Form.copyitemclick(Sender: TObject);
+var
+ ACaption: String;
 begin
-with LNK_ActionForm do
-  begin
-    Caption := 'Delete tab';
-    Label1.Caption := 'Select tab to delete:';
-    ActiveControl := ComboBoxEx;
-    PathCombo;
-    ComboBoxEx.ItemIndex := FindString(Tabs.Tabs,LNK_Form.Caption);
-    ComboBoxEx.Style := csExDropDownList;
-    if (Showmodal <> mrCancel) and (ComboBoxEx.Text <> '') then
-      begin
-        FLists.EraseSection(ComboBoxEx.Text);
-        FLists.UpdateFile;
-        DeleteAt(Tabs,FindString(Tabs.Tabs,ComboBoxEx.Text));
-        if LNK_Form.Caption = ComboBoxEx.Text then
-          begin
-           if Tabs.Tabs.Count = 0 then
-           begin
-            N27Click(Sender);
-            N29Click(Sender);
-           end else
-           begin
-            Tabs.TabIndex := 0;
-            TabsChange(Sender);
-           end;
-          end;
-      end;
-  end;
+ACaption := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
+if LNK_Form.Caption <> ACaption then
+begin
+ ACaption := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
+ FLists.WriteString(ACaption,List.Selected.Caption,
+ List.Selected.SubItems[0]+'|'+List.Selected.SubItems[1]+'|'+
+ List.Selected.SubItems[2]+'|'+List.Selected.SubItems[3]+'|');
+ FLists.UpdateFile;
+end;
 end;
 
-procedure TLNK_Form.N7Click(Sender: TObject);
+procedure TLNK_Form.moveitemclick(Sender: TObject);
+var
+ ACaption: String;
 begin
-with LNK_ActionForm do
-  begin
-    Caption := 'Copy';
-    Label1.Caption := 'Select tab:';
-    ActiveControl := ComboBoxEx;
-    PathCombo;
-    ComboBoxEx.Items.Delete(FindString(ComboBoxEx.Items,LNK_Form.Caption));
-    ComboBoxEx.ItemIndex := 0;
-    ComboBoxEx.Style := csExDropDownList;
-    if (Showmodal <> mrCancel) and (ComboBoxEx.Text <> '') and (ComboBoxEx.Text <> LNK_Form.Caption) then
-      begin
-        FLists.WriteString(ComboBoxEx.Text,List.Selected.Caption,
-        List.Selected.SubItems[0]+'|'+List.Selected.SubItems[1]+'|'+
-        List.Selected.SubItems[2]+'|'+List.Selected.SubItems[3]+'|');
-        FLists.UpdateFile;
-      end;
-  end;
+ACaption := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
+if LNK_Form.Caption <> ACaption then
+begin
+ ACaption := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
+ FLists.WriteString(ACaption,List.Selected.Caption,
+ List.Selected.SubItems[0]+'|'+List.Selected.SubItems[1]+'|'+
+ List.Selected.SubItems[2]+'|'+List.Selected.SubItems[3]+'|');
+ FLists.DeleteKey(LNK_Form.Caption,List.Selected.Caption);
+ FLists.UpdateFile;
+ List.DeleteSelected;
+end;
 end;
 
-procedure TLNK_Form.N8Click(Sender: TObject);
+procedure TLNK_Form.deleteitemclick(Sender: TObject);
+var
+ ACaption: String;
 begin
-with LNK_ActionForm do
-  begin
-    Caption := 'Move';
-    Label1.Caption := 'Select tab:';
-    ActiveControl := ComboBoxEx;
-    PathCombo;
-    ComboBoxEx.Items.Delete(FindString(ComboBoxEx.Items,LNK_Form.Caption));
-    ComboBoxEx.ItemIndex := 0;
-    ComboBoxEx.Style := csExDropDownList;
-    if (Showmodal <> mrCancel) and (ComboBoxEx.Text <> '') and (ComboBoxEx.Text <> LNK_Form.Caption) then
-      begin
-        FLists.WriteString(ComboBoxEx.Text,List.Selected.Caption,
-        List.Selected.SubItems[0]+'|'+List.Selected.SubItems[1]+'|'+
-        List.Selected.SubItems[2]+'|'+List.Selected.SubItems[3]+'|');
-        FLists.DeleteKey(LNK_Form.Caption,List.Selected.Caption);
-        FLists.UpdateFile;
-        List.DeleteSelected;
-      end;
-  end;
+ACaption := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
+if (MessageBox(LNK_Form.Handle,PChar('Do you really want to remove tab: '+ACaption+' ?'),
+    PChar(ExtractFileName(ChangeFileExt(ParamStr(0),''))), MB_OKCANCEL) = IDOK) then
+begin
+FLists.EraseSection(ACaption);
+FLists.UpdateFile;
+DeleteAt(Tabs,FindString(Tabs.Tabs,ACaption));
+if LNK_Form.Caption = ACaption then
+ begin
+  if Tabs.Tabs.Count = 0 then
+   begin
+    N27Click(Sender);
+    N29Click(Sender);
+   end else
+   begin
+    Tabs.TabIndex := 0;
+    TabsChange(Sender);
+   end;
+ end;
+end;
 end;
 
 procedure TLNK_Form.N22Click(Sender: TObject);
@@ -717,10 +694,10 @@ end;
 procedure TLNK_Form.N28Click(Sender: TObject);
 begin
  case MainForm.FConfig.ReadInteger('General','LNKForm_IconSize',0) of
-  0: N30.Checked := True;
-  1: N26.Checked := True;
-  2: N31.Checked := True;
-  4: N71.Checked := True;
+  0: Normal1.Checked := True;
+  1: Small1.Checked := True;
+  2: ExtraLarge1.Checked := True;
+  4: Jumbo1.Checked := True;
  end;
 end;
 
@@ -738,8 +715,8 @@ end;
 procedure TLNK_Form.N32Click(Sender: TObject);
 begin
  case MainForm.FConfig.ReadInteger('General','LNKForm_IconStyle',0) of
-  0: N33.Checked := True;
-  1: N34.Checked := True;
+  0: Icon1.Checked := True;
+  1: Tile1.Checked := True;
  end;
 end;
 
@@ -769,6 +746,9 @@ begin
  if List.Selected <> nil then Addtoprocesslist1.Enabled := True else Addtoprocesslist1.Enabled := False;
  if List.Selected <> nil then N7.Enabled := True else N7.Enabled := False;
  if List.Selected <> nil then N10.Enabled := True else N10.Enabled := False;
+ if List.Selected <> nil then AddMenuItem(N7, Tabs, copyitemclick);
+ if List.Selected <> nil then AddMenuItem(N8, Tabs, moveitemclick);
+ AddMenuItem(N5, Tabs, deleteitemclick);
 end;
 
 procedure TLNK_Form.DriveOnClick(Sender: TObject);
@@ -803,12 +783,12 @@ end;
 
 procedure TLNK_Form.Button1DropDownClick(Sender: TObject);
 begin
-ADDListDrives(CustomPopupMenu);
+ADDListDrives(FPopup, DriveOnClick);
 end;
 
 procedure TLNK_Form.Button2DropDownClick(Sender: TObject);
 begin
-ADDControlPanelList(CustomPopupMenu);
+ADDControlPanelList(FPopup, ControlPanelOnClick);
 end;
 
 procedure TLNK_Form.GeneralMenuPopup(Sender: TObject);

@@ -12,16 +12,16 @@ object MainForm: TMainForm
   CustomTitleBar.Enabled = True
   CustomTitleBar.Height = 31
   CustomTitleBar.ShowIcon = False
-  CustomTitleBar.BackgroundColor = 14120960
+  CustomTitleBar.BackgroundColor = 11625216
   CustomTitleBar.ForegroundColor = clWhite
   CustomTitleBar.InactiveBackgroundColor = clWhite
   CustomTitleBar.InactiveForegroundColor = 10066329
   CustomTitleBar.ButtonForegroundColor = clWhite
-  CustomTitleBar.ButtonBackgroundColor = 14120960
+  CustomTitleBar.ButtonBackgroundColor = 11625216
   CustomTitleBar.ButtonHoverForegroundColor = clWhite
-  CustomTitleBar.ButtonHoverBackgroundColor = 11362304
+  CustomTitleBar.ButtonHoverBackgroundColor = 8801024
   CustomTitleBar.ButtonPressedForegroundColor = clWhite
-  CustomTitleBar.ButtonPressedBackgroundColor = 7159040
+  CustomTitleBar.ButtonPressedBackgroundColor = 4663296
   CustomTitleBar.ButtonInactiveForegroundColor = 10066329
   CustomTitleBar.ButtonInactiveBackgroundColor = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -251,7 +251,7 @@ object MainForm: TMainForm
       item
         ButtonType = sbMinimize
         Enabled = True
-        Hint = 'Hide (Shift+Ctrl+Alt+F12 Hide/Show)'
+        Hint = 'Hide'
         Width = 46
         Visible = True
         OnClick = TitleBarPanel1CustomButtons0Click
@@ -260,8 +260,8 @@ object MainForm: TMainForm
       612
       30)
     object LogImg: TImage
-      Left = 3
-      Top = 4
+      Left = 35
+      Top = 3
       Width = 24
       Height = 24
       Cursor = crHandPoint
@@ -271,8 +271,8 @@ object MainForm: TMainForm
       OnClick = LogImgClick
     end
     object TimerImage: TImage
-      Left = 30
-      Top = 4
+      Left = 62
+      Top = 3
       Width = 24
       Height = 24
       Cursor = crHandPoint
@@ -283,16 +283,25 @@ object MainForm: TMainForm
       OnClick = TimerImageClick
     end
     object FavLNKImage: TImage
-      Left = 57
-      Top = 4
+      Left = 89
+      Top = 3
       Width = 24
       Height = 24
       Cursor = crHandPoint
-      Hint = 'Favorites links'
+      Hint = 'Favorites'
       Center = True
       PopupMenu = LNK_Form.GeneralMenu
       Transparent = True
       OnClick = FavLNKImageClick
+    end
+    object MainImg: TImage
+      Left = 8
+      Top = 3
+      Width = 24
+      Height = 24
+      Cursor = crHandPoint
+      Transparent = True
+      OnClick = MainImgClick
     end
   end
   object PTab: TTabControl
@@ -439,11 +448,6 @@ object MainForm: TMainForm
     TabOrder = 12
     OnClick = RemoveButtonClick
   end
-  object ProcessMenu: TPopupMenu
-    OwnerDraw = True
-    Left = 264
-    Top = 16
-  end
   object FavTray: TTrayIcon
     Icon.Data = {
       0000010001001010000001002000680400001600000028000000100000002000
@@ -484,8 +488,9 @@ object MainForm: TMainForm
       00008001000080010000F81F0000FC3F0000FC3F0000FE7F0000FFFF0000}
     PopupMenu = LNK_Form.GeneralMenu
     OnClick = FavTrayClick
-    Left = 312
-    Top = 16
+    OnDblClick = FavTrayDblClick
+    Left = 208
+    Top = 64
   end
   object TimerTrayIcon: TTrayIcon
     Hint = 'Timer not active'
@@ -529,13 +534,29 @@ object MainForm: TMainForm
     Icons = ImageList1
     PopupMenu = ShutdownForm.PopupMenu1
     OnClick = TimerTrayIconClick
-    Left = 344
-    Top = 16
+    OnDblClick = TimerTrayIconDblClick
+    Left = 272
+    Top = 64
   end
   object ImageList1: TImageList
     ColorDepth = cd32Bit
     DrawingStyle = dsTransparent
-    Left = 376
-    Top = 16
+    Left = 344
+    Top = 64
+  end
+  object PopupMenu1: TPopupMenu
+    Left = 144
+    Top = 64
+    object N1: TMenuItem
+      Caption = 'Help'
+      OnClick = N1Click
+    end
+    object N3: TMenuItem
+      Caption = '-'
+    end
+    object N2: TMenuItem
+      Caption = 'Change Main HotKey'
+      OnClick = N2Click
+    end
   end
 end

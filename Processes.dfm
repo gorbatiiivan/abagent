@@ -20,8 +20,6 @@ object ProcessesForm: TProcessesForm
     Align = alClient
     TabOrder = 0
     OnDblClick = ListBox1DblClick
-    ExplicitLeft = 9
-    ExplicitTop = 123
   end
   object Panel1: TPanel
     Left = 0
@@ -31,7 +29,7 @@ object ProcessesForm: TProcessesForm
     Align = alBottom
     TabOrder = 1
     object Button1: TButton
-      Left = 114
+      Left = 210
       Top = 18
       Width = 83
       Height = 27
@@ -41,7 +39,7 @@ object ProcessesForm: TProcessesForm
       TabOrder = 0
     end
     object Button2: TButton
-      Left = 220
+      Left = 316
       Top = 18
       Width = 83
       Height = 27
@@ -49,6 +47,15 @@ object ProcessesForm: TProcessesForm
       Caption = 'Cancel'
       ModalResult = 2
       TabOrder = 1
+    end
+    object Button3: TButton
+      Left = 9
+      Top = 18
+      Width = 83
+      Height = 27
+      Caption = 'Refresh'
+      TabOrder = 2
+      OnClick = Button3Click
     end
   end
 end

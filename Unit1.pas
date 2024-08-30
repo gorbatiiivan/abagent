@@ -21,7 +21,6 @@ type
     CheckBox3: TCheckBox;
     Edit3: TEdit;
     Button5: TButton;
-    ProcessMenu: TPopupMenu;
     GroupBox4: TGroupBox;
     MousePosBox: TComboBox;
     Button6: TButton;
@@ -62,6 +61,11 @@ type
     ImageList1: TImageList;
     Edit4: TEdit;
     Label4: TLabel;
+    MainImg: TImage;
+    PopupMenu1: TPopupMenu;
+    N1: TMenuItem;
+    N2: TMenuItem;
+    N3: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
@@ -89,6 +93,11 @@ type
     procedure BossBtnClick(Sender: TObject);
     procedure ProcessHotKeyBtnClick(Sender: TObject);
     procedure BossCheckBoxClick(Sender: TObject);
+    procedure TimerTrayIconDblClick(Sender: TObject);
+    procedure FavTrayDblClick(Sender: TObject);
+    procedure MainImgClick(Sender: TObject);
+    procedure N1Click(Sender: TObject);
+    procedure N2Click(Sender: TObject);
   private
     TskMgrList: TStringList;
     ProcessList: TListBox;
@@ -130,17 +139,7 @@ procedure TMainForm.WMSysCommand(var Message: TWMSysCommand);
 begin
   if Message.CmdType = SC_CONTEXTHELP then
    begin
-   with HelpForm do
-    begin
-     Position := poDesktopCenter;
-     PageControl1.ActivePageIndex := 0;
-     //Read HotKeys from ini to help form
-     ListView1.Items[1].SubItems.Insert(0,FConfig.ReadString('General','ClearData_Key',''));
-     ListView1.Items[2].SubItems.Insert(0,FConfig.ReadString('General','BossKey',''));
-     ListView1.Items[3].SubItems.Insert(0,FConfig.ReadString('General','TimerForm_Timer_Key',''));
-     ListView1.Items[4].SubItems.Insert(0,FConfig.ReadString('General','LNKForm_Favorites_Key',''));
-     Show;
-    end;
+    N1Click(Self);
     Message.Result := 0;
    end else
    begin
@@ -209,6 +208,7 @@ begin
 if FirstRun = True then
  begin
   GetFConfig;
+  FConfig.WriteString('General','MainKey','Shift+Ctrl+Alt+F12');
   FConfig.WriteString('General','ClearData_Key','');
   FConfig.WriteString('General','BossKey','');
   FConfig.WriteString('General','Task Manager Name',Encode('SystemInformer.exe;ProcessHacker.exe;procexp.exe;procexp64.exe;Taskmgr.exe;cmd.exe;perfmon.exe;ProcessActivityView.exe;ProcessThreadsView.exe','N90fL6FF9SXx+S'));
@@ -292,6 +292,7 @@ if Write = true then
   HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','ClearData_Key', ''),True));
   HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','LNKForm_Favorites_Key',''),True));
   HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','TimerForm_Timer_Key',''),True));
+  HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','MainKey', 'Shift+Ctrl+Alt+F12'),True));
 
   CheckBox1.Checked := FConfig.ReadBool('General', 'AutoRun', CheckBox1.Checked);
 
@@ -359,20 +360,22 @@ end;
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
 //Load png images from Resource
+MainImg.Picture.Graphic := LoadImageResource('main24');
 LogImg.Picture.Graphic := LoadImageResource('log24');
 TimerImage.Picture.Graphic := LoadImageResource('time24');
 FavLNKImage.Picture.Graphic := LoadImageResource('star24');
 
 Application.OnException := MyExcept;
+
 //Create HotKeyManager
 HotKeyManager := THotKeyManager.Create(Self);
 HotKeyManager.OnHotKeyPressed := HotKeyManagerHotKeyPressed;
-HotKeyManager.AddHotKey(TextToHotKey('Shift+Ctrl+Alt+F12',True));
 //Read inifile
 RegIni(False, False);
 
 TskMgrList := TStringList.Create;
 ProcessList := TListBox.CreateParented(Handle);
+ProcessList.Visible := False;
 
 ReportMemoryLeaksOnShutdown := False;
 
@@ -434,7 +437,7 @@ var
  I,l: Integer;
 begin
 //Get Mainform HotKey
-if TextToHotKey('Shift+Ctrl+Alt+F12',True) = HotKey then
+if TextToHotKey(FConfig.ReadString('General','MainKey','Shift+Ctrl+Alt+F12'),True) = HotKey then
  begin
   Visible := not Visible;
   SetForegroundWindow(Handle);
@@ -442,11 +445,13 @@ if TextToHotKey('Shift+Ctrl+Alt+F12',True) = HotKey then
 
 //Get TimerForm HotKey
 if TextToHotKey(FConfig.ReadString('General','TimerForm_Timer_Key',''),True) = HotKey then
-    TimerTrayIconClick(Self);
+   if (ShutdownForm.Visible = True) and (ShutdownForm.Active = False) then
+      TimerTrayIconClick(Self) else TimerTrayIconDblClick(Self);
 
 //Get Lnk_Form HotKey
 if TextToHotKey(FConfig.ReadString('General','LNKForm_Favorites_Key',''),True) = HotKey then
-   FavTrayClick(MainForm);
+   if (LNK_Form.Visible = True) and (LNK_Form.Active = False) then
+   FavTrayClick(MainForm) else FavTrayDblClick(Self);
 
 //Get Boss HotKey
 if TextToHotKey(FConfig.ReadString('General','BossKey', ''),True) = HotKey then
@@ -503,7 +508,7 @@ end;
 //procedure for create task managers list
 procedure TMainForm.DoUpdateProcesses();
 var
-  i,j,l: integer;
+  i,j: integer;
   KillResult: Integer;
   AppName, AppLocation: String;
 begin
@@ -514,14 +519,15 @@ begin
   begin
    if Edit3.Text <> '' then
    begin
+   // killing only if running name from Edit3
     StrToList(Edit3.Text,';',TskMgrList);
     for j := 0 to TskMgrList.Count - 1 do
     if IsExistFromList(TskMgrList[j], ProcessList) then
      begin
      //kill all running process
-      for l := 0 to PTab.Tabs.Count-1 do
+      for i := 0 to PTab.Tabs.Count-1 do
         begin
-         AppName := Decode(FConfig.ReadString(IntToStr(l),'Name',''),'N90fL6FF9SXx+S');
+         AppName := Decode(FConfig.ReadString(IntToStr(i),'Name',''),'N90fL6FF9SXx+S');
          KillResult := KillProcess(AppName);
         end;
 
@@ -691,6 +697,8 @@ with ProcessesForm do
   Position := poDesktopCenter;
   ActiveControl := ListBox1;
   ProcessToList(ListBox1);
+  ListBox1.Sorted := True;
+  ListBox1.Items.Delete(FindString(ListBox1.Items,ExtractFileName(ParamStr(0))));
   if (Showmodal <> mrCancel) then
    begin
     Edit1.Text := ListBox1.Items[ListBox1.ItemIndex];
@@ -705,6 +713,8 @@ with ProcessesForm do
   Position := poDesktopCenter;
   ActiveControl := ListBox1;
   ProcessToList(ListBox1);
+  ListBox1.Sorted := True;
+  ListBox1.Items.Delete(FindString(ListBox1.Items,ExtractFileName(ParamStr(0))));
   if (Showmodal <> mrCancel) then
    begin
     if Edit3.Text = '' then
@@ -731,6 +741,11 @@ begin
 ShowMessage('1. Clear data usage Ethernet (need Admin Privileges)'+#10+
             '2. Delete data from the "Recent and Prefetch" folder (only what is launched from this application, including the program itself)'+#10+
             '3. Delete data from registry.');
+end;
+
+procedure TMainForm.MainImgClick(Sender: TObject);
+begin
+Popupmenu1.Popup(Mouse.CursorPos.X, Mouse.CursorPos.Y);
 end;
 
 procedure TMainForm.LogImgClick(Sender: TObject);
@@ -810,20 +825,28 @@ end;
 procedure TMainForm.FavTrayClick(Sender: TObject);
 begin
 with LNK_Form do
-if isWindowVisible(Handle) then
- begin
-  Hide;
- end else
-if not isWindowVisible(Handle) then
+if Active = False then SetForegroundWindow(Handle);
+end;
+
+procedure TMainForm.FavTrayDblClick(Sender: TObject);
+begin
+with LNK_Form do
+if Visible = False then
   begin
    TabsChange(LNK_Form);
    Show;
    SetForegroundWindow(Handle);
-  end;
-LNK_Form.ActiveControl := LNK_Form.List;
+   LNK_Form.ActiveControl := LNK_Form.List;
+  end else Hide;
 end;
 
 procedure TMainForm.TimerTrayIconClick(Sender: TObject);
+begin
+with ShutdownForm do
+if Active = False then SetForegroundWindow(Handle);
+end;
+
+procedure TMainForm.TimerTrayIconDblClick(Sender: TObject);
 begin
 with ShutdownForm do
 if Visible = False then
@@ -832,6 +855,45 @@ if Visible = False then
   Show;
   SetForegroundWindow(Handle);
  end else Hide;
+end;
+
+//PopupMenu1
+//------------------------------------------------------------------------------
+
+procedure TMainForm.N1Click(Sender: TObject);
+begin
+with HelpForm do
+ begin
+  Position := poDesktopCenter;
+  PageControl1.ActivePageIndex := 0;
+  //Read HotKeys from ini to help form
+  ListView1.Items[0].SubItems.Insert(0,FConfig.ReadString('General','MainKey','Shift+Ctrl+Alt+F12'));
+  ListView1.Items[1].SubItems.Insert(0,FConfig.ReadString('General','ClearData_Key',''));
+  ListView1.Items[2].SubItems.Insert(0,FConfig.ReadString('General','BossKey',''));
+  ListView1.Items[3].SubItems.Insert(0,FConfig.ReadString('General','TimerForm_Timer_Key',''));
+  ListView1.Items[4].SubItems.Insert(0,FConfig.ReadString('General','LNKForm_Favorites_Key',''));
+  Show;
+ end;
+end;
+
+procedure TMainForm.N2Click(Sender: TObject);
+begin
+with HotKeyForm do
+ begin
+  Position := poDesktopCenter;
+  ActiveControl := Edit1;
+  Caption := 'HotKey changer';
+  Button3Click(Sender);
+  Edit1.Text := MainForm.FConfig.ReadString('General','MainKey', 'Shift+Ctrl+Alt+F12');
+  if (Showmodal <> mrCancel) then
+   begin
+    MainForm.HotKeyManager.RemoveHotKey(TextToHotKey(MainForm.FConfig.ReadString('General','MainKey', 'Shift+Ctrl+Alt+F12'),True));
+    MainForm.FConfig.WriteString('General','MainKey',Edit1.Text);
+    MainForm.FConfig.UpdateFile;
+    if Edit1.Text <> '' then
+    MainForm.HotKeyManager.AddHotKey(TextToHotKey(Edit1.Text,True));
+   end;
+ end;
 end;
 
 end.

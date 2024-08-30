@@ -16,7 +16,6 @@ uses
   HotKeyManager in 'HotKeyManager.pas',
   lnkForm in 'lnkForm.pas' {LNK_Form},
   LNK_Utils in 'LNK_Utils.pas',
-  LNK_Action in 'LNK_Action.pas' {LNK_ActionForm},
   LNK_Properties in 'LNK_Properties.pas' {Properties},
   HotKeyChanger in 'HotKeyChanger.pas' {HotKeyForm},
   Help in 'Help.pas' {HelpForm},
@@ -42,7 +41,6 @@ if Win32MajorVersion >= 6 then
   Application.CreateForm(TLNK_Form, LNK_Form);
   Application.CreateForm(TProperties, Properties);
   Application.CreateForm(TShutdownForm, ShutdownForm);
-  Application.CreateForm(TLNK_ActionForm, LNK_ActionForm);
   Application.CreateForm(THotKeyForm, HotKeyForm);
   Application.CreateForm(THelpForm, HelpForm);
   Application.CreateForm(TProcessesForm, ProcessesForm);

@@ -332,8 +332,6 @@ begin
     begin
       repeat
         MyList.Items.Add(ExtractFileName(ProcessEntry.szExeFile));
-        MyList.Items.Delete(FindString(MyList.Items,ExtractFileName(ParamStr(0))));
-        MyList.Sorted := True;
       until not Process32Next(SnapshotHandle, ProcessEntry);
     end;
     CloseHandle(SnapshotHandle);

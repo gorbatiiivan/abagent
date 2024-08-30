@@ -68,6 +68,7 @@ const
 
 var
   ShutdownForm: TShutdownForm;
+
   shutdown_tick : DWORD;
   first_show, start_enabled : boolean;
   method : byte;

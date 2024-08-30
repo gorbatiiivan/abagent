@@ -194,7 +194,7 @@ object ShutdownForm: TShutdownForm
       Left = 106
       Top = 68
       Width = 21
-      Height = 28
+      Height = 24
       Margins.Left = 5
       Margins.Top = 5
       Margins.Right = 5
@@ -298,7 +298,7 @@ object ShutdownForm: TShutdownForm
     Left = 117
     Top = 108
     Width = 18
-    Height = 27
+    Height = 24
     Margins.Left = 5
     Margins.Top = 5
     Margins.Right = 5
@@ -325,7 +325,7 @@ object ShutdownForm: TShutdownForm
     Left = 199
     Top = 108
     Width = 19
-    Height = 27
+    Height = 24
     Margins.Left = 5
     Margins.Top = 5
     Margins.Right = 5
