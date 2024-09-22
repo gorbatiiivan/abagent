@@ -3,7 +3,8 @@ Anti Boss Agent is a portable open source application for Windows that can easil
 (Please, I need help to improve the application, I will always be glad to any help.)
 
 
-![Снимок](https://github.com/user-attachments/assets/cac1d80a-9e0f-46cb-aba9-23f8ef947d92)
+![01](https://github.com/user-attachments/assets/83001369-2934-45c7-bbb9-43f7772a8fb8)
+
 
 
 
@@ -18,13 +19,15 @@ Features:
 
 Timer
 
-![Снимок2](https://github.com/gorbatiiivan/abagent/assets/84850541/97c22ea2-3e0b-4e84-a8fc-1e918be3ed75)
+![02](https://github.com/user-attachments/assets/67b92346-e7e8-442a-a964-4f33171eb69f)
+
 
 ------------------------------------------------------------------------------------------------------
 
 Favorites
 
-![Снимок](https://github.com/user-attachments/assets/10eb8a0e-8c95-48e5-83d6-a8656f60f58e)
+![03](https://github.com/user-attachments/assets/666efd31-bce9-4455-97b6-3198a5f7e0d9)
+
 
 ------------------------------------------------------------------------------------------------------
 
