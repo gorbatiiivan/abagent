@@ -3,7 +3,8 @@ Anti Boss Agent is a portable open source application for Windows that can easil
 (Please, I need help to improve the application, I will always be glad to any help.)
 
 
-![01](https://github.com/user-attachments/assets/83001369-2934-45c7-bbb9-43f7772a8fb8)
+![Снимок](https://github.com/user-attachments/assets/096fd48f-af26-4b0f-92c5-bcb17441e7c2)
+
 
 
 
