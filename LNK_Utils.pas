@@ -139,11 +139,11 @@ function GetSpecialFolderLocation(const Folder: Integer; const FolderNew: TGUID)
 function DiskFloatToString(Number: Double;Units: Boolean): string;
 function DiskFreeString(Drive: Char;Units: Boolean): string;
 function DiskSizeString(Drive: Char;Units: Boolean): string;
-procedure ADDListDrives(PopupMenu: TPopupMenu; OnClick: TNotifyEvent);
-procedure ADDControlPanelList(PopupMenu: TPopupMenu; OnClick: TNotifyEvent);
+procedure ADDListDrives(PopupMenu: TPopupMenu; Config: TMemIniFile; OnClick: TNotifyEvent);
+procedure ADDControlPanelList(PopupMenu: TPopupMenu; Config: TMemIniFile; OnClick: TNotifyEvent);
 function GetNotepad: String;
 procedure AddSystemApps(ListView: TListView; AIndex: Integer);
-procedure GetPersonalFolders(ToolBar: TToolBar);
+procedure GetPersonalFolders(ToolBar: TToolBar; Config: TMemIniFile);
 procedure LoadPngFromRes(PngName: String; ImageList: TImageList);
 function LoadImageResource(const ResName: string): TPngImage;
 procedure AddIconsToImgList(ImageList: TImageList);
@@ -155,7 +155,7 @@ procedure AddMenuItem(Menu: TMenuItem; Tabs: TTabControl; OnClick: TNotifyEvent)
 
 implementation
 
-uses lnkForm, Utils;
+uses lnkForm, Utils, Translation;
 
 function GetIconIndex(const AFile: string; Attrs: DWORD): integer;
 var
@@ -341,7 +341,7 @@ begin
   Result := DiskFloatToString(Size,Units);
 end;
 
-procedure ADDListDrives(PopupMenu: TPopupMenu; OnClick: TNotifyEvent);
+procedure ADDListDrives(PopupMenu: TPopupMenu; Config: TMemIniFile; OnClick: TNotifyEvent);
 var
   i, j, k: integer;
   buf: array [0..499] of char;
@@ -367,7 +367,8 @@ begin
     inc(i);
     DrvStr2 := DrvStr[0];
     MenuItem := TMenuItem.Create(PopupMenu);
-    MenuItem.Caption := DrvStr+'    '+DiskFreeString(DrvStr2,True)+' free of '+DiskSizeString(DrvStr2, True);
+    MenuItem.Caption := DrvStr+'    '+DiskFreeString(DrvStr2,True)+
+    _(LNK_UTILS_GLOBAL_TEXT_MSG1,Config.ReadString('General','Language',EN_US))+DiskSizeString(DrvStr2, True);
     MenuItem.Hint := DrvStr;
     MenuItem.OnClick := OnClick;
     PopupMenu.Items.Add(MenuItem);
@@ -375,26 +376,26 @@ begin
     ((buf[i-1] = #0) and (buf[i] = #0)) or (i > 499);
 end;
 
-procedure ADDControlPanelList(PopupMenu: TPopupMenu; OnClick: TNotifyEvent);
+procedure ADDControlPanelList(PopupMenu: TPopupMenu; Config: TMemIniFile; OnClick: TNotifyEvent);
 var
   MenuItem : TMenuItem;
 begin
   PopupMenu.Items.Clear;
 
   MenuItem := TMenuItem.Create(PopupMenu);
-  MenuItem.Caption := 'Control Panel (category view)';
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG2,Config.ReadString('General','Language',EN_US));
   MenuItem.Hint := '/root,"shell:::{26EE0668-A00A-44D7-9371-BEB064C98683}"';
   MenuItem.OnClick := OnClick;
   PopupMenu.Items.Add(MenuItem);
 
   MenuItem := TMenuItem.Create(PopupMenu);
-  MenuItem.Caption := 'Control Panel (icons view)';
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG3,Config.ReadString('General','Language',EN_US));
   MenuItem.Hint := '/root,"shell:::{21EC2020-3AEA-1069-A2DD-08002B30309D}"';
   MenuItem.OnClick := OnClick;
   PopupMenu.Items.Add(MenuItem);
 
   MenuItem := TMenuItem.Create(PopupMenu);
-  MenuItem.Caption := 'Control Panel (all tasks)';
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG4,Config.ReadString('General','Language',EN_US));
   MenuItem.Hint := '/root,"shell:::{ED7BA470-8E54-465E-825C-99712043E01C}"';
   MenuItem.OnClick := OnClick;
   PopupMenu.Items.Add(MenuItem);
@@ -404,13 +405,13 @@ begin
   PopupMenu.Items.Add(MenuItem);
 
   MenuItem := TMenuItem.Create(PopupMenu);
-  MenuItem.Caption := 'Device Manager';
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG5,Config.ReadString('General','Language',EN_US));
   MenuItem.Hint := '/root,"shell:::{74246bfc-4c96-11d0-abef-0020af6b0b7a}"';
   MenuItem.OnClick := OnClick;
   PopupMenu.Items.Add(MenuItem);
 
   MenuItem := TMenuItem.Create(PopupMenu);
-  MenuItem.Caption := 'System';
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG6,Config.ReadString('General','Language',EN_US));
   MenuItem.Hint := '/root,"shell:::{BB06C0E4-D293-4f75-8A90-CB05B6477EEE}"';
   MenuItem.OnClick := OnClick;
   PopupMenu.Items.Add(MenuItem);
@@ -592,15 +593,21 @@ case AIndex of
 end;
 end;
 
-procedure GetPersonalFolders(ToolBar: TToolBar);
+procedure GetPersonalFolders(ToolBar: TToolBar; Config: TMemIniFile);
+var
+ I: Integer;
 begin
-  AddButtonToToolbar(ToolBar,'Desktop',GetSpecialFolderLocation(-1, FOLDERID_Desktop),3,0);
-  AddButtonToToolbar(ToolBar,'Documents',GetSpecialFolderLocation(-1, FOLDERID_Documents),4,1);
-  AddButtonToToolbar(ToolBar,'Downloads',GetSpecialFolderLocation(-1, FOLDERID_Downloads),5,2);
-  AddButtonToToolbar(ToolBar,'Music',GetSpecialFolderLocation(-1, FOLDERID_Music),6,3);
-  AddButtonToToolbar(ToolBar,'Pictures',GetSpecialFolderLocation(-1, FOLDERID_Pictures),7,4);
-  AddButtonToToolbar(ToolBar,'Saved Games',GetSpecialFolderLocation(-1, FOLDERID_SavedGames),8,5);
-  AddButtonToToolbar(ToolBar,'Videos',GetSpecialFolderLocation(-1, FOLDERID_Videos),9,6);
+  //Delete all buttons
+  for I := ToolBar.ButtonCount - 1 downto 0 do
+  ToolBar.Buttons[I].Free;
+  //Create buttons
+  AddButtonToToolbar(ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG7,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Desktop),3,0);
+  AddButtonToToolbar(ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG8,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Documents),4,1);
+  AddButtonToToolbar(ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG9,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Downloads),5,2);
+  AddButtonToToolbar(ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG10,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Music),6,3);
+  AddButtonToToolbar(ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG11,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Pictures),7,4);
+  AddButtonToToolbar(ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG12,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_SavedGames),8,5);
+  AddButtonToToolbar(ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG13,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Videos),9,6);
 end;
 
 procedure LoadPngFromRes(PngName: String; ImageList: TImageList);

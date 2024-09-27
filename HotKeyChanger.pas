@@ -24,9 +24,9 @@ type
     chCtrl: TCheckBox;
     ComboBox1: TComboBox;
     Edit1: TEdit;
-    Button1: TButton;
-    Button2: TButton;
-    Button3: TButton;
+    HOTKEYCHANGER_BTN2: TButton;
+    HOTKEYCHANGER_BTN3: TButton;
+    HOTKEYCHANGER_BTN1: TButton;
     procedure Edit1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure Edit1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure ComboBox1Change(Sender: TObject);
@@ -36,13 +36,15 @@ type
     procedure chCtrlClick(Sender: TObject);
     procedure chShiftClick(Sender: TObject);
     procedure chAltClick(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
+    procedure HOTKEYCHANGER_BTN1Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
     _KeyDown: Boolean;
     procedure ModToCheckBox(const ModStr: string = '');
   public
     { Public declarations }
+    procedure Translate(aLanguageID: String);
   end;
 
 var
@@ -65,7 +67,24 @@ function WinDown: Boolean;
 
 implementation
 
+uses Translation, Unit1;
+
 {$R *.dfm}
+
+procedure THotKeyForm.Translate(aLanguageID: String);
+var
+ TempInteger: Integer;
+begin
+  Caption := _(HOTKEYCHANGER_CPTN, aLanguageID);
+  HOTKEYCHANGER_BTN1.Caption := _(HOTKEYCHANGER_CPTN_BTN_BTN1, aLanguageID);
+  HOTKEYCHANGER_BTN2.Caption := _(HOTKEYCHANGER_CPTN_BTN_BTN2, aLanguageID);
+  HOTKEYCHANGER_BTN3.Caption := _(HOTKEYCHANGER_CPTN_BTN_BTN3, aLanguageID);
+end;
+
+procedure THotKeyForm.FormCreate(Sender: TObject);
+begin
+Translate(MainForm.FConfig.ReadString('General','Language',EN_US));
+end;
 
 //============================================================================== kuHotKeyEditorExecute
 function kuHotKeyEditorExecute: Boolean;
@@ -234,7 +253,7 @@ chAlt.Checked   := AltDown;
 chWin.Checked   := WinDown;
 end;
 
-procedure THotKeyForm.Button3Click(Sender: TObject);
+procedure THotKeyForm.HOTKEYCHANGER_BTN1Click(Sender: TObject);
 begin
 Edit1.Text := '';
 ComboBox1.ItemIndex := -1;

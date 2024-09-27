@@ -149,30 +149,28 @@
         <DCCReference Include="ShutdownUnit.pas">
             <Form>ShutdownForm</Form>
         </DCCReference>
-        <DCCReference Include="Utils.pas"/>
-        <DCCReference Include="MMDevApi.pas"/>
-        <DCCReference Include="SystemUtils.pas"/>
-        <DCCReference Include="SPGetSid.pas"/>
-        <DCCReference Include="HotKeyManager.pas"/>
         <DCCReference Include="lnkForm.pas">
             <Form>LNK_Form</Form>
         </DCCReference>
-        <DCCReference Include="LNK_Utils.pas"/>
         <DCCReference Include="LNK_Properties.pas">
             <Form>Properties</Form>
         </DCCReference>
         <DCCReference Include="HotKeyChanger.pas">
             <Form>HotKeyForm</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
-        <DCCReference Include="Help.pas">
-            <Form>HelpForm</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Processes.pas">
             <Form>ProcessesForm</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="Help.pas">
+            <Form>HelpForm</Form>
+        </DCCReference>
+        <DCCReference Include="Utils.pas"/>
+        <DCCReference Include="MMDevApi.pas"/>
+        <DCCReference Include="SystemUtils.pas"/>
+        <DCCReference Include="SPGetSid.pas"/>
+        <DCCReference Include="HotKeyManager.pas"/>
+        <DCCReference Include="LNK_Utils.pas"/>
+        <DCCReference Include="Translation.pas"/>
         <RcItem Include="images\log\log24.png">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>log24</ResourceId>
@@ -192,6 +190,18 @@
         <RcItem Include="abagent.Artwork\Windows\main24.png">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>main24</ResourceId>
+        </RcItem>
+        <RcItem Include="images\lang\lng_romania.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>lng_romania</ResourceId>
+        </RcItem>
+        <RcItem Include="images\lang\lng_russian.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>lng_russian</ResourceId>
+        </RcItem>
+        <RcItem Include="images\lang\lng_usa.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>lng_usa</ResourceId>
         </RcItem>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
@@ -229,6 +239,24 @@
                 </DeployFile>
                 <DeployFile LocalName="Win64\Release\abmanager.exe" Configuration="Release" Class="ProjectOutput"/>
                 <DeployFile LocalName="abagent.Artwork\Windows\main24.png" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="images\lang\lng_romania.png" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="images\lang\lng_russian.png" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win64">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="images\lang\lng_usa.png" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

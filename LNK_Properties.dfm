@@ -9,12 +9,13 @@ object Properties: TProperties
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -15
-  Font.Name = 'MS Sans Serif'
+  Font.Height = -11
+  Font.Name = 'Segoe UI'
   Font.Style = []
   Position = poDesktopCenter
   ShowHint = True
-  TextHeight = 16
+  OnCreate = FormCreate
+  TextHeight = 13
   object GroupBox1: TGroupBox
     Left = 9
     Top = 9
@@ -27,40 +28,40 @@ object Properties: TProperties
       Width = 35
       Height = 35
     end
-    object Edit1: TLabeledEdit
+    object LNKPROP_EDIT2: TLabeledEdit
       Left = 70
       Top = 75
       Width = 398
-      Height = 24
-      EditLabel.Width = 30
-      EditLabel.Height = 16
+      Height = 21
+      EditLabel.Width = 26
+      EditLabel.Height = 13
       EditLabel.Caption = 'Path:'
       TabOrder = 1
       Text = ''
     end
-    object Edit2: TLabeledEdit
+    object LNKPROP_EDIT1: TLabeledEdit
       Left = 70
       Top = 28
       Width = 398
-      Height = 24
-      EditLabel.Width = 40
-      EditLabel.Height = 16
+      Height = 21
+      EditLabel.Width = 32
+      EditLabel.Height = 13
       EditLabel.Caption = 'Name:'
       TabOrder = 0
       Text = ''
     end
-    object Edit3: TLabeledEdit
+    object LNKPROP_EDIT3: TLabeledEdit
       Left = 70
       Top = 123
       Width = 398
-      Height = 24
-      EditLabel.Width = 73
-      EditLabel.Height = 16
+      Height = 21
+      EditLabel.Width = 59
+      EditLabel.Height = 13
       EditLabel.Caption = 'Parameters:'
       TabOrder = 2
       Text = ''
     end
-    object Button4: TButton
+    object LNKPROP_BTN1: TButton
       Left = 440
       Top = 220
       Width = 23
@@ -68,32 +69,32 @@ object Properties: TProperties
       Hint = 'Click to change icon'
       Caption = '>>'
       TabOrder = 5
-      OnClick = Button4Click
+      OnClick = LNKPROP_BTN1Click
     end
-    object Edit5: TLabeledEdit
+    object LNKPROP_EDIT4: TLabeledEdit
       Left = 70
       Top = 173
       Width = 398
-      Height = 24
-      EditLabel.Width = 71
-      EditLabel.Height = 16
+      Height = 21
+      EditLabel.Width = 65
+      EditLabel.Height = 13
       EditLabel.Caption = 'Working dir:'
       TabOrder = 3
       Text = ''
     end
-    object Edit4: TLabeledEdit
+    object LNKPROP_EDIT5: TLabeledEdit
       Left = 70
       Top = 220
       Width = 363
-      Height = 24
-      EditLabel.Width = 78
-      EditLabel.Height = 16
+      Height = 21
+      EditLabel.Width = 70
+      EditLabel.Height = 13
       EditLabel.Caption = 'Icon location:'
       TabOrder = 4
       Text = ''
     end
   end
-  object Button2: TButton
+  object LNKPROP_BTN2: TButton
     Left = 158
     Top = 281
     Width = 83
@@ -103,7 +104,7 @@ object Properties: TProperties
     ModalResult = 1
     TabOrder = 1
   end
-  object Button3: TButton
+  object LNKPROP_BTN3: TButton
     Left = 255
     Top = 281
     Width = 83

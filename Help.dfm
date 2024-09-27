@@ -1,29 +1,31 @@
 object HelpForm: THelpForm
   Left = 0
   Top = 0
-  BorderIcons = [biSystemMenu, biMaximize]
+  BorderIcons = [biSystemMenu]
+  BorderStyle = bsDialog
   Caption = 'Help'
   ClientHeight = 441
   ClientWidth = 635
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -12
+  Font.Height = -11
   Font.Name = 'Segoe UI'
   Font.Style = []
+  OnCreate = FormCreate
   OnResize = FormResize
-  TextHeight = 15
-  object PageControl1: TPageControl
+  TextHeight = 13
+  object HELPFORM_PAGECTRL1: TPageControl
     Left = 0
     Top = 0
     Width = 635
     Height = 441
-    ActivePage = TabSheet1
+    ActivePage = TabSheet2
     Align = alClient
     TabOrder = 0
     object TabSheet1: TTabSheet
       Caption = 'About'
-      object Memo1: TMemo
+      object HELPFORM_MEMO1: TMemo
         Left = 0
         Top = 0
         Width = 627
@@ -32,43 +34,6 @@ object HelpForm: THelpForm
         BevelInner = bvNone
         BevelOuter = bvNone
         BorderStyle = bsNone
-        Lines.Strings = (
-          
-            'Anti Boss Agent is a portable open source application for Window' +
-            's that can easily hide any window in the '
-          'background with hotkey.'
-          ''
-          'Have many features:'
-          
-            '* Run your selected process from file and hide with the same hot' +
-            'key.'
-          '* Close all processes using your mouse.'
-          '* End all running processes when task manager starts.'
-          
-            '* Clear the history of all running processes from the registry, ' +
-            'from special folders, and network usage statistics.'
-          '* And many others features.'
-          ''
-          'Timer'
-          
-            'Is a small little features that allows you to set a timer for sh' +
-            'utting down, restarting, etc. your PC.'
-          ''
-          'Favorites'
-          
-            'Is a good features that allows you to added your favorites apps,' +
-            ' personal folders, system folders and '
-          'apps in one form and in one click.'
-          ''
-          'Run with parameters'
-          '-    Enabled timer '#39'--enable'#39'.'
-          '-    Force procceses that don'#39't respond '#39'--force'#39'.'
-          '-    Ignore wakeup '#39'--ignore_wakeup'#39'.'
-          '-    Poweroff '#39'--POWEROFF'#39'.'
-          '-    Shutdown '#39'--SHUTDOWN'#39'.'
-          '-    Reboot '#39'--REBOOT'#39'.'
-          '-    Logoff '#39'--LOGOFF'#39'.'
-          '-    Standby '#39'--STANDBY'#39#39'.')
         ReadOnly = True
         ScrollBars = ssVertical
         TabOrder = 0
@@ -77,11 +42,11 @@ object HelpForm: THelpForm
     object TabSheet2: TTabSheet
       Caption = 'Keyboard shortcut'
       ImageIndex = 1
-      object ListView1: TListView
+      object HELPFORM_LSTVIEW1: TListView
         Left = 0
         Top = 0
         Width = 627
-        Height = 411
+        Height = 413
         Align = alClient
         BorderStyle = bsNone
         Columns = <
@@ -156,6 +121,7 @@ object HelpForm: THelpForm
         RowSelect = True
         TabOrder = 0
         ViewStyle = vsReport
+        ExplicitHeight = 411
       end
     end
   end

@@ -8,38 +8,15 @@ object ShutdownForm: TShutdownForm
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -15
-  Font.Name = 'MS Sans Serif'
+  Font.Height = -11
+  Font.Name = 'Segoe UI'
   Font.Style = []
   KeyPreview = True
   Position = poDesktopCenter
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
-  TextHeight = 16
-  object Image1: TImage
-    Left = 175
-    Top = 82
-    Width = 64
-    Height = 60
-    Margins.Left = 5
-    Margins.Top = 5
-    Margins.Right = 5
-    Margins.Bottom = 5
-    Picture.Data = {
-      055449636F6E0000010001001010100000000000280100001600000028000000
-      10000000200000000100040000000000C0000000000000000000000000000000
-      0000000000000000000080000080000000808000800000008000800080800000
-      C0C0C000808080000000FF0000FF000000FFFF00FF000000FF00FF00FFFF0000
-      FFFFFF0000000008800000000000088888000000000888877788000008888777
-      77880000888777117788000087771191778808008711A99177880880871A9AA1
-      778808808719A991778808808719A9117788088087191187F7780880871187FF
-      777887808787F7777887788087FF777787788000088777888880000000088800
-      00000000FE3F0000F80F0000E007000080070000000300000001000000000000
-      00000000000000000000000000000000000000000001000000070000801F0000
-      E3FF0000}
-    Visible = False
-  end
-  object GroupBox1: TGroupBox
+  TextHeight = 13
+  object Timer_GrpBox1: TGroupBox
     Left = 10
     Top = 10
     Width = 316
@@ -63,9 +40,9 @@ object ShutdownForm: TShutdownForm
     end
     object Label2: TLabel
       Left = 218
-      Top = 74
-      Width = 59
-      Height = 16
+      Top = 72
+      Width = 56
+      Height = 13
       Margins.Left = 5
       Margins.Top = 5
       Margins.Right = 5
@@ -73,19 +50,20 @@ object ShutdownForm: TShutdownForm
       Caption = 'from now !'
     end
     object Label3: TLabel
-      Left = 218
-      Top = 104
-      Width = 60
-      Height = 16
+      Left = 206
+      Top = 102
+      Width = 52
+      Height = 13
       Margins.Left = 5
       Margins.Top = 5
       Margins.Right = 5
       Margins.Bottom = 5
       Caption = 'localtime !'
+      Layout = tlCenter
     end
     object Label1: TLabel
-      Left = 188
-      Top = 24
+      Left = 196
+      Top = 23
       Width = 100
       Height = 24
       Margins.Left = 5
@@ -97,8 +75,8 @@ object ShutdownForm: TShutdownForm
       Layout = tlCenter
     end
     object Label7: TLabel
-      Left = 132
-      Top = 99
+      Left = 128
+      Top = 96
       Width = 5
       Height = 24
       Margins.Left = 5
@@ -145,7 +123,7 @@ object ShutdownForm: TShutdownForm
       Left = 135
       Top = 68
       Width = 77
-      Height = 24
+      Height = 21
       Margins.Left = 5
       Margins.Top = 5
       Margins.Right = 5
@@ -157,10 +135,10 @@ object ShutdownForm: TShutdownForm
         'hours')
     end
     object ComboBox_ExitMethod: TComboBox
-      Left = 63
+      Left = 64
       Top = 24
-      Width = 115
-      Height = 24
+      Width = 122
+      Height = 21
       Margins.Left = 5
       Margins.Top = 5
       Margins.Right = 5
@@ -208,7 +186,7 @@ object ShutdownForm: TShutdownForm
       Left = 63
       Top = 68
       Width = 43
-      Height = 24
+      Height = 21
       Margins.Left = 5
       Margins.Top = 5
       Margins.Right = 5
@@ -256,9 +234,9 @@ object ShutdownForm: TShutdownForm
     end
     object Label4: TLabel
       Left = 19
-      Top = 24
-      Width = 161
-      Height = 16
+      Top = 26
+      Width = 147
+      Height = 13
       Margins.Left = 5
       Margins.Top = 5
       Margins.Right = 5
@@ -283,8 +261,8 @@ object ShutdownForm: TShutdownForm
   object Edit2: TEdit
     Left = 74
     Top = 108
-    Width = 43
-    Height = 24
+    Width = 42
+    Height = 21
     Margins.Left = 5
     Margins.Top = 5
     Margins.Right = 5
@@ -295,9 +273,9 @@ object ShutdownForm: TShutdownForm
     OnKeyPress = Edit1KeyPress
   end
   object UpDown2: TUpDown
-    Left = 117
+    Left = 116
     Top = 108
-    Width = 18
+    Width = 21
     Height = 24
     Margins.Left = 5
     Margins.Top = 5
@@ -308,10 +286,10 @@ object ShutdownForm: TShutdownForm
     TabOrder = 3
   end
   object Edit3: TEdit
-    Left = 156
+    Left = 146
     Top = 108
     Width = 43
-    Height = 24
+    Height = 21
     Margins.Left = 5
     Margins.Top = 5
     Margins.Right = 5
@@ -322,9 +300,9 @@ object ShutdownForm: TShutdownForm
     OnKeyPress = Edit1KeyPress
   end
   object UpDown3: TUpDown
-    Left = 199
+    Left = 191
     Top = 108
-    Width = 19
+    Width = 21
     Height = 24
     Margins.Left = 5
     Margins.Top = 5
@@ -344,21 +322,21 @@ object ShutdownForm: TShutdownForm
     OnPopup = PopupMenu1Popup
     Left = 208
     Top = 206
-    object N3: TMenuItem
+    object Timer_N1: TMenuItem
       Caption = 'Show'
       Default = True
-      OnClick = N3Click
+      OnClick = Timer_N1Click
     end
     object N4: TMenuItem
       Caption = '-'
     end
-    object N1: TMenuItem
+    object Timer_N2: TMenuItem
       Caption = 'Show in tray'
-      OnClick = N1Click
+      OnClick = Timer_N2Click
     end
-    object N2: TMenuItem
+    object Timer_N3: TMenuItem
       Caption = 'Set HotKey'
-      OnClick = N2Click
+      OnClick = Timer_N3Click
     end
   end
 end

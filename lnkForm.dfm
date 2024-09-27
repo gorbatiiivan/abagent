@@ -1,6 +1,7 @@
 object LNK_Form: TLNK_Form
   Left = 0
   Top = 0
+  ActiveControl = FindEdit
   BorderIcons = []
   ClientHeight = 461
   ClientWidth = 700
@@ -8,7 +9,7 @@ object LNK_Form: TLNK_Form
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Segoe UI'
   Font.Style = []
   KeyPreview = True
   ShowHint = True
@@ -67,7 +68,7 @@ object LNK_Form: TLNK_Form
     BevelOuter = bvNone
     TabOrder = 1
     OnMouseDown = PanelMouseDown
-    object SpeedButton3: TSpeedButton
+    object LNK_SPD_BTN2: TSpeedButton
       Left = 170
       Top = 6
       Width = 34
@@ -76,9 +77,9 @@ object LNK_Form: TLNK_Form
       ImageIndex = 2
       Images = ImageList1
       Flat = True
-      OnClick = SpeedButton3Click
+      OnClick = LNK_SPD_BTN2Click
     end
-    object HideButton: TSpeedButton
+    object LNK_SPD_BTN3: TSpeedButton
       Left = 673
       Top = 6
       Width = 20
@@ -92,7 +93,7 @@ object LNK_Form: TLNK_Form
       Font.Name = 'Tahoma'
       Font.Style = [fsBold]
       ParentFont = False
-      OnClick = HideButtonClick
+      OnClick = LNK_SPD_BTN3Click
     end
     object Bevel1: TBevel
       Left = 42
@@ -108,7 +109,7 @@ object LNK_Form: TLNK_Form
       Height = 28
       Shape = bsLeftLine
     end
-    object SpeedButton1: TSpeedButton
+    object LNK_SPD_BTN1: TSpeedButton
       Left = 4
       Top = 6
       Width = 34
@@ -117,9 +118,9 @@ object LNK_Form: TLNK_Form
       ImageIndex = 10
       Images = ImageList1
       Flat = True
-      OnClick = SpeedButton1Click
+      OnClick = LNK_SPD_BTN1Click
     end
-    object Button1: TButton
+    object LNK_BTN1: TButton
       Left = 50
       Top = 6
       Width = 54
@@ -129,10 +130,10 @@ object LNK_Form: TLNK_Form
       Images = ImageList1
       Style = bsSplitButton
       TabOrder = 1
-      OnClick = Button1Click
-      OnDropDownClick = Button1DropDownClick
+      OnClick = LNK_BTN1Click
+      OnDropDownClick = LNK_BTN1DropDownClick
     end
-    object Button2: TButton
+    object LNK_BTN2: TButton
       Tag = 1
       Left = 110
       Top = 6
@@ -143,8 +144,8 @@ object LNK_Form: TLNK_Form
       Images = ImageList1
       Style = bsSplitButton
       TabOrder = 0
-      OnClick = Button2Click
-      OnDropDownClick = Button2DropDownClick
+      OnClick = LNK_BTN2Click
+      OnDropDownClick = LNK_BTN2DropDownClick
     end
     object ToolBar1: TToolBar
       Left = 0
@@ -171,7 +172,7 @@ object LNK_Form: TLNK_Form
     OnPopup = PopupMenuPopup
     Left = 48
     Top = 104
-    object Open1: TMenuItem
+    object LNK_LST_MENU_N1: TMenuItem
       Caption = 'Open'
       Default = True
       ShortCut = 13
@@ -180,70 +181,70 @@ object LNK_Form: TLNK_Form
     object N20: TMenuItem
       Caption = '-'
     end
-    object N17: TMenuItem
+    object LNK_LST_MENU_N2: TMenuItem
       Caption = 'Open location'
       ShortCut = 16460
-      OnClick = N17Click
+      OnClick = LNK_LST_MENU_N2Click
     end
     object N19: TMenuItem
       Caption = '-'
     end
-    object N1: TMenuItem
+    object LNK_LST_MENU_N3: TMenuItem
       Caption = 'Create a shortcut'
       ShortCut = 16462
-      OnClick = N1Click
+      OnClick = LNK_LST_MENU_N3Click
     end
-    object N2: TMenuItem
+    object LNK_LST_MENU_N4: TMenuItem
       Caption = 'Remove shortcut'
       ShortCut = 46
-      OnClick = N2Click
+      OnClick = LNK_LST_MENU_N4Click
     end
     object N3: TMenuItem
       Caption = '-'
     end
-    object N7: TMenuItem
+    object LNK_LST_MENU_N5: TMenuItem
       Caption = 'Copy to'
     end
-    object N8: TMenuItem
+    object LNK_LST_MENU_N6: TMenuItem
       Caption = 'Move to'
     end
     object N6: TMenuItem
       Caption = '-'
     end
-    object Addtoprocesslist1: TMenuItem
+    object LNK_LST_MENU_N7: TMenuItem
       Caption = 'Add to process list'
       ShortCut = 16464
-      OnClick = Addtoprocesslist1Click
+      OnClick = LNK_LST_MENU_N7Click
     end
     object N11: TMenuItem
       Caption = '-'
     end
-    object N4: TMenuItem
+    object LNK_LST_MENU_N8: TMenuItem
       Caption = 'New tab'
       ShortCut = 16454
-      OnClick = N4Click
+      OnClick = LNK_LST_MENU_N8Click
     end
-    object N5: TMenuItem
+    object LNK_LST_MENU_N9: TMenuItem
       Caption = 'Delete tab'
     end
     object N25: TMenuItem
       Caption = '-'
     end
-    object N21: TMenuItem
+    object LNK_LST_MENU_N10: TMenuItem
       Caption = 'Import from system'
-      object N27: TMenuItem
+      object LNK_LST_MENU_N11: TMenuItem
         Caption = 'Apps'
-        OnClick = N27Click
+        OnClick = LNK_LST_MENU_N11Click
       end
-      object N29: TMenuItem
+      object LNK_LST_MENU_N12: TMenuItem
         Caption = 'Folders'
-        OnClick = N29Click
+        OnClick = LNK_LST_MENU_N12Click
       end
     end
     object N9: TMenuItem
       Caption = '-'
     end
-    object Iconssize1: TMenuItem
+    object LNK_LST_MENU_N13: TMenuItem
       Caption = 'Icons size'
       OnClick = N28Click
       object Small1: TMenuItem
@@ -271,7 +272,7 @@ object LNK_Form: TLNK_Form
         OnClick = N26Click
       end
     end
-    object IconsStyle1: TMenuItem
+    object LNK_LST_MENU_N14: TMenuItem
       Caption = 'Icons style'
       OnClick = N32Click
       object Icon1: TMenuItem
@@ -290,46 +291,46 @@ object LNK_Form: TLNK_Form
     object N26: TMenuItem
       Caption = '-'
     end
-    object N10: TMenuItem
+    object LNK_LST_MENU_N15: TMenuItem
       Caption = 'Properties'
       ShortCut = 32781
-      OnClick = N10Click
+      OnClick = LNK_LST_MENU_N15Click
     end
   end
   object GeneralMenu: TPopupMenu
     OnPopup = GeneralMenuPopup
     Left = 48
     Top = 160
-    object N14: TMenuItem
+    object LNK_GEN_MENU_N1: TMenuItem
       Caption = 'Show'
       Default = True
-      OnClick = N14Click
+      OnClick = LNK_GEN_MENU_N1Click
     end
     object N13: TMenuItem
       Caption = '-'
     end
-    object N23: TMenuItem
+    object LNK_GEN_MENU_N2: TMenuItem
       Caption = 'Do not hide automatically'
-      OnClick = N23Click
+      OnClick = LNK_GEN_MENU_N2Click
     end
-    object N24: TMenuItem
+    object LNK_GEN_MENU_N3: TMenuItem
       Caption = 'Hide when opening'
-      OnClick = N24Click
+      OnClick = LNK_GEN_MENU_N3Click
     end
-    object N22: TMenuItem
+    object LNK_GEN_MENU_N4: TMenuItem
       Caption = 'Prevent moving off screen'
-      OnClick = N22Click
+      OnClick = LNK_GEN_MENU_N4Click
     end
     object N18: TMenuItem
       Caption = '-'
     end
-    object N15: TMenuItem
-      Caption = 'Hide from tray'
-      OnClick = N15Click
+    object LNK_GEN_MENU_N5: TMenuItem
+      Caption = 'Show tray icon'
+      OnClick = LNK_GEN_MENU_N5Click
     end
-    object N16: TMenuItem
+    object LNK_GEN_MENU_N6: TMenuItem
       Caption = 'Set HotKey'
-      OnClick = N16Click
+      OnClick = LNK_GEN_MENU_N6Click
     end
   end
   object ImageList1: TImageList

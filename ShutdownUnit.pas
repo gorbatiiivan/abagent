@@ -4,13 +4,12 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Menus, Vcl.ExtCtrls, Vcl.StdCtrls,
-  Vcl.ComCtrls;
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Menus, Vcl.StdCtrls,
+  Vcl.ComCtrls, Vcl.ExtCtrls;
 
 type
   TShutdownForm = class(TForm)
-    Image1: TImage;
-    GroupBox1: TGroupBox;
+    Timer_GrpBox1: TGroupBox;
     Bevel3: TBevel;
     Label2: TLabel;
     Label3: TLabel;
@@ -34,9 +33,9 @@ type
     UpDown3: TUpDown;
     Timer1: TTimer;
     PopupMenu1: TPopupMenu;
-    N1: TMenuItem;
-    N2: TMenuItem;
-    N3: TMenuItem;
+    Timer_N2: TMenuItem;
+    Timer_N3: TMenuItem;
+    Timer_N1: TMenuItem;
     N4: TMenuItem;
     procedure Button1Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
@@ -49,9 +48,9 @@ type
     procedure RadioButton1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure PopupMenu1Popup(Sender: TObject);
-    procedure N1Click(Sender: TObject);
-    procedure N2Click(Sender: TObject);
-    procedure N3Click(Sender: TObject);
+    procedure Timer_N2Click(Sender: TObject);
+    procedure Timer_N3Click(Sender: TObject);
+    procedure Timer_N1Click(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
@@ -61,6 +60,7 @@ type
   public
     { Public declarations }
     procedure saveshutdowntoini();
+    procedure Translate(aLanguageID: String);
   end;
 
 const
@@ -84,11 +84,41 @@ var
 
 implementation
 
-uses Unit1, HotKeyChanger, HotKeyManager, lnkForm;
+uses Unit1, HotKeyChanger, HotKeyManager, lnkForm, Translation, Utils;
 
 function SetSuspendState( Hibernate, ForceCritical, DisableWakeEvent: Boolean): Boolean; stdcall; external 'powrprof.dll';
 
 {$R *.dfm}
+
+procedure TShutdownForm.Translate(aLanguageID: String);
+var
+ TempInteger: Integer;
+begin
+ Caption := _(GLOBAL_HINT_IMG_TimerImg, aLanguageID);
+ Timer_GrpBox1.Caption := _(Timer_CPTN_GRPBOX_GrpBox1, aLanguageID);
+ //Load items and read itemindex to ComboBox
+ TempInteger := ComboBox_ExitMethod.ItemIndex;
+ StrToList(_(Timer_TEXT_COMBO_ComboBox1, aLanguageID),';',ComboBox_ExitMethod.Items);
+ ComboBox_ExitMethod.ItemIndex := TempInteger;
+ //-----------------------------------------------------------------------------
+ RadioButton1.Caption := _(Timer_CPTN_RADBTN_RADBTN1, aLanguageID);
+ //Load items and read itemindex to ComboBox
+ TempInteger := ComboBox1.ItemIndex;
+ StrToList(_(Timer_TEXT_COMBO_ComboBox2, aLanguageID),';',ComboBox1.Items);
+ ComboBox1.ItemIndex := TempInteger;
+ //-----------------------------------------------------------------------------
+ Label2.Caption := _(Timer_CPTN_LBL_LBL2, aLanguageID);
+ RadioButton2.Caption := _(Timer_CPTN_RADBTN_RADBTN2, aLanguageID);
+ Label3.Caption := _(Timer_CPTN_LBL_LBL3, aLanguageID);
+ CheckBox1.Caption := _(Timer_CPTN_CHKBOX_CHKBOX1, aLanguageID);
+ CheckBox2.Caption := _(Timer_CPTN_CHKBOX_CHKBOX2, aLanguageID);
+ GroupBox2.Caption := _(HELPFORM_TEXT_LSTVIEW_COL1, aLanguageID);
+ Label4.Caption := _(Timer_CPTN_LBL_LBL4, aLanguageID);
+ Button1.Caption := _(Timer_CPTN_BTN_BTN1, aLanguageID);
+ Timer_N1.Caption := _(LNK_CPTN_MENUITEM_GEN_N1, aLanguageID);
+ Timer_N2.Caption := _(LNK_CPTN_MENUITEM_GEN_N5, aLanguageID);
+ Timer_N3.Caption := _(GLOBAL_CPTN_MENUITEM_Main_N2, aLanguageID);
+end;
 
 procedure getTimerParam();
 var
@@ -262,6 +292,8 @@ var
  command_str : string;
  i, errcode : integer;
 begin
+Translate(MainForm.FConfig.ReadString('General','Language',EN_US));
+
 getTimerParam();
 
 first_show := true;
@@ -352,13 +384,13 @@ begin
   if Timer1.enabled then
   begin
     Timer1.enabled := false;
-    label4.caption := 'No reboot or shutdown set !';
-    Button1.Caption := 'Enable timer';
-    GroupBox1.Enabled := true;
+    label4.caption := _(Timer_CPTN_LBL_LBL4, MainForm.FConfig.ReadString('General','Language',EN_US));
+    Button1.Caption := _(Timer_CPTN_BTN_BTN1, MainForm.FConfig.ReadString('General','Language',EN_US));
+    Timer_GrpBox1.Enabled := true;
     Timer1.Enabled := false;
-    MainForm.TimerImage.Hint := 'Timer not active';
-    MainForm.TimerTrayIcon.Hint := 'Timer not active';
-    LNK_Form.SpeedButton1.Hint := 'Timer not active';
+    MainForm.TimerImg.Hint := _(Timer_GLOBAL_TEXT_MSG1, MainForm.FConfig.ReadString('General','Language',EN_US));
+    MainForm.TimerTrayIcon.Hint := _(Timer_GLOBAL_TEXT_MSG1, MainForm.FConfig.ReadString('General','Language',EN_US));
+    LNK_Form.LNK_SPD_BTN1.Hint := _(Timer_GLOBAL_TEXT_MSG1, MainForm.FConfig.ReadString('General','Language',EN_US));
   end
     else
   begin
@@ -380,22 +412,23 @@ begin
           faktor := 1000*60;
         if (ComboBox1.ItemIndex = 1) then
           faktor := 1000*60*60;
-        Button1.Caption := 'Stop timer';
+        Button1.Caption := _(Timer_CPTN_BTN_BTN1_2, MainForm.FConfig.ReadString('General','Language',EN_US));
         shutdown_tick := faktor*DWORD(UpDown1.Position) + GetTickCount;
-        GroupBox1.Enabled := false;
+        Timer_GrpBox1.Enabled := false;
         Timer1.enabled := true;
       end
         else
-          MessageBox(0, 'Missing parameters ...', 'Shutdown', MB_OK);
+          MessageBox(0, PChar(_(Timer_GLOBAL_TEXT_MSG2, MainForm.FConfig.ReadString('General','Language',EN_US))),
+          PChar(_(Timer_GLOBAL_TEXT_MSG3, MainForm.FConfig.ReadString('General','Language',EN_US))), MB_OK);
     end
       else
     begin
       command_str := 'a' + lz(UpDown2.Position) + lz(UpDown3.Position);
       MainForm.FConfig.WriteString('General','TimerForm_command', command_str);
       MainForm.FConfig.UpdateFile;
-      GroupBox1.Enabled := false;
+      Timer_GrpBox1.Enabled := false;
       Timer1.enabled := true;
-      Button1.Caption := 'Stop timer';
+      Button1.Caption :=  _(Timer_CPTN_BTN_BTN1_2, MainForm.FConfig.ReadString('General','Language',EN_US));
     end;
   end;
 end;
@@ -405,26 +438,30 @@ var
   lt : TSystemTime;
   buffer : longint;
   last_err : DWORD;
-
+  Transl_IN,Transl_AT: String;
 begin
+  Transl_IN := ' '+_(Timer_CPTN_RADBTN_RADBTN1, MainForm.FConfig.ReadString('General','Language',EN_US))+' ';
+  Transl_AT := ' '+_(Timer_CPTN_RADBTN_RADBTN2, MainForm.FConfig.ReadString('General','Language',EN_US))+' ';
   method := 0;
   if RadioButton1.Checked then
   begin
-    label4.Caption := ComboBox_ExitMethod.Text + ' in ' + inttostr((shutdown_tick - GetTickCount()) div 1000 + 1) + ' seconds ...';
-    MainForm.TimerImage.Hint := label4.caption;
+    label4.Caption := ComboBox_ExitMethod.Text + Transl_IN + inttostr((shutdown_tick - GetTickCount()) div 1000 + 1) +
+    _(Timer_GLOBAL_TEXT_MSG4, MainForm.FConfig.ReadString('General','Language',EN_US));
+    MainForm.TimerImg.Hint := label4.caption;
     MainForm.TimerTrayIcon.Hint := label4.caption;
-    LNK_Form.SpeedButton1.Hint := label4.Caption;
+    LNK_Form.LNK_SPD_BTN1.Hint := label4.Caption;
     buffer := shutdown_tick - GetTickCount();
     if (buffer <= 0) then
       method := getmethod;
   end
     else
   begin
-    label4.caption := ComboBox_ExitMethod.Text + ' at ' + Edit2.Text + ':' + Edit3.Text + ' localtime ...';
+    label4.caption := ComboBox_ExitMethod.Text + Transl_AT + Edit2.Text + ':' + Edit3.Text +
+    ' '+_(Timer_CPTN_LBL_LBL3, MainForm.FConfig.ReadString('General','Language',EN_US));
 
-    MainForm.TimerImage.Hint := label4.caption;
+    MainForm.TimerImg.Hint := label4.caption;
     MainForm.TimerTrayIcon.Hint := label4.caption;
-    LNK_Form.SpeedButton1.Hint := label4.Caption;
+    LNK_Form.LNK_SPD_BTN1.Hint := label4.Caption;
     GetLocalTime(lt);
     if (lt.wHour = Word(UpDown2.Position)) and (lt.wMinute = Word(UpDown3.Position)) then
       method := getmethod;
@@ -447,16 +484,12 @@ begin
         last_err := do_reboot(method);
         if (last_err > 0) then
          begin
-          MainForm.TimerImage.Hint := 'Error'+inttostr(last_err)+'Timer stopped';
-          MainForm.TimerTrayIcon.Hint := 'Error'+inttostr(last_err)+'Timer stopped';
-          LNK_Form.SpeedButton1.Hint := 'Error'+inttostr(last_err)+'Timer stopped';
+          MainForm.TimerImg.Hint := _(Timer_GLOBAL_TEXT_MSG5, MainForm.FConfig.ReadString('General','Language',EN_US))
+          +inttostr(last_err)+_(Timer_GLOBAL_TEXT_MSG6, MainForm.FConfig.ReadString('General','Language',EN_US));
+          MainForm.TimerTrayIcon.Hint := MainForm.TimerImg.Hint;
+          LNK_Form.LNK_SPD_BTN1.Hint := MainForm.TimerImg.Hint;
          end else
-          Exit;
-        //From original code:
-        {if (last_err > 0) then
-          MessageDlg('WindowsError '''+inttostr(last_err)+''' occured. All Timers stopped !', mtError, [mbOK], 0)
-        else
-          Application.Destroy;}
+          Exit; //From original code:Application.Destroy;
        end;
       //
     end
@@ -515,12 +548,10 @@ end;
 //Menu
 procedure TShutdownForm.PopupMenu1Popup(Sender: TObject);
 begin
-if MainForm.TimerTrayIcon.Visible = True then
-N1.Caption := 'Hide icon from tray' else N1.Caption := 'Show icon in tray';
-N1.Checked := MainForm.FConfig.ReadBool('General','TimerForm_TimerInTray',False);
+Timer_N2.Checked := MainForm.FConfig.ReadBool('General','TimerForm_TimerInTray',False);
 end;
 
-procedure TShutdownForm.N1Click(Sender: TObject);
+procedure TShutdownForm.Timer_N2Click(Sender: TObject);
 begin
 with Sender as TMenuItem do
   begin
@@ -531,13 +562,12 @@ with Sender as TMenuItem do
   end;
 end;
 
-procedure TShutdownForm.N2Click(Sender: TObject);
+procedure TShutdownForm.Timer_N3Click(Sender: TObject);
 begin
 with HotKeyForm do
  begin
   Position := poDesktopCenter;
-  Caption := 'HotKey changer';
-  Button3Click(Sender);
+  HOTKEYCHANGER_BTN1Click(Sender);
   Edit1.Text := MainForm.FConfig.ReadString('General','TimerForm_Timer_Key','');
   if (Showmodal <> mrCancel) then
    begin
@@ -550,7 +580,7 @@ with HotKeyForm do
  end;
 end;
 
-procedure TShutdownForm.N3Click(Sender: TObject);
+procedure TShutdownForm.Timer_N1Click(Sender: TObject);
 begin
 if not ShutdownForm.Showing then
  begin
@@ -560,9 +590,9 @@ if not ShutdownForm.Showing then
  end else
   begin
    if not ShutdownForm.Timer1.Enabled then
-      MainForm.TimerImage.Hint := 'Timer not active';
-      MainForm.TimerTrayIcon.Hint := 'Timer not active';
-      LNK_Form.SpeedButton1.Hint := 'Timer not active';
+      MainForm.TimerImg.Hint := _(Timer_GLOBAL_TEXT_MSG1, MainForm.FConfig.ReadString('General','Language',EN_US));
+      MainForm.TimerTrayIcon.Hint := _(Timer_GLOBAL_TEXT_MSG1, MainForm.FConfig.ReadString('General','Language',EN_US));
+      LNK_Form.LNK_SPD_BTN1.Hint := _(Timer_GLOBAL_TEXT_MSG1, MainForm.FConfig.ReadString('General','Language',EN_US));
    ShutdownForm.Close;
   end;
 end;

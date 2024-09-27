@@ -2,9 +2,9 @@
 
 interface
 
-uses Windows, Forms, System.SysUtils, Vcl.StdCtrls, System.Classes, ShellAPI,
-     ShlObj, WinSvc, TlHelp32, System.IOUtils, Registry, System.Types, IniFiles,
-     ComCtrls;
+uses Winapi.Windows, Vcl.Controls, Vcl.Forms, Vcl.Graphics, System.SysUtils,
+     Vcl.StdCtrls, System.Classes, System.Types, ShellAPI, ShlObj, WinSvc,
+     TlHelp32, System.IOUtils, Registry,  IniFiles, ComCtrls, PngImage;
 
 type //for GetWinHandleFromProcId
   TEnumData = record
@@ -48,7 +48,8 @@ procedure RemoveAllFromRegistry(AppName,AppLocation: String);
 function DeleteFilesFromFolder(sFiles: String; const FolderPath: string): Boolean;
 procedure DeleteFilesFromSysMaps(IntLocation: Integer; ProcessNames, FileLocation: String);
 function RenameSection(IniFile:TCustomIniFile; FromName,ToName:string):boolean;
-procedure ScanProcessListFromIni(Config: TMemIniFile; List: TTabControl);
+procedure ScanProcessListFromIni(Config: TMemIniFile; TabList: TTabControl);
+procedure LangImgFromRes(ImageList: TImageList);
 
 implementation
 
@@ -668,20 +669,37 @@ begin
   Result:=True;
 end;
 
-procedure ScanProcessListFromIni(Config: TMemIniFile; List: TTabControl);
-var
- TempStrings: TStringList;
+procedure ScanProcessListFromIni(Config: TMemIniFile; TabList: TTabControl);
 begin
-TempStrings := TStringList.Create;
- try
-  Config.ReadSections(TempStrings);
-  TempStrings.Sort;
-  List.Tabs := TempStrings;
-  List.Tabs.Delete(FindString(List.Tabs,'General'));
-  if List.Tabs.Count <> -1 then List.TabIndex := 0;
- finally
-  TempStrings.Free;
- end;
+ Config.ReadSections(TabList.Tabs);
+ if Config.SectionExists('General') then
+ TabList.Tabs.Delete(FindString(TabList.Tabs,'General'));
+ if TabList.Tabs.Count <> -1 then TabList.TabIndex := 0;
+end;
+
+procedure LangImgFromRes(ImageList: TImageList);
+var
+ TempImage: TPNGImage;
+ Bitmap: TBitmap;
+begin
+ TempImage := TPNGImage.Create;
+ Bitmap := TBitmap.Create;
+  try
+   TempImage.LoadFromResourceName(hInstance,'lng_usa');
+   Bitmap.Assign(TempImage);
+   ImageList.Add(Bitmap, nil);
+
+   TempImage.LoadFromResourceName(hInstance,'lng_russian');
+   Bitmap.Assign(TempImage);
+   ImageList.Add(Bitmap, nil);
+
+   TempImage.LoadFromResourceName(hInstance,'lng_romania');
+   Bitmap.Assign(TempImage);
+   ImageList.Add(Bitmap, nil);
+  finally
+   FreeAndNil(TempImage);
+   FreeAndNil(Bitmap);
+  end;
 end;
 
 end.

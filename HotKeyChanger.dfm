@@ -7,11 +7,12 @@ object HotKeyForm: THotKeyForm
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -15
-  Font.Name = 'MS Sans Serif'
+  Font.Height = -11
+  Font.Name = 'Segoe UI'
   Font.Style = []
   Position = poDesktopCenter
-  TextHeight = 16
+  OnCreate = FormCreate
+  TextHeight = 13
   object chWin: TCheckBox
     Left = 90
     Top = 63
@@ -56,7 +57,7 @@ object HotKeyForm: THotKeyForm
     Left = 152
     Top = 16
     Width = 145
-    Height = 24
+    Height = 21
     Cursor = crHandPoint
     Style = csDropDownList
     DropDownCount = 33
@@ -162,15 +163,15 @@ object HotKeyForm: THotKeyForm
   object Edit1: TEdit
     Left = 18
     Top = 104
-    Width = 215
-    Height = 24
+    Width = 202
+    Height = 21
     AutoSelect = False
     ReadOnly = True
     TabOrder = 5
     OnKeyDown = Edit1KeyDown
     OnKeyUp = Edit1KeyUp
   end
-  object Button1: TButton
+  object HOTKEYCHANGER_BTN2: TButton
     Left = 34
     Top = 160
     Width = 119
@@ -180,7 +181,7 @@ object HotKeyForm: THotKeyForm
     ModalResult = 1
     TabOrder = 7
   end
-  object Button2: TButton
+  object HOTKEYCHANGER_BTN3: TButton
     Left = 159
     Top = 160
     Width = 119
@@ -190,13 +191,13 @@ object HotKeyForm: THotKeyForm
     ModalResult = 2
     TabOrder = 8
   end
-  object Button3: TButton
-    Left = 239
+  object HOTKEYCHANGER_BTN1: TButton
+    Left = 226
     Top = 102
-    Width = 58
+    Width = 71
     Height = 28
     Caption = 'Clear'
     TabOrder = 6
-    OnClick = Button3Click
+    OnClick = HOTKEYCHANGER_BTN1Click
   end
 end

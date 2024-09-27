@@ -27,7 +27,7 @@ object MainForm: TMainForm
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Name = 'Segoe UI'
   Font.Style = []
   GlassFrame.Enabled = True
   GlassFrame.Top = 31
@@ -38,50 +38,41 @@ object MainForm: TMainForm
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   TextHeight = 13
-  object Label3: TLabel
+  object Main_LBL1: TLabel
     Left = 8
     Top = 101
-    Width = 73
+    Width = 387
     Height = 21
     AutoSize = False
     Caption = 'Process list:'
     Layout = tlCenter
   end
-  object CheckBox1: TCheckBox
+  object Main_CHKBOX1: TCheckBox
     Left = 8
-    Top = 37
+    Top = 36
     Width = 387
     Height = 17
     Caption = 'Start when I log on (with Admin privileges)'
     TabOrder = 0
-    OnClick = CheckBox1Click
+    OnClick = Main_CHKBOX1Click
   end
-  object Button2: TButton
-    Left = 511
-    Top = 538
-    Width = 93
-    Height = 25
-    Caption = 'Save and Exit'
-    TabOrder = 2
-    OnClick = Button2Click
-  end
-  object GroupBox3: TGroupBox
+  object Main_GrpBox3: TGroupBox
     Left = 8
     Top = 392
     Width = 437
     Height = 73
     Caption = 'Task Managers'
     TabOrder = 1
-    object CheckBox3: TCheckBox
+    object Main_CHKBOX5: TCheckBox
       Left = 15
       Top = 17
-      Width = 404
+      Width = 419
       Height = 17
       Caption = 
         'Terminate all running processes when starting application from t' +
         'he list:'
       TabOrder = 0
-      OnClick = CheckBox3Click
+      OnClick = Main_CHKBOX5Click
     end
     object Edit3: TEdit
       Left = 15
@@ -90,7 +81,7 @@ object MainForm: TMainForm
       Height = 21
       TabOrder = 1
     end
-    object Button5: TButton
+    object Main_BTN7: TButton
       Left = 391
       Top = 38
       Width = 28
@@ -98,16 +89,16 @@ object MainForm: TMainForm
       Hint = 'Select from all running apps'
       Caption = '>>'
       TabOrder = 2
-      OnClick = Button5Click
+      OnClick = Main_BTN7Click
     end
   end
-  object GroupBox4: TGroupBox
+  object Main_GrpBox1: TGroupBox
     Left = 401
     Top = 37
     Width = 203
     Height = 52
     Caption = 'Hide process using the mouse'
-    TabOrder = 3
+    TabOrder = 2
     object MousePosBox: TComboBox
       Left = 16
       Top = 21
@@ -125,7 +116,7 @@ object MainForm: TMainForm
         'top'
         'bottom')
     end
-    object Button6: TButton
+    object Main_BTN1: TButton
       Left = 168
       Top = 21
       Width = 21
@@ -133,77 +124,68 @@ object MainForm: TMainForm
       Hint = 'Help'
       Caption = '?'
       TabOrder = 1
-      OnClick = Button6Click
+      OnClick = Main_BTN1Click
     end
   end
-  object GroupBox5: TGroupBox
+  object Main_GrpBox5: TGroupBox
     Left = 8
     Top = 471
     Width = 437
     Height = 92
     Caption = 'Clear data (need Admin Privileges)'
-    TabOrder = 4
-    object CheckBox7: TCheckBox
+    TabOrder = 3
+    object Main_CHKBOX7: TCheckBox
       Left = 16
       Top = 32
-      Width = 217
+      Width = 251
       Height = 17
       Hint = 'It only works if the checkbox "Task Managers" is checked'
       Caption = 'When starting Task Managers'
       TabOrder = 0
     end
-    object GroupBox6: TGroupBox
-      Left = 249
-      Top = 23
+    object Main_GrpBox6: TGroupBox
+      Left = 273
+      Top = 16
       Width = 154
-      Height = 57
+      Height = 64
       Caption = 'HotKey'
       TabOrder = 1
-      object ClearDataBtn: TButton
+      object Main_BTN9: TButton
         Left = 8
         Top = 22
         Width = 137
         Height = 25
         Hint = 'Click to change HotKey'
         TabOrder = 0
-        OnClick = ClearDataBtnClick
+        OnClick = Main_BTN9Click
       end
     end
-    object CheckBox8: TCheckBox
+    object Main_CHKBOX8: TCheckBox
       Left = 16
       Top = 55
-      Width = 217
+      Width = 251
       Height = 17
       Caption = 'When hide from Boss HotKey'
       TabOrder = 2
     end
-    object Button7: TButton
-      Left = 409
-      Top = 12
-      Width = 21
-      Height = 21
-      Caption = '?'
-      TabOrder = 3
-      OnClick = Button7Click
-    end
   end
-  object GroupBox7: TGroupBox
+  object Main_GrpBox4: TGroupBox
     Left = 451
     Top = 392
     Width = 153
     Height = 140
     Caption = 'Boss HotKey'
-    TabOrder = 5
-    object BossCheckBox: TCheckBox
+    TabOrder = 4
+    object Main_CHKBOX6: TCheckBox
       Left = 16
       Top = 17
       Width = 121
       Height = 17
       Caption = 'Enabled'
       TabOrder = 0
-      OnClick = BossCheckBoxClick
+      OnClick = Main_CHKBOX6Click
     end
-    object RadioGroup2: TRadioGroup
+    object Main_RADGrp2: TRadioGroup
       Left = 16
       Top = 41
       Width = 121
@@ -215,32 +197,32 @@ object MainForm: TMainForm
         'Kill process')
       TabOrder = 1
     end
-    object BossBtn: TButton
+    object Main_BTN8: TButton
       Left = 8
       Top = 106
       Width = 137
       Height = 25
       Hint = 'Click to change HotKey'
       TabOrder = 2
-      OnClick = BossBtnClick
+      OnClick = Main_BTN8Click
     end
   end
-  object CheckBox5: TCheckBox
+  object Main_CHKBOX2: TCheckBox
     Left = 8
     Top = 60
     Width = 387
     Height = 17
     Caption = 'Enabled log file'
-    TabOrder = 6
+    TabOrder = 5
   end
-  object Button1: TButton
+  object Main_BTN10: TButton
     Left = 451
     Top = 538
-    Width = 54
+    Width = 153
     Height = 25
     Caption = 'Save'
-    TabOrder = 7
-    OnClick = Button1Click
+    TabOrder = 6
+    OnClick = Main_BTN10Click
   end
   object TitleBarPanel1: TTitleBarPanel
     Left = 0
@@ -270,7 +252,7 @@ object MainForm: TMainForm
       Transparent = True
       OnClick = LogImgClick
     end
-    object TimerImage: TImage
+    object TimerImg: TImage
       Left = 62
       Top = 3
       Width = 24
@@ -280,9 +262,9 @@ object MainForm: TMainForm
       Center = True
       PopupMenu = ShutdownForm.PopupMenu1
       Transparent = True
-      OnClick = TimerImageClick
+      OnClick = TimerImgClick
     end
-    object FavLNKImage: TImage
+    object FavImg: TImage
       Left = 89
       Top = 3
       Width = 24
@@ -292,7 +274,7 @@ object MainForm: TMainForm
       Center = True
       PopupMenu = LNK_Form.GeneralMenu
       Transparent = True
-      OnClick = FavLNKImageClick
+      OnClick = FavImgClick
     end
     object MainImg: TImage
       Left = 8
@@ -300,6 +282,7 @@ object MainForm: TMainForm
       Width = 24
       Height = 24
       Cursor = crHandPoint
+      Hint = 'Main menu'
       Transparent = True
       OnClick = MainImgClick
     end
@@ -310,12 +293,12 @@ object MainForm: TMainForm
     Width = 596
     Height = 258
     Style = tsButtons
-    TabOrder = 9
+    TabOrder = 8
     OnChange = PTabChange
-    object Label1: TLabel
+    object Main_LBL2: TLabel
       Left = 15
       Top = 40
-      Width = 75
+      Width = 76
       Height = 13
       Caption = 'Process Name :'
     end
@@ -326,7 +309,7 @@ object MainForm: TMainForm
       Height = 21
       TabOrder = 0
     end
-    object Button4: TButton
+    object Main_BTN4: TButton
       Left = 239
       Top = 54
       Width = 28
@@ -334,26 +317,26 @@ object MainForm: TMainForm
       Hint = 'Select from all running apps'
       Caption = '>>'
       TabOrder = 1
-      OnClick = Button4Click
+      OnClick = Main_BTN4Click
     end
-    object GroupBox1: TGroupBox
+    object Main_GrpBox2: TGroupBox
       Left = 286
       Top = 32
       Width = 154
       Height = 62
       Caption = 'HotKey'
       TabOrder = 2
-      object ProcessHotKeyBtn: TButton
+      object Main_BTN5: TButton
         Left = 8
         Top = 24
         Width = 137
         Height = 25
         Hint = 'Click to change HotKey'
         TabOrder = 0
-        OnClick = ProcessHotKeyBtnClick
+        OnClick = Main_BTN5Click
       end
     end
-    object RadioGroup1: TRadioGroup
+    object Main_RADGrp1: TRadioGroup
       Left = 458
       Top = 32
       Width = 122
@@ -371,28 +354,28 @@ object MainForm: TMainForm
       Width = 565
       Height = 141
       TabOrder = 4
-      object Label2: TLabel
+      object Main_LBL3: TLabel
         Left = 14
         Top = 39
-        Width = 66
+        Width = 71
         Height = 13
         Caption = 'File Location :'
       end
-      object Label4: TLabel
+      object Main_LBL4: TLabel
         Left = 16
         Top = 88
-        Width = 57
+        Width = 65
         Height = 13
         Caption = 'Working dir:'
       end
-      object CheckBox2: TCheckBox
+      object Main_CHKBOX4: TCheckBox
         Left = 14
         Top = 16
         Width = 289
         Height = 17
         Caption = 'Do not open'
         TabOrder = 0
-        OnClick = CheckBox2Click
+        OnClick = Main_CHKBOX4Click
       end
       object Edit2: TEdit
         Left = 14
@@ -401,7 +384,7 @@ object MainForm: TMainForm
         Height = 21
         TabOrder = 1
       end
-      object Button3: TButton
+      object Main_BTN6: TButton
         Left = 479
         Top = 56
         Width = 70
@@ -409,7 +392,7 @@ object MainForm: TMainForm
         Hint = 'Select executable file'
         Caption = '>>'
         TabOrder = 2
-        OnClick = Button3Click
+        OnClick = Main_BTN6Click
       end
       object Edit4: TEdit
         Left = 14
@@ -420,33 +403,43 @@ object MainForm: TMainForm
       end
     end
   end
-  object CheckBox4: TCheckBox
+  object Main_CHKBOX3: TCheckBox
     Left = 8
     Top = 83
     Width = 387
     Height = 17
     Caption = 'Mute when hide'
-    TabOrder = 10
+    TabOrder = 9
   end
-  object AddButton: TButton
+  object Main_BTN2: TButton
     Left = 556
     Top = 101
     Width = 21
     Height = 21
     Hint = 'New tab'
     Caption = '+'
-    TabOrder = 11
-    OnClick = AddButtonClick
+    TabOrder = 10
+    OnClick = Main_BTN2Click
   end
-  object RemoveButton: TButton
+  object Main_BTN3: TButton
     Left = 583
     Top = 101
     Width = 21
     Height = 21
     Hint = 'Remove tab'
     Caption = 'X'
+    TabOrder = 11
+    OnClick = Main_BTN3Click
+  end
+  object Main_BTN11: TButton
+    Left = 254
+    Top = 487
+    Width = 21
+    Height = 21
+    Hint = 'Help'
+    Caption = '?'
     TabOrder = 12
-    OnClick = RemoveButtonClick
+    OnClick = Main_BTN11Click
   end
   object FavTray: TTrayIcon
     Icon.Data = {
@@ -544,19 +537,50 @@ object MainForm: TMainForm
     Left = 344
     Top = 64
   end
-  object PopupMenu1: TPopupMenu
+  object MainMenu: TPopupMenu
+    OnPopup = MainMenuPopup
     Left = 144
     Top = 64
-    object N1: TMenuItem
+    object Main_N1: TMenuItem
       Caption = 'Help'
-      OnClick = N1Click
+      OnClick = Main_N1Click
     end
-    object N3: TMenuItem
+    object Main_N3: TMenuItem
       Caption = '-'
     end
-    object N2: TMenuItem
-      Caption = 'Change Main HotKey'
-      OnClick = N2Click
+    object Main_N2: TMenuItem
+      Caption = 'Change HotKey'
+      OnClick = Main_N2Click
     end
+    object Main_N4: TMenuItem
+      Caption = '-'
+    end
+    object Main_N5: TMenuItem
+      Caption = 'Language'
+      SubMenuImages = LangImgList
+      object Main_N6: TMenuItem
+        Caption = 'English'
+        ImageIndex = 0
+        OnClick = Main_N6Click
+      end
+      object Main_N7: TMenuItem
+        Caption = #1056#1091#1089#1089#1082#1080#1081
+        ImageIndex = 1
+        OnClick = Main_N6Click
+      end
+      object Main_N8: TMenuItem
+        Caption = 'Rom'#226'n'#259
+        ImageIndex = 2
+        OnClick = Main_N6Click
+      end
+    end
+  end
+  object LangImgList: TImageList
+    ColorDepth = cd32Bit
+    DrawingStyle = dsTransparent
+    Height = 30
+    Width = 30
+    Left = 392
+    Top = 64
   end
 end

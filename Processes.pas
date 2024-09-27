@@ -10,15 +10,17 @@ type
   TProcessesForm = class(TForm)
     ListBox1: TListBox;
     Panel1: TPanel;
-    Button1: TButton;
-    Button2: TButton;
-    Button3: TButton;
+    Proc_BTN2: TButton;
+    Proc_BTN3: TButton;
+    Proc_BTN1: TButton;
     procedure ListBox1DblClick(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
+    procedure Proc_BTN1Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
+    procedure Translate(aLanguageID: String);
   end;
 
 var
@@ -26,11 +28,24 @@ var
 
 implementation
 
-uses Utils;
+uses Utils, Unit1, Translation;
 
 {$R *.dfm}
 
-procedure TProcessesForm.Button3Click(Sender: TObject);
+procedure TProcessesForm.Translate(aLanguageID: String);
+begin
+ Caption := _(PROC_CPTN, aLanguageID);
+ Proc_BTN1.Caption := _(PROC_CPTN_BTN_BTN1, aLanguageID);
+ Proc_BTN2.Caption := _(PROC_CPTN_BTN_BTN2, aLanguageID);
+ Proc_BTN3.Caption := _(HOTKEYCHANGER_CPTN_BTN_BTN3, aLanguageID);
+end;
+
+procedure TProcessesForm.FormCreate(Sender: TObject);
+begin
+Translate(MainForm.FConfig.ReadString('General','Language',EN_US));
+end;
+
+procedure TProcessesForm.Proc_BTN1Click(Sender: TObject);
 begin
 ProcessToList(ListBox1);
 ListBox1.Sorted := True;

@@ -9,17 +9,18 @@ uses
   SysUtils,
   Unit1 in 'Unit1.pas' {MainForm},
   ShutdownUnit in 'ShutdownUnit.pas' {ShutdownForm},
+  lnkForm in 'lnkForm.pas' {LNK_Form},
+  LNK_Properties in 'LNK_Properties.pas' {Properties},
+  HotKeyChanger in 'HotKeyChanger.pas' {HotKeyForm},
+  Processes in 'Processes.pas' {ProcessesForm},
+  Help in 'Help.pas' {HelpForm},
   Utils in 'Utils.pas',
   MMDevApi in 'MMDevApi.pas',
   SystemUtils in 'SystemUtils.pas',
   SPGetSid in 'SPGetSid.pas',
   HotKeyManager in 'HotKeyManager.pas',
-  lnkForm in 'lnkForm.pas' {LNK_Form},
   LNK_Utils in 'LNK_Utils.pas',
-  LNK_Properties in 'LNK_Properties.pas' {Properties},
-  HotKeyChanger in 'HotKeyChanger.pas' {HotKeyForm},
-  Help in 'Help.pas' {HelpForm},
-  Processes in 'Processes.pas' {ProcessesForm};
+  Translation in 'Translation.pas';
 
 {$R *.res}
 {$SETPEFLAGS IMAGE_FILE_RELOCS_STRIPPED} //Удаление из exe таблицы релокаций.
