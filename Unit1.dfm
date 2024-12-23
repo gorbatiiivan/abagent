@@ -297,21 +297,32 @@ object MainForm: TMainForm
     OnChange = PTabChange
     object Main_LBL2: TLabel
       Left = 15
-      Top = 40
+      Top = 55
       Width = 76
       Height = 13
       Caption = 'Process Name :'
     end
+    object Main_LBL5: TLabel
+      Left = 15
+      Top = 32
+      Width = 173
+      Height = 13
+      Cursor = crHandPoint
+      Caption = 'Click to show hidding process list'
+      OnClick = Main_LBL5Click
+      OnMouseEnter = Main_LBL5MouseEnter
+      OnMouseLeave = Main_LBL5MouseLeave
+    end
     object Edit1: TEdit
       Left = 15
-      Top = 56
+      Top = 71
       Width = 218
       Height = 21
       TabOrder = 0
     end
     object Main_BTN4: TButton
       Left = 239
-      Top = 54
+      Top = 69
       Width = 28
       Height = 25
       Hint = 'Select from all running apps'
@@ -483,7 +494,7 @@ object MainForm: TMainForm
     OnClick = FavTrayClick
     OnDblClick = FavTrayDblClick
     Left = 208
-    Top = 64
+    Top = 32
   end
   object TimerTrayIcon: TTrayIcon
     Hint = 'Timer not active'
@@ -529,18 +540,18 @@ object MainForm: TMainForm
     OnClick = TimerTrayIconClick
     OnDblClick = TimerTrayIconDblClick
     Left = 272
-    Top = 64
+    Top = 32
   end
   object ImageList1: TImageList
     ColorDepth = cd32Bit
     DrawingStyle = dsTransparent
     Left = 344
-    Top = 64
+    Top = 32
   end
   object MainMenu: TPopupMenu
     OnPopup = MainMenuPopup
     Left = 144
-    Top = 64
+    Top = 32
     object Main_N1: TMenuItem
       Caption = 'Help'
       OnClick = Main_N1Click
@@ -581,6 +592,6 @@ object MainForm: TMainForm
     Height = 30
     Width = 30
     Left = 392
-    Top = 64
+    Top = 32
   end
 end

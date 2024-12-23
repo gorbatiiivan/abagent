@@ -13,7 +13,6 @@ type
     Tabs: TTabControl;
     List: TListView;
     Panel: TPanel;
-    LNK_SPD_BTN2: TSpeedButton;
     LNK_SPD_BTN3: TSpeedButton;
     LNK_BTN1: TButton;
     PopupMenu: TPopupMenu;
@@ -63,6 +62,7 @@ type
     LNK_LST_MENU_N14: TMenuItem;
     Tile1: TMenuItem;
     Icon1: TMenuItem;
+    LNK_BTN3: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -70,7 +70,6 @@ type
     procedure TabsChange(Sender: TObject);
     procedure ListDblClick(Sender: TObject);
     procedure LNK_BTN1Click(Sender: TObject);
-    procedure LNK_SPD_BTN2Click(Sender: TObject);
     procedure LNK_SPD_BTN3Click(Sender: TObject);
     procedure LNK_LST_MENU_N15Click(Sender: TObject);
     procedure LNK_LST_MENU_N3Click(Sender: TObject);
@@ -101,6 +100,8 @@ type
     procedure N28Click(Sender: TObject);
     procedure N32Click(Sender: TObject);
     procedure N33Click(Sender: TObject);
+    procedure LNK_BTN3DropDownClick(Sender: TObject);
+    procedure LNK_BTN3Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -113,6 +114,7 @@ type
     procedure ChangeIcons(Size: Integer);
     procedure DriveOnClick(Sender: TObject);
     procedure ControlPanelOnClick(Sender: TObject);
+    procedure RecycleOnClick(Sender: TObject);
     procedure ToolBarOnClick(Sender: TObject);
     procedure copyitemclick(Sender: TObject);
     procedure moveitemclick(Sender: TObject);
@@ -137,7 +139,7 @@ var
 implementation
 
 uses LNK_Utils, LNK_Properties, Unit1, ShutdownUnit, Utils,
-     HotKeyChanger, HotKeyManager, Translation;
+     HotKeyChanger, HotKeyManager, Translation, SystemUtils;
 
 {$R *.dfm}
 
@@ -175,7 +177,7 @@ begin
   LNK_SPD_BTN1.Hint := _(GLOBAL_HINT_IMG_TimerImg, aLanguageID);
   LNK_BTN1.Hint := _(LNK_HINT_BTN_BTN1, aLanguageID);
   LNK_BTN2.Hint := _(LNK_HINT_BTN_BTN2, aLanguageID);
-  LNK_SPD_BTN2.Hint := _(LNK_HINT_SPDBTN_SPDBTN2, aLanguageID);
+  LNK_BTN3.Hint := _(LNK_HINT_SPDBTN_BTN2, aLanguageID);
   LNK_SPD_BTN3.Hint := _(GLOBAL_HINT_CAPT_BTN1, aLanguageID)+' (Esc)';
   //Create buttons
   GetPersonalFolders(ToolBar1, MainForm.FConfig);
@@ -383,6 +385,8 @@ begin
 FPopup := TPopupMenu.Create(Self);
 LNK_BTN1.DropDownMenu := FPopup;
 LNK_BTN2.DropDownMenu := FPopup;
+LNK_BTN3.DropDownMenu := FPopup;
+FPopup.OwnerDraw := True;
 LNK_Form.ScaleForPPI(110);
 List.ShowColumnHeaders := False;
 InsertItem := List.Items.Add;
@@ -505,7 +509,7 @@ AFile := GetSpecialFolderLocation(-1, FOLDERID_Windows)+'\explorer.exe';
 RunApplication(AFile, 'ms-settings:',PChar(ExtractFilePath(AFile)), SW_MAXIMIZE);
 end;
 
-procedure TLNK_Form.LNK_SPD_BTN2Click(Sender: TObject);
+procedure TLNK_Form.LNK_BTN3Click(Sender: TObject);
 var
  AFile: String;
 begin
@@ -572,7 +576,7 @@ with Properties do
    Image1.Picture.Icon.Handle := ExtractAssociatedIcon(hInstance,PChar(LNKPROP_EDIT2.Text),Index)
    else
    Image1.Picture.Icon.Handle := ExtractAssociatedIcon(hInstance,PChar(LNKPROP_EDIT5.Text),Index);
-   if (ShowModal <> mrCancel) and (LNKPROP_EDIT2.Text <> '') and (LNKPROP_EDIT1.Text <> '') then
+   if (ShowModal <> mrCancel) {and (LNKPROP_EDIT2.Text <> '') and (LNKPROP_EDIT1.Text <> '')} then
     begin
      FLists.DeleteKey(LNK_Form.Caption,List.Selected.Caption);
      FLists.UpdateFile;
@@ -809,6 +813,11 @@ begin
   end;
 end;
 
+procedure TLNK_Form.RecycleOnClick(Sender: TObject);
+begin
+ DeleteRecycleBinFiles();
+end;
+
 procedure TLNK_Form.ToolBarOnClick(Sender: TObject);
 begin
  RunApplication(TToolButton(Sender).Caption,'',
@@ -824,6 +833,18 @@ end;
 procedure TLNK_Form.LNK_BTN2DropDownClick(Sender: TObject);
 begin
 ADDControlPanelList(FPopup, MainForm.FConfig, ControlPanelOnClick);
+end;
+
+
+procedure TLNK_Form.LNK_BTN3DropDownClick(Sender: TObject);
+var
+ MenuItem : TMenuItem;
+begin
+FPopup.Items.Clear;
+MenuItem := TMenuItem.Create(FPopup);
+MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG14,MainForm.FConfig.ReadString('General','Language',EN_US));
+MenuItem.OnClick := RecycleOnClick;
+FPopup.Items.Add(MenuItem);
 end;
 
 procedure TLNK_Form.GeneralMenuPopup(Sender: TObject);

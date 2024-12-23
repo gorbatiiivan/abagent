@@ -13,27 +13,17 @@ object ProcessesForm: TProcessesForm
   Font.Style = []
   OnCreate = FormCreate
   TextHeight = 13
-  object ListBox1: TListBox
-    Left = 0
-    Top = 0
-    Width = 418
-    Height = 440
-    Align = alClient
-    ItemHeight = 13
-    TabOrder = 0
-    OnDblClick = ListBox1DblClick
-  end
   object Panel1: TPanel
     Left = 0
     Top = 440
     Width = 418
     Height = 61
     Align = alBottom
-    TabOrder = 1
+    TabOrder = 0
     object Proc_BTN2: TButton
-      Left = 210
+      Left = 192
       Top = 18
-      Width = 83
+      Width = 100
       Height = 27
       Caption = 'Add'
       Default = True
@@ -41,9 +31,9 @@ object ProcessesForm: TProcessesForm
       TabOrder = 0
     end
     object Proc_BTN3: TButton
-      Left = 316
+      Left = 299
       Top = 18
-      Width = 83
+      Width = 100
       Height = 27
       Cancel = True
       Caption = 'Cancel'
@@ -53,11 +43,65 @@ object ProcessesForm: TProcessesForm
     object Proc_BTN1: TButton
       Left = 9
       Top = 18
-      Width = 83
+      Width = 100
       Height = 27
       Caption = 'Refresh'
       TabOrder = 2
       OnClick = Proc_BTN1Click
+    end
+  end
+  object PageControl1: TPageControl
+    Left = 0
+    Top = 0
+    Width = 418
+    Height = 440
+    ActivePage = TabSheet2
+    Align = alClient
+    TabOrder = 1
+    ExplicitLeft = 32
+    ExplicitTop = 64
+    ExplicitWidth = 353
+    ExplicitHeight = 313
+    object TabSheet1: TTabSheet
+      Caption = 'TabSheet1'
+      object ListBox1: TListBox
+        Left = 0
+        Top = 0
+        Width = 410
+        Height = 412
+        Align = alClient
+        ItemHeight = 13
+        TabOrder = 0
+        OnDblClick = ListBox1DblClick
+        ExplicitWidth = 418
+        ExplicitHeight = 440
+      end
+    end
+    object TabSheet2: TTabSheet
+      Caption = 'TabSheet2'
+      ImageIndex = 1
+      object ProcessListView: TListView
+        Left = 0
+        Top = 0
+        Width = 410
+        Height = 412
+        Align = alClient
+        BevelInner = bvNone
+        BevelOuter = bvNone
+        Columns = <
+          item
+            AutoSize = True
+          end>
+        ReadOnly = True
+        ShowColumnHeaders = False
+        SortType = stText
+        TabOrder = 0
+        ViewStyle = vsReport
+        ExplicitLeft = 4
+        ExplicitTop = 24
+        ExplicitWidth = 337
+        ExplicitHeight = 277
+      end
     end
   end
 end

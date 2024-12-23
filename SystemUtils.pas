@@ -20,7 +20,9 @@ unit SystemUtils;
 
 interface
 
-uses MMDevApi, Windows, Classes, Registry, SysUtils, ActiveX, TlHelp32, ShlObj, MMSystem, WinInet, ShellApi, Messages, Variants, Generics.Collections;
+uses MMDevApi, Windows, Classes, Registry, SysUtils, ActiveX, TlHelp32, ShlObj,
+     MMSystem, WinInet, ShellApi, Messages, Variants, Generics.Collections,
+     Vcl.ComCtrls;
 
 const
   ACTION_KILL_PROCESS: Integer = 1;
@@ -48,7 +50,7 @@ function MinimizeWindowsForProcess(ProcessExeFilename: String): Integer;
 function RestoreWindowsForProcess(ProcessExeFilename: String): Integer;
 function KeywordsActionProcess(KeywordsList: TStringList; CaseSensitive: Boolean; ActionType: Integer): Integer;
 function ShowWindowInTaskbar(hWndOwner: HWnd): Integer;
-function ShowAllHiddenWindowsInTaskbar(): Integer;
+function ShowAllHiddenWindowsInTaskbar(ProcessExeFilename: String): Integer;
 function HideWindowFromTaskbar(hWndOwner: HWnd): Integer;
 // ---------------------------------------------------------------------------
 
@@ -68,12 +70,89 @@ function DeleteRecycleBinFiles(): Integer;
 // ---------------------------------------------------------------------------
 implementation
 
+uses Processes;
+
 var
   EndpointVolume: IAudioEndpointVolume = nil;
   WindowsHandleList, HiddenWindowsHandleList: TList<Cardinal>;
 // ---------------------------------------------------------------------------
 
                              // GENERAL FUNCTIONS
+// ---------------------------------------------------------------------------
+{ **
+ * Function for add running processes to ListView
+ * }
+procedure AddSubItemsToItemByName(ListView: TListView; const ItemName: string; const SubItems: array of string);
+var
+  i, j: Integer;
+  Item: TListItem;
+  Exists: Boolean;
+begin
+  Exists := False;
+
+  // Iterate through all items to find a match by name
+  for i := 0 to ListView.Items.Count - 1 do
+  begin
+    Item := ListView.Items[i];
+    if Item.Caption = ItemName then
+    begin
+      Exists := True;
+
+      // Add new subitems to the existing item's SubItems
+      for j := Low(SubItems) to High(SubItems) do
+        Item.SubItems.Add(SubItems[j]);
+
+      Break; // Stop searching after finding the first match
+    end;
+  end;
+
+  // If no matching item was found, create a new item
+  if not Exists then
+  begin
+    Item := ListView.Items.Add;
+    Item.Caption := ItemName; // Set the name of the new item
+    for j := Low(SubItems) to High(SubItems) do
+      Item.SubItems.Add(SubItems[j]);
+  end;
+end;
+
+function GetSubItemsFromItemName(ListView: TListView; const ItemName: string): TStringList;
+var
+  i: Integer;
+  ListItem: TListItem;
+  SubItemList: TStringList;
+begin
+  SubItemList := TStringList.Create;
+  try
+    for i := 0 to ListView.Items.Count - 1 do
+    begin
+      ListItem := ListView.Items[i];
+      if ListItem.Caption = ItemName then
+      begin
+        SubItemList.AddStrings(ListItem.SubItems);
+        Break;
+      end;
+    end;
+    Result := SubItemList;
+  except
+    SubItemList.Free;
+    raise;
+  end;
+end;
+
+procedure DeleteItemByName(ListView: TListView; const ItemName: string);
+var
+  i: Integer;
+begin
+  for i := 0 to ListView.Items.Count - 1 do
+  begin
+    if ListView.Items[i].Caption = ItemName then
+    begin
+      ListView.Items.Delete(i); // Delete the matching item
+      Exit; // Exit after deleting the item to avoid accessing an invalid index
+    end;
+  end;
+end;
 // ---------------------------------------------------------------------------
 { **
  * Function for checking if current operating system is pre-Window XP (because it has different commands and registry keys)
@@ -305,9 +384,12 @@ end;
  * @param ProcessExeFilename The filename of the executable which created the process
  * @return Success (0) or error code (1)
  * }
+
 function HideWindowsForProcess(ProcessExeFilename: String): Integer;
 var
   I, ProcessID1, ProcessID2: Integer;
+  L: integer;
+  Item: TListItem;
 begin
   try
     WindowsHandleList := TList<Cardinal>.Create();
@@ -328,6 +410,7 @@ begin
         HideWindowFromTaskbar(WindowsHandleList[I]);
       // Saving the handles of the windows that need to be redisplayed!
         HiddenWindowsHandleList.Add(WindowsHandleList[I]);
+        AddSubItemsToItemByName(ProcessesForm.ProcessListView,ProcessExeFilename,[IntToStr(WindowsHandleList[I])]);
       end;
     end;
     WindowsHandleList.Free();
@@ -489,15 +572,29 @@ end;
  * Function for showing all hidden windows in taskbar
  * @return Success (0) or error code (1)
  * }
-function ShowAllHiddenWindowsInTaskbar(): Integer;
+function ShowAllHiddenWindowsInTaskbar(ProcessExeFilename: String): Integer;
 var
   I: Integer;
+  SubItems: TStringList;
 begin
   try
+    {Show all hidden processes
     for I := 0 to HiddenWindowsHandleList.Count - 1 do begin
       ShowWindowInTaskbar(HiddenWindowsHandleList[I]);
     end;
     HiddenWindowsHandleList.Clear();
+    }
+    SubItems := GetSubItemsFromItemName(ProcessesForm.ProcessListView, ProcessExeFilename);
+     try
+      if SubItems.Count > 0 then
+       begin
+        for i := 0 to SubItems.Count - 1 do
+        ShowWindowInTaskbar(StrToInt(SubItems[i]));
+       end;
+     finally
+      SubItems.Free;
+     end;
+     DeleteItemByName(ProcessesForm.ProcessListView,ProcessExeFilename);
     Result := 1;
   except
     Result := 0;

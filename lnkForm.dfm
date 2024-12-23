@@ -68,17 +68,6 @@ object LNK_Form: TLNK_Form
     BevelOuter = bvNone
     TabOrder = 1
     OnMouseDown = PanelMouseDown
-    object LNK_SPD_BTN2: TSpeedButton
-      Left = 170
-      Top = 6
-      Width = 34
-      Height = 32
-      Hint = 'Recycle Bin'
-      ImageIndex = 2
-      Images = ImageList1
-      Flat = True
-      OnClick = LNK_SPD_BTN2Click
-    end
     object LNK_SPD_BTN3: TSpeedButton
       Left = 673
       Top = 6
@@ -103,7 +92,7 @@ object LNK_Form: TLNK_Form
       Shape = bsLeftLine
     end
     object Bevel2: TBevel
-      Left = 210
+      Left = 230
       Top = 8
       Width = 9
       Height = 28
@@ -160,12 +149,25 @@ object LNK_Form: TLNK_Form
       TabOrder = 2
     end
     object FindEdit: TEdit
-      Left = 218
+      Left = 238
       Top = 11
       Width = 135
       Height = 21
       TabOrder = 3
       OnChange = FindEditChange
+    end
+    object LNK_BTN3: TButton
+      Left = 170
+      Top = 6
+      Width = 54
+      Height = 32
+      Hint = 'My Computer'
+      ImageIndex = 2
+      Images = ImageList1
+      Style = bsSplitButton
+      TabOrder = 4
+      OnClick = LNK_BTN3Click
+      OnDropDownClick = LNK_BTN3DropDownClick
     end
   end
   object PopupMenu: TPopupMenu

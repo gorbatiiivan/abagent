@@ -4,7 +4,8 @@ interface
 
 uses Winapi.Windows, Vcl.Controls, Vcl.Forms, Vcl.Graphics, System.SysUtils,
      Vcl.StdCtrls, System.Classes, System.Types, ShellAPI, ShlObj, WinSvc,
-     TlHelp32, System.IOUtils, Registry,  IniFiles, ComCtrls, PngImage;
+     TlHelp32, System.IOUtils, Registry,  IniFiles, ComCtrls, PngImage, ActiveX,
+     ComObj, Variants;
 
 type //for GetWinHandleFromProcId
   TEnumData = record
@@ -27,6 +28,7 @@ procedure LogWrite(LogType: String; LogFrom: String; LogMessage: String);
 function ABBoolToStr(B: Boolean; UseBoolStrs: Boolean = False): string;
 procedure ScheduleRunAtStartup(nCreate: Boolean; const ATaskName: string; const AFileName: string;
   const AUserAccount: string);
+function CheckRunAtStartupByScheduledTask(const TaskName: string): Boolean;
 function Encode(Source, Key: AnsiString): AnsiString;
 function Decode(Source, Key: AnsiString): AnsiString;
 function EnumWindowsProcMatchPID(WHdl: HWND; EData: PEnumData): bool; stdcall;
@@ -239,6 +241,49 @@ if nCreate = False then
  begin
   ShellExecute(0, nil, 'schtasks', PChar('/delete /f /tn "' + ATaskName + '"'), nil, SW_HIDE);
  end;
+end;
+
+function CheckRunAtStartupByScheduledTask(const TaskName: string): Boolean;
+const
+  TASK_ENUM_HIDDEN = $1;
+var
+  TaskService: OleVariant;
+  TaskFolder: OleVariant;
+  TaskCollection: OleVariant;
+  Task: OleVariant;
+  i: Integer;
+begin
+  Result := False;
+  try
+    // Initialize COM library
+    CoInitialize(nil);
+    try
+      // Connect to Task Scheduler service
+      TaskService := CreateOleObject('Schedule.Service');
+      TaskService.Connect;
+
+      // Get the root task folder
+      TaskFolder := TaskService.GetFolder('\');
+
+      // Retrieve all tasks
+      TaskCollection := TaskFolder.GetTasks(TASK_ENUM_HIDDEN);
+
+      for i := 1 to TaskCollection.Count do
+      begin
+        Task := TaskCollection.Item[i];
+        if SameText(Task.Name, TaskName) then
+        begin
+          Result := True;
+          Exit;
+        end;
+      end;
+    finally
+      CoUninitialize;
+    end;
+  except
+    on E: Exception do
+      Writeln('Error: ', E.Message);
+  end;
 end;
 
 function Encode(Source, Key: AnsiString): AnsiString;

@@ -39,6 +39,8 @@ const
    GLOBAL_CPTN_LBL_LBL3 = 'GLOBAL_CPTN_LBL_LBL3';
    GLOBAL_HINT_BTN_BTN6 = 'GLOBAL_HINT_BTN_BTN6';
    GLOBAL_CPTN_LBL_LBL4 = 'GLOBAL_CPTN_LBL_LBL4';
+   GLOBAL_CPTN_LBL_LBL5 = 'GLOBAL_CPTN_LBL_LBL5';
+   GLOBAL_HINT_LBL_LBL5 = 'GLOBAL_HINT_LBL_LBL5';
    GLOBAL_CPTN_GRPBOX_GrpBox3 = 'GLOBAL_CPTN_GRPBOX_GrpBox3';
    GLOBAL_CPTN_CHKBOX_CHKBOX5 = 'GLOBAL_CPTN_CHKBOX_CHKBOX5';
    GLOBAL_CPTN_GRPBOX_GrpBox4 = 'GLOBAL_CPTN_GRPBOX_GrpBox4';
@@ -108,7 +110,7 @@ const
    LNK_GLOBAL_TEXT_MSG10 = 'LNK_GLOBAL_TEXT_MSG10';
    LNK_HINT_BTN_BTN1 = 'LNK_HINT_BTN_BTN1';
    LNK_HINT_BTN_BTN2 = 'LNK_HINT_BTN_BTN2';
-   LNK_HINT_SPDBTN_SPDBTN2 = 'LNK_HINT_SPDBTN_SPDBTN2';
+   LNK_HINT_SPDBTN_BTN2 = 'LNK_HINT_BTN_SPDBTN2';
    // LNK_Utils
    //---------------------------------------------------------------------------
    LNK_UTILS_GLOBAL_TEXT_MSG1 = 'LNK_UTILS_GLOBAL_TEXT_MSG1';
@@ -124,11 +126,13 @@ const
    LNK_UTILS_GLOBAL_TEXT_MSG11 = 'LNK_UTILS_GLOBAL_TEXT_MSG11';
    LNK_UTILS_GLOBAL_TEXT_MSG12 = 'LNK_UTILS_GLOBAL_TEXT_MSG12';
    LNK_UTILS_GLOBAL_TEXT_MSG13 = 'LNK_UTILS_GLOBAL_TEXT_MSG13';
+   LNK_UTILS_GLOBAL_TEXT_MSG14 = 'LNK_UTILS_GLOBAL_TEXT_MSG14';
    // ProcessesForm
    //---------------------------------------------------------------------------
    PROC_CPTN = 'PROC_CPTN';
    PROC_CPTN_BTN_BTN1 = 'PROC_CPTN_BTN_BTN1';
    PROC_CPTN_BTN_BTN2 = 'PROC_CPTN_BTN_BTN2';
+   PROC_CPTN_BTN_BTN2_1 = 'PROC_CPTN_BTN_BTN2_1';
    // LNK_Properties
    //---------------------------------------------------------------------------
    LNKPROP_CPTN_LBLEDIT5 = 'LNKPROP_CPTN_LBLEDIT5';
@@ -221,6 +225,10 @@ if aLanguageID = EN_US then
      Result := 'Select executable file';
   if StringID  = GLOBAL_CPTN_LBL_LBL4 then
      Result := 'Working dir :';
+  if StringID  = GLOBAL_CPTN_LBL_LBL5 then
+     Result := 'Click to show running process list';
+  if StringID  = GLOBAL_HINT_LBL_LBL5 then
+     Result := 'Click to show hidden or running process list';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox3 then
      Result := 'Task Managers';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX5 then
@@ -402,6 +410,8 @@ if aLanguageID = EN_US then
      Result := 'Saved Games';
   if StringID  = LNK_UTILS_GLOBAL_TEXT_MSG13 then
      Result := 'Videos';
+  if StringID  = LNK_UTILS_GLOBAL_TEXT_MSG14 then
+     Result := 'Empty Recycle Bin';
   // ProcessesForm
   //----------------------------------------------------------------------------
   if StringID  = PROC_CPTN then
@@ -410,6 +420,8 @@ if aLanguageID = EN_US then
      Result := 'Refresh';
   if StringID  = PROC_CPTN_BTN_BTN2 then
      Result := 'Add';
+  if StringID  = PROC_CPTN_BTN_BTN2_1 then
+     Result := 'Kill process';
   // LNK_Properties
   //----------------------------------------------------------------------------
   if StringID  = LNKPROP_CPTN_LBLEDIT5 then
@@ -517,6 +529,10 @@ if aLanguageID = RU_RU then
      Result := 'Выберите исполняемый файл';
   if StringID  = GLOBAL_CPTN_LBL_LBL4 then
      Result := 'Рабочий каталог :';
+  if StringID  = GLOBAL_CPTN_LBL_LBL5 then
+     Result := 'Нажмите чтобы отобразить список процессов';
+  if StringID  = GLOBAL_HINT_LBL_LBL5 then
+     Result := 'Нажмите, чтобы отобразить список скрытых или запущенных процессов';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox3 then
      Result := 'Диспетчеры задач';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX5 then
@@ -587,7 +603,7 @@ if aLanguageID = RU_RU then
   if StringID  = HELPFORM_TEXT_LSTVIEW_ITEM1 then
      Result := 'Показать или скрыть форму';
   if StringID  = HELPFORM_TEXT_LSTVIEW_ITEM2 then
-     Result := 'Показывать';
+     Result := 'Очистить историю';
   if StringID  = HELPFORM_TEXT_LSTVIEW_ITEM6 then
      Result := 'Изменить вкладки';
   // FavoritesForm
@@ -668,7 +684,7 @@ if aLanguageID = RU_RU then
      Result := 'Мой компьютер';
   if StringID  = LNK_HINT_BTN_BTN2 then
      Result := 'Параметры';
-  if StringID  = LNK_HINT_SPDBTN_SPDBTN2 then
+  if StringID  = LNK_HINT_SPDBTN_BTN2 then
      Result := 'Корзина';
   // LNK_Utils
   //----------------------------------------------------------------------------
@@ -698,6 +714,8 @@ if aLanguageID = RU_RU then
      Result := 'Сохраненные игры';
   if StringID  = LNK_UTILS_GLOBAL_TEXT_MSG13 then
      Result := 'Видео';
+  if StringID  = LNK_UTILS_GLOBAL_TEXT_MSG14 then
+     Result := 'Очистить корзину';
   // ProcessesForm
   //----------------------------------------------------------------------------
   if StringID  = PROC_CPTN then
@@ -706,6 +724,8 @@ if aLanguageID = RU_RU then
      Result := 'Обновить';
   if StringID  = PROC_CPTN_BTN_BTN2 then
      Result := 'Добавить';
+  if StringID  = PROC_CPTN_BTN_BTN2_1 then
+     Result := 'Убить процесс';
   // LNK_Properties
   //----------------------------------------------------------------------------
   if StringID  = LNKPROP_CPTN_LBLEDIT5 then
@@ -813,6 +833,10 @@ if aLanguageID = RO_RO then
      Result := 'Selectați fișierul executabil';
   if StringID  = GLOBAL_CPTN_LBL_LBL4 then
      Result := 'Director de lucru :';
+  if StringID  = GLOBAL_CPTN_LBL_LBL5 then
+     Result := 'Clic pentru a afișa lista de procese';
+  if StringID  = GLOBAL_HINT_LBL_LBL5 then
+     Result := 'Faceți clic pentru a afișa lista de procese ascunse sau care rulează';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox3 then
      Result := 'Manageri de activități';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX5 then
@@ -966,7 +990,7 @@ if aLanguageID = RO_RO then
      Result := 'Calculatorul meu';
   if StringID  = LNK_HINT_BTN_BTN2 then
      Result := 'Opțiuni';
-  if StringID  = LNK_HINT_SPDBTN_SPDBTN2 then
+  if StringID  = LNK_HINT_SPDBTN_BTN2 then
      Result := 'Coş';
   // LNK_Utils
   //----------------------------------------------------------------------------
@@ -996,6 +1020,8 @@ if aLanguageID = RO_RO then
      Result := 'Jocurile salvate';
   if StringID  = LNK_UTILS_GLOBAL_TEXT_MSG13 then
      Result := 'Video';
+  if StringID  = LNK_UTILS_GLOBAL_TEXT_MSG14 then
+     Result := 'Goliți coșul de gunoi';
   // ProcessesForm
   //----------------------------------------------------------------------------
   if StringID  = PROC_CPTN then
@@ -1004,6 +1030,8 @@ if aLanguageID = RO_RO then
      Result := 'Actualizați';
   if StringID  = PROC_CPTN_BTN_BTN2 then
      Result := 'Adăuga';
+  if StringID  = PROC_CPTN_BTN_BTN2_1 then
+     Result := 'Ucideți procesul';
   // LNK_Properties
   //----------------------------------------------------------------------------
   if StringID  = LNKPROP_CPTN_LBLEDIT5 then

@@ -10,7 +10,7 @@ uses
 
 const
   TIMER1 = 1;
-  TIMER2 = 1;
+  TIMER2 = 2;
   MSG_ClearDPS = WM_USER;
 
 type
@@ -71,6 +71,7 @@ type
     Main_N8: TMenuItem;
     LangImgList: TImageList;
     Main_BTN11: TButton;
+    Main_LBL5: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Main_CHKBOX1Click(Sender: TObject);
@@ -104,6 +105,9 @@ type
     procedure Main_N6Click(Sender: TObject);
     procedure MainMenuPopup(Sender: TObject);
     procedure Main_BTN11Click(Sender: TObject);
+    procedure Main_LBL5Click(Sender: TObject);
+    procedure Main_LBL5MouseEnter(Sender: TObject);
+    procedure Main_LBL5MouseLeave(Sender: TObject);
   private
     TskMgrList: TStringList;
     ProcessList: TListBox;
@@ -190,7 +194,7 @@ if EnableHotKey = True then  //Daca este false in bosshotkey nu se deschide/ascu
      //Daca procesul este ascuns, el se face vazut
     begin
      if FConfig.ReadBool('General', 'Mute', Main_CHKBOX3.Checked) then SetMasterMute(False);
-     ShowAllHiddenWindowsInTaskbar();
+     ShowAllHiddenWindowsInTaskbar(ProcessName);
      if FConfig.ReadInteger(Section,'ProcState',0) = 0 then
      RestoreWindowsForProcess(ProcessName);
     end;
@@ -241,6 +245,8 @@ with MainForm do
   Main_LBL3.Caption := _(GLOBAL_CPTN_LBL_LBL3, aLanguageID);
   Main_BTN6.Hint := _(GLOBAL_HINT_BTN_BTN6, aLanguageID);
   Main_LBL4.Caption := _(GLOBAL_CPTN_LBL_LBL4, aLanguageID);
+  Main_LBL5.Caption := _(GLOBAL_CPTN_LBL_LBL5, aLanguageID);
+  Main_LBL5.Hint := _(GLOBAL_HINT_LBL_LBL5, aLanguageID);
   Main_GrpBox3.Caption := _(GLOBAL_CPTN_GRPBOX_GrpBox3, aLanguageID);
   Main_CHKBOX5.Caption := _(GLOBAL_CPTN_CHKBOX_CHKBOX5, aLanguageID);
   Main_BTN7.Hint := _(GLOBAL_HINT_BTN_BTN4, aLanguageID);
@@ -284,8 +290,7 @@ if FirstRun = True then
   FConfig.WriteString('General','MainKey','Shift+Ctrl+Alt+F12');
   FConfig.WriteString('General','ClearData_Key','');
   FConfig.WriteString('General','BossKey','');
-  FConfig.WriteString('General','Task Manager Name',Encode('SystemInformer.exe;ProcessHacker.exe;procexp.exe;procexp64.exe;Taskmgr.exe;cmd.exe;perfmon.exe;ProcessActivityView.exe;ProcessThreadsView.exe','N90fL6FF9SXx+S'));
-  FConfig.WriteBool('General', 'AutoRun', False);
+  FConfig.WriteString('General','Task Manager Name',Encode('SystemInformer.exe;ProcessHacker.exe;procexp.exe;procexp64.exe;Taskmgr.exe;perfmon.exe;ProcessActivityView.exe;ProcessThreadsView.exe','N90fL6FF9SXx+S'));
   FConfig.WriteBool('General', 'AutoCloseAPP', False);
   FConfig.WriteBool('General', 'Mute', False);
   FConfig.WriteBool('General', 'EnabledLogFile', False);
@@ -319,7 +324,6 @@ if Write = true then
   FConfig.WriteString(IntToStr(PTab.TabIndex),'Location', Encode(Edit2.Text,'N90fL6FF9SXx+S'));
   FConfig.WriteInteger(IntToStr(PTab.TabIndex),'ProcState',Main_RADGrp1.ItemIndex);
   FConfig.WriteString(IntToStr(PTab.TabIndex),'WorkingDir',Encode(Edit4.Text,'N90fL6FF9SXx+S'));
-  FConfig.WriteBool('General', 'AutoRun', Main_CHKBOX1.Checked);
   FConfig.WriteBool(IntToStr(PTab.TabIndex), 'NoRunFile', Main_CHKBOX4.Checked);
   FConfig.WriteBool('General', 'AutoCloseAPP', Main_CHKBOX5.Checked);
   FConfig.WriteBool('General', 'Mute', Main_CHKBOX3.Checked);
@@ -367,7 +371,7 @@ if Write = true then
   HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','TimerForm_Timer_Key',''),True));
   HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','MainKey', 'Shift+Ctrl+Alt+F12'),True));
 
-  Main_CHKBOX1.Checked := FConfig.ReadBool('General', 'AutoRun', Main_CHKBOX1.Checked);
+  Main_CHKBOX1.Checked := CheckRunAtStartupByScheduledTask(ExtractFileName(ChangeFileExt(ParamStr(0),'')));
 
   Main_CHKBOX4.Checked := FConfig.ReadBool(IntToStr(PTab.TabIndex), 'NoRunFile', Main_CHKBOX4.Checked);
   //Close process when taskmanager running
@@ -760,12 +764,46 @@ if SelectExe(String(_('GLOBAL_HINT_BTN_BTN6', FConfig.ReadString('General','Lang
  end;
 end;
 
+procedure TMainForm.Main_LBL5Click(Sender: TObject);
+begin
+with ProcessesForm do
+ begin
+  Position := poDesktopCenter;
+  PageControl1.ActivePage := TabSheet2;
+  ActiveControl := ProcessListView;
+  Proc_BTN1.Visible := False;
+  Proc_BTN2.OnClick := Proc_BTN2_1Click;
+  Proc_BTN2.Caption := _(PROC_CPTN_BTN_BTN2_1, FConfig.ReadString('General','Language',EN_US));
+  ProcessToList(ListBox1);
+  ListBox1.Sorted := True;
+  ListBox1.Items.Delete(FindString(ListBox1.Items,ExtractFileName(ParamStr(0))));
+  if (Showmodal <> mrCancel) and (ListBox1.ItemIndex <> -1) then
+   begin
+    Edit1.Text := ListBox1.Items[ListBox1.ItemIndex];
+   end;
+ end;
+end;
+
+procedure TMainForm.Main_LBL5MouseEnter(Sender: TObject);
+begin
+Main_LBL5.Font.Color := clRed;
+end;
+
+procedure TMainForm.Main_LBL5MouseLeave(Sender: TObject);
+begin
+Main_LBL5.Font.Color := clBlack;
+end;
+
 procedure TMainForm.Main_BTN4Click(Sender: TObject);
 begin
 with ProcessesForm do
  begin
   Position := poDesktopCenter;
+  PageControl1.ActivePage := TabSheet1;
   ActiveControl := ListBox1;
+  Proc_BTN1.Visible := True;
+  Proc_BTN2.OnClick := nil;
+  Proc_BTN2.Caption := _(PROC_CPTN_BTN_BTN2, FConfig.ReadString('General','Language',EN_US));
   ProcessToList(ListBox1);
   ListBox1.Sorted := True;
   ListBox1.Items.Delete(FindString(ListBox1.Items,ExtractFileName(ParamStr(0))));
@@ -781,7 +819,11 @@ begin
 with ProcessesForm do
  begin
   Position := poDesktopCenter;
+  PageControl1.ActivePage := TabSheet1;
   ActiveControl := ListBox1;
+  Proc_BTN1.Visible := True;
+  Proc_BTN2.OnClick := nil;
+  Proc_BTN2.Caption := _(PROC_CPTN_BTN_BTN2, FConfig.ReadString('General','Language',EN_US));
   ProcessToList(ListBox1);
   ListBox1.Sorted := True;
   ListBox1.Items.Delete(FindString(ListBox1.Items,ExtractFileName(ParamStr(0))));
