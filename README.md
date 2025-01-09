@@ -4,7 +4,8 @@ Anti Boss Agent is a portable open source application for Windows that can easil
 
 
 
-![Снимок](https://github.com/user-attachments/assets/055286df-a6e5-4bcf-a86f-09db69b9041a)
+![01](https://github.com/user-attachments/assets/0fc94347-27a8-439b-94a8-a31e52b62fce)
+
 
 
 
@@ -28,7 +29,8 @@ Timer
 
 Favorites
 
-![03](https://github.com/user-attachments/assets/666efd31-bce9-4455-97b6-3198a5f7e0d9)
+![02](https://github.com/user-attachments/assets/9fc8f3fe-ea18-4eb4-bb13-43fd0476bbb8)
+
 
 
 ------------------------------------------------------------------------------------------------------
@@ -42,3 +44,5 @@ Run with parameters
 -    Reboot '--REBOOT'.
 -    Logoff '--LOGOFF'.
 -    Standby '--STANDBY''.
+
+*To enabled "mute by process" need to download svcl.exe from "https://www.nirsoft.net/utils/sound_volume_command_line.html", download SoundVolumeCommandLine (64-bit) and put svcl.exe in the directory to abagent.exe, when svcl.exe is not in the directory mute working for all).
