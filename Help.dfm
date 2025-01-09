@@ -121,7 +121,6 @@ object HelpForm: THelpForm
         RowSelect = True
         TabOrder = 0
         ViewStyle = vsReport
-        ExplicitHeight = 411
       end
     end
   end

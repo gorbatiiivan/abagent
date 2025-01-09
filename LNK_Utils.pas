@@ -128,7 +128,6 @@ type
  end;
 
 function GetIconIndex(const AFile: string; Attrs: DWORD): integer;
-procedure AddItem(Section, FileName, FilePath, Parameters, IconLocation, WorkingDir: string);
 function ReadDirectory(List : TStrings; Config: TMemIniFile): Integer;
 procedure GetShellLinkInfo(const LinkFile: WideString;
  var SLI: TShellLinkInfo);
@@ -155,7 +154,7 @@ procedure AddMenuItem(Menu: TMenuItem; Tabs: TTabControl; OnClick: TNotifyEvent)
 
 implementation
 
-uses lnkForm, Utils, Translation;
+uses lnkForm, SystemUtils, Translation;
 
 function GetIconIndex(const AFile: string; Attrs: DWORD): integer;
 var
@@ -163,27 +162,6 @@ var
 begin
   SHGetFileInfo(PWideChar(AFile), Attrs, SFI, SizeOf(TSHFileInfo),SHGFI_SYSICONINDEX);
   Result := SFI.iIcon;
-end;
-
-procedure AddItem(Section, FileName, FilePath, Parameters, IconLocation, WorkingDir: string);
-begin
-with lnk_Form do
- begin
-   if not (FLists.ValueExists(lnk_Form.Caption,FileName)) then
-    begin
-     FLists.WriteString(Section,FileName,FilePath+'|'+Parameters+'|'+
-                      IconLocation+'|'+WorkingDir+'|');
-     FLists.UpdateFile;
-     InsertItem := List.Items.Add;
-     InsertItem.Caption:= FileName;
-     InsertItem.SubItems.Add(FilePath);
-     InsertItem.SubItems.Add(Parameters);
-     InsertItem.SubItems.Add(IconLocation);
-     InsertItem.SubItems.Add(WorkingDir);
-     AddIconsToList(IconLocation,ImageList2);
-     InsertItem.ImageIndex := ImageList2.Count-1;
-  end;
-end;
 end;
 
 function ReadDirectory(List : TStrings; Config: TMemIniFile): Integer;
@@ -777,6 +755,7 @@ begin
    if ExtractFileExt(IconPath) <> '.ICO' then
     GetIconFromFile(IconPath,hicon,CurrentIconSize)
    else
+   if FileExists(IconPath) then
     hicon.LoadFromFile(IconPath);
 
    //if icon not loading or exist extractfrom imageres.dll

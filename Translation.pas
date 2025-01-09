@@ -2,8 +2,6 @@
 
 interface
 
-uses WinAPI.Windows;
-
 const
    EN_US = 'English';
    RU_RU = 'Русский';
@@ -51,6 +49,7 @@ const
    GLOBAL_CPTN_CHKBOX_CHKBOX7 = 'GLOBAL_CPTN_CHKBOX_CHKBOX7';
    GLOBAL_HINT_CHKBOX_CHKBOX7 = 'GLOBAL_HINT_CHKBOX_CHKBOX7';
    GLOBAL_CPTN_CHKBOX_CHKBOX8 = 'GLOBAL_CPTN_CHKBOX_CHKBOX8';
+   GLOBAL_CPTN_CHKBOX_CHKBOX9 = 'GLOBAL_CPTN_CHKBOX_CHKBOX9';
    GLOBAL_TEXT_MSG1 = 'GLOBAL_TEXT_MSG1';
    GLOBAL_TEXT_MSG2 = 'GLOBAL_TEXT_MSG2';
    GLOBAL_CPTN_BTN_BTN10 = 'GLOBAL_CPTN_BTN_BTN10';
@@ -133,6 +132,7 @@ const
    PROC_CPTN_BTN_BTN1 = 'PROC_CPTN_BTN_BTN1';
    PROC_CPTN_BTN_BTN2 = 'PROC_CPTN_BTN_BTN2';
    PROC_CPTN_BTN_BTN2_1 = 'PROC_CPTN_BTN_BTN2_1';
+   PROC_CPTN_COL1_LSTVIEW1 = 'PROC_CPTN_COL1_LSTVIEW1';
    // LNK_Properties
    //---------------------------------------------------------------------------
    LNKPROP_CPTN_LBLEDIT5 = 'LNKPROP_CPTN_LBLEDIT5';
@@ -251,6 +251,8 @@ if aLanguageID = EN_US then
      Result := 'It only works if the checkbox "Task Managers" is checked.';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX8 then
      Result := 'When the boss hotkey is pressed';
+  if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX9 then
+     Result := 'One Hot-Key';
   if StringID  = GLOBAL_TEXT_MSG1 then
      Result := 'The log file does not exist.';
   if StringID  = GLOBAL_TEXT_MSG2 then
@@ -422,6 +424,8 @@ if aLanguageID = EN_US then
      Result := 'Add';
   if StringID  = PROC_CPTN_BTN_BTN2_1 then
      Result := 'Kill process';
+  if StringID  = PROC_CPTN_COL1_LSTVIEW1 then
+     Result := 'Hidden processes';
   // LNK_Properties
   //----------------------------------------------------------------------------
   if StringID  = LNKPROP_CPTN_LBLEDIT5 then
@@ -555,6 +559,8 @@ if aLanguageID = RU_RU then
      Result := 'Работает только если стоит галочка у "Диспетчеры задач".';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX8 then
      Result := 'Когда нажимается горячая клавиша босса';
+  if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX9 then
+     Result := 'Одна горячая клавиша';
   if StringID  = GLOBAL_TEXT_MSG1 then
      Result := 'Файл журнала не существует.';
   if StringID  = GLOBAL_TEXT_MSG2 then
@@ -726,6 +732,8 @@ if aLanguageID = RU_RU then
      Result := 'Добавить';
   if StringID  = PROC_CPTN_BTN_BTN2_1 then
      Result := 'Убить процесс';
+  if StringID  = PROC_CPTN_COL1_LSTVIEW1 then
+     Result := 'Скрытые процессы';
   // LNK_Properties
   //----------------------------------------------------------------------------
   if StringID  = LNKPROP_CPTN_LBLEDIT5 then
@@ -859,6 +867,8 @@ if aLanguageID = RO_RO then
      Result := 'Funcționează doar dacă este bifat „Manager de activități”.';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX8 then
      Result := 'Când este apăsată tasta rapidă a șefului';
+  if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX9 then
+     Result := 'O tastă rapidă';
   if StringID  = GLOBAL_TEXT_MSG1 then
      Result := 'Fișierul jurnal nu există.';
   if StringID  = GLOBAL_TEXT_MSG2 then
@@ -1032,6 +1042,8 @@ if aLanguageID = RO_RO then
      Result := 'Adăuga';
   if StringID  = PROC_CPTN_BTN_BTN2_1 then
      Result := 'Ucideți procesul';
+  if StringID  = PROC_CPTN_COL1_LSTVIEW1 then
+     Result := 'Procesele ascunse';
   // LNK_Properties
   //----------------------------------------------------------------------------
   if StringID  = LNKPROP_CPTN_LBLEDIT5 then

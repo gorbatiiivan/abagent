@@ -164,10 +164,8 @@
         <DCCReference Include="Help.pas">
             <Form>HelpForm</Form>
         </DCCReference>
-        <DCCReference Include="Utils.pas"/>
         <DCCReference Include="MMDevApi.pas"/>
         <DCCReference Include="SystemUtils.pas"/>
-        <DCCReference Include="SPGetSid.pas"/>
         <DCCReference Include="HotKeyManager.pas"/>
         <DCCReference Include="LNK_Utils.pas"/>
         <DCCReference Include="Translation.pas"/>

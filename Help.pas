@@ -3,8 +3,8 @@ unit Help;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ComCtrls, Vcl.StdCtrls;
 
 type
   THelpForm = class(TForm)
@@ -27,7 +27,7 @@ var
 
 implementation
 
-uses Translation, Unit1, Utils;
+uses Translation, Unit1, SystemUtils;
 
 {$R *.dfm}
 

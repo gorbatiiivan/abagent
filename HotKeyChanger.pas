@@ -1,20 +1,10 @@
-{
-Редактор горячих клавиш Delphi
-Отлавливает не только Ctrl, Shift, Alt но и Win
-Автор Горкун Григорий https://kuzduk.ru/delphi/kulibrary
-
-НУЖНО СДЕЛАТЬ:
-Запретить в ComboBox все HK: Up Dn Left Right PgUp PgDown чтоб при OnKeyDown они не меняли строку а делали только KeyToStr
-Запретить потрею фокуса по Tab в ComboBox и Edit1
-Перехватить все глобальные клавиши системы чтоб они не выпонгялись, а только  отображались редакторе, например Win чтоб не включалось меню пуск, или например Win + E
-}
 unit HotKeyChanger;
 
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls;
 
 type
   THotKeyForm = class(TForm)

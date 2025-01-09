@@ -1,28 +1,22 @@
-// Don't Panic!
-// Copyleft 2006-2015 Adrian-Costin Tundrea
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <http://www.fsf.org/licensing/licenses/>.
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
 unit SystemUtils;
 
 interface
 
 uses MMDevApi, Windows, Classes, Registry, SysUtils, ActiveX, TlHelp32, ShlObj,
      MMSystem, WinInet, ShellApi, Messages, Variants, Generics.Collections,
-     Vcl.ComCtrls;
+     ComCtrls, WinSvc, IniFiles, Forms, ComObj, StdCtrls, Types, IOUtils,
+     Controls, PngImage, Graphics;
+
+// ---------------------------------------------------------------------------
+// GetWinHandleFromProcId
+type
+  TEnumData = record
+    WHdl: HWND;
+    WPid: DWORD;
+    WTitle: String;
+  end;
+  PEnumData = ^TEnumData;
+// ---------------------------------------------------------------------------
 
 const
   ACTION_KILL_PROCESS: Integer = 1;
@@ -35,124 +29,118 @@ const
 // ---------------------------------------------------------------------------
 function IsCurrentOSWindowsVista7(): Boolean;
 function HasAdministratorRights(): Boolean;
-function DisableTaskManager(Status: Boolean): Integer;
-// function GetTaskbarSizeAndPosition(TaskbarLeft, TaskbarTop, TaskbarWidth, TaskbarHeight: Integer): Integer;
+function GetLocalComputerName(NameType: TComputerNameFormat = ComputerNameDnsHostname): string;
+function CurrentUserName:String;
+function ServiceStart(aMachineName,aServiceName: string): boolean;
+function ServiceStop(aMachineName, aServiceName: string): boolean;
+function ServiceGetStatus(sMachine, sService: PChar): DWORD;
+function ServiceRunning(sMachine, sService: PChar): Boolean;
+procedure ScheduleRunAtStartup(nCreate: Boolean; const ATaskName: string;
+  const AFileName: string; const AUserAccount: string);
+function CheckRunAtStartupByScheduledTask(const TaskName: string): Boolean;
 // ---------------------------------------------------------------------------
 
 // WINDOWS TASK SCHEDULING FUNCTIONS
 // ---------------------------------------------------------------------------
-function GetProcessID(ProcessExeFilename: String): Integer;
+function GetProcessID_(ProcessExeFilename: String): Integer;
 function GetRunningCountForProcess(ProcessExeFilename: String): Integer;
 function KillProcess(ProcessExeFilename: String): Integer;
+function TerminateProcessById(ProcessID: DWORD): Boolean;
 function CloseWindowsForProcess(ProcessExeFilename: String): Integer;
-function HideWindowsForProcess(ProcessExeFilename: String): Integer;
+function HideWindowsForProcess(ListView: TListView; ProcessExeFilename: String): Integer;
 function MinimizeWindowsForProcess(ProcessExeFilename: String): Integer;
 function RestoreWindowsForProcess(ProcessExeFilename: String): Integer;
-function KeywordsActionProcess(KeywordsList: TStringList; CaseSensitive: Boolean; ActionType: Integer): Integer;
+function KeywordsActionProcess(ListView: TListView; KeywordsList: TStringList; CaseSensitive: Boolean; ActionType: Integer): Integer;
 function ShowWindowInTaskbar(hWndOwner: HWnd): Integer;
-function ShowAllHiddenWindowsInTaskbar(ProcessExeFilename: String): Integer;
+function ShowAllHiddenWindowsInTaskbar(ListView: TListView; ProcessExeFilename: String): Integer;
 function HideWindowFromTaskbar(hWndOwner: HWnd): Integer;
+function EnumWindowsProcMatchPID(WHdl: HWND; EData: PEnumData): bool; stdcall;
+function GetWinHandleFromProcId(ProcId: DWORD): HWND;
+function IsProcessRunning(const AProcessName: string): Boolean;
 // ---------------------------------------------------------------------------
 
 // SOUND CONTROL FUNCTIONS
 // ---------------------------------------------------------------------------
 function SetMasterMute(MuteValue: Boolean): Integer;
+procedure MuteForProcess(Config: TMemIniFile; ProcessName: String; Mute: Boolean);
 // ---------------------------------------------------------------------------
 
 // HISTORY CLEANING FUNCTIONS
 // ---------------------------------------------------------------------------
 function DeleteFolderContents(FolderPath: String): Integer;
-function DeleteInternetExplorerTemporaryFiles(): Integer;
-function DeleteInternetExplorerTypedURLs(): Integer;
 function DeleteRecentFiles(): Integer;
 function DeleteRecycleBinFiles(): Integer;
-
+function GetSpecialPath( CSIDL: Word ): PChar;
+procedure ClearDPS(isDPSServiceRunning: Boolean);
+function RemoveFromRegistryWithMui(MyRoot: HKEY; Key, Name: String): Integer;
+function RemoveFromRegistryWithLocation(MyRoot: HKEY; Key,Name: String): Integer;
+procedure RemoveAllFromRegistry(AppName,AppLocation: String);
+function DeleteFilesFromFolder(sFiles: String; const FolderPath: string): Boolean;
+procedure RemoveFromRegistryControlSet(AppLocation: String);
+procedure DeleteFilesFromSysMaps(IntLocation: Integer; ProcessNames, FileLocation: String);
 // ---------------------------------------------------------------------------
-implementation
 
-uses Processes;
+// Get Current User Sid FUNCTIONS
+// ---------------------------------------------------------------------------
+function GetCurrentUserSid: string;
+// ---------------------------------------------------------------------------
+
+// LISTVIEW FUNCTIONS
+// ---------------------------------------------------------------------------
+procedure AddSubItemsToItemByName(ListView: TListView; const ItemName: string; const SubItems: array of string);
+function GetSubItemsFromItemName(ListView: TListView; const ItemName: string): TStringList;
+procedure DeleteItemByName(ListView: TListView; const ItemName: string);
+// ---------------------------------------------------------------------------
+
+// DRIVE FUNCTIONS
+// ---------------------------------------------------------------------------
+function CurDrvFile(sFileName: String): Char;
+function GetQueryDosDevice(sDeviceName: LPCWSTR): String;
+function GetDiskVolume(sFileName: String): String;
+function RemoveDriveFromFile(sFileName: String): String;
+// ---------------------------------------------------------------------------
+
+// TSTRINGS FUNCTIONS
+// ---------------------------------------------------------------------------
+function FindString(List: TStrings; s: string): Integer;
+procedure StrToList(const S, Sign: string; SList: TStrings);
+function FindStringInStringList(sList: TStringList; const SearchStr: string;
+   CaseSensitive: Boolean = False): Integer;
+procedure ProcessToList(MyList: TStrings);
+procedure RemoveDuplicateItems(ListBox: TListBox);
+// ---------------------------------------------------------------------------
+
+// FILENAME FUNCTIONS
+// ---------------------------------------------------------------------------
+function RunApplication(const AExecutableFile, AParameters, AWorkingDir : string;
+  const AShowOption: Integer = SW_SHOWNORMAL): Integer;
+procedure OpenFileLocation(FileName: TFileName);
+function SelectExe(const Caption: string; var Directory, Name: string): boolean;
+procedure LogWrite(LogType: String; LogFrom: String; LogMessage: String);
+function ABBoolToStr(B: Boolean; UseBoolStrs: Boolean = False): string;
+function RenameSection(IniFile:TCustomIniFile; FromName,ToName:string):boolean;
+procedure ScanProcessListFromIni(Config: TMemIniFile; TabList: TTabControl);
+// ---------------------------------------------------------------------------
+
+// ENCRYPTION FUNCTIONS
+// ---------------------------------------------------------------------------
+function Encode(Source, Key: AnsiString): AnsiString;
+function Decode(Source, Key: AnsiString): AnsiString;
+// ---------------------------------------------------------------------------
+
+// IMAGES FUNCTIONS
+// ---------------------------------------------------------------------------
+procedure LangImgFromRes(ImageList: TImageList);
+// ---------------------------------------------------------------------------
+
+implementation
 
 var
   EndpointVolume: IAudioEndpointVolume = nil;
-  WindowsHandleList, HiddenWindowsHandleList: TList<Cardinal>;
+  WindowsHandleList: TList<Cardinal>;
 // ---------------------------------------------------------------------------
 
                              // GENERAL FUNCTIONS
-// ---------------------------------------------------------------------------
-{ **
- * Function for add running processes to ListView
- * }
-procedure AddSubItemsToItemByName(ListView: TListView; const ItemName: string; const SubItems: array of string);
-var
-  i, j: Integer;
-  Item: TListItem;
-  Exists: Boolean;
-begin
-  Exists := False;
-
-  // Iterate through all items to find a match by name
-  for i := 0 to ListView.Items.Count - 1 do
-  begin
-    Item := ListView.Items[i];
-    if Item.Caption = ItemName then
-    begin
-      Exists := True;
-
-      // Add new subitems to the existing item's SubItems
-      for j := Low(SubItems) to High(SubItems) do
-        Item.SubItems.Add(SubItems[j]);
-
-      Break; // Stop searching after finding the first match
-    end;
-  end;
-
-  // If no matching item was found, create a new item
-  if not Exists then
-  begin
-    Item := ListView.Items.Add;
-    Item.Caption := ItemName; // Set the name of the new item
-    for j := Low(SubItems) to High(SubItems) do
-      Item.SubItems.Add(SubItems[j]);
-  end;
-end;
-
-function GetSubItemsFromItemName(ListView: TListView; const ItemName: string): TStringList;
-var
-  i: Integer;
-  ListItem: TListItem;
-  SubItemList: TStringList;
-begin
-  SubItemList := TStringList.Create;
-  try
-    for i := 0 to ListView.Items.Count - 1 do
-    begin
-      ListItem := ListView.Items[i];
-      if ListItem.Caption = ItemName then
-      begin
-        SubItemList.AddStrings(ListItem.SubItems);
-        Break;
-      end;
-    end;
-    Result := SubItemList;
-  except
-    SubItemList.Free;
-    raise;
-  end;
-end;
-
-procedure DeleteItemByName(ListView: TListView; const ItemName: string);
-var
-  i: Integer;
-begin
-  for i := 0 to ListView.Items.Count - 1 do
-  begin
-    if ListView.Items[i].Caption = ItemName then
-    begin
-      ListView.Items.Delete(i); // Delete the matching item
-      Exit; // Exit after deleting the item to avoid accessing an invalid index
-    end;
-  end;
-end;
 // ---------------------------------------------------------------------------
 { **
  * Function for checking if current operating system is pre-Window XP (because it has different commands and registry keys)
@@ -200,51 +188,227 @@ begin
 end;
 // ---------------------------------------------------------------------------
 { **
- * Function for blocking access to Windows Task Manager
- * @return Success (0) or error code (1)
+ * Function for checking name of the computer name
+ * @return String
  * }
-function DisableTaskManager(Status: Boolean): Integer;
+function GetLocalComputerName(NameType: TComputerNameFormat = ComputerNameDnsHostname): string;
 var
-  Registry: TRegistry;
+  len: DWORD;
 begin
-  try
-    Registry := TRegistry.Create();
-    Registry.RootKey := HKEY_CURRENT_USER;
-    Registry.OpenKey('Software\Microsoft\Windows\CurrentVersion\Policies\System', True);
-    if Status then begin
-      Registry.WriteString('DisableTaskMgr', '1');
-    end else begin
-      Registry.DeleteValue('DisableTaskMgr');
-    end;
-    Registry.CloseKey();
-    Registry.Free();
-    Result := 0;
-  except
-    Result := 1;
-  end;
+  len:= 0;
+  GetComputerNameEx(NameType, nil, len);
+  SetLength(Result, len - 1);
+  if not GetComputerNameEx(NameType, PChar(Result), len) then RaiseLastOSError;
 end;
 // ---------------------------------------------------------------------------
-{ TODO : Check the size and position of the taskbar and set the default Panic Button position accordingly! (not at a fixed position) }
-// function GetTaskbarSizeAndPosition(TaskbarLeft, TaskbarTop, TaskbarWidth, TaskbarHeight: Integer): Integer; // Function for getting the size and position of the taskbar!
-// var
-// Data: TAppBarData;
-// begin
-// Data.HWnd := FindWindow('Shell_TrayWnd', nil);
-// Data.cbSize := SizeOf(TAppBarData);
-// if (Data.HWnd <> 0) then begin
-// if (SHAppBarMessage(ABM_GETTASKBARPOS, Data) = 1) then begin
-// TaskbarLeft := Data.rc.Left;
-// TaskbarTop := Data.rc.Top;
-// TaskbarWidth := Data.rc.Right - Data.rc.Left;
-// TaskbarHeight := Data.rc.Bottom - Data.rc.Top;
-// Result := 1;
-// end else begin
-// Result := 0;
-// end;
-// end else begin
-// Result := 0;
-// end;
-// end;
+{ **
+ * Function for checking name of the user name
+ * @return String
+ * }
+function CurrentUserName:String;
+var
+  UserName: array[0..127] of Char;
+  Size:DWord;
+begin
+  Size:=SizeOf(UserName);
+  GetUserName(UserName,Size);
+  Result:=UserName;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to run any service from system
+ * @return Bool
+ * }
+function ServiceStart(aMachineName,aServiceName: string): boolean;
+var
+  schm,
+  schs: SC_Handle;
+  ss: TServiceStatus;
+  psTemp: PChar;
+  dwChkP: DWord;
+begin
+  ss.dwCurrentState := 1;
+  schm := OpenSCManager(PChar(aMachineName),nil, SC_MANAGER_CONNECT);
+  if (schm > 0) then
+  begin
+    schs := OpenService(schm,PChar(aServiceName),SERVICE_START or SERVICE_QUERY_STATUS);
+    if (schs > 0) then
+    begin
+      psTemp := nil;
+      if (StartService(schs,0, psTemp)) then
+      begin
+        if (QueryServiceStatus(schs,ss)) then
+        begin
+          while (SERVICE_RUNNING <> ss.dwCurrentState) do
+          begin
+            dwChkP := ss.dwCheckPoint;
+            Sleep(ss.dwWaitHint);
+            if (not QueryServiceStatus(schs,ss)) then
+            begin
+              break;
+            end;
+            if (ss.dwCheckPoint <dwChkP) then
+            begin
+              break;
+            end;
+          end;
+        end;
+      end;
+      CloseServiceHandle(schs);
+    end;
+    CloseServiceHandle(schm);
+  end;
+  Result := SERVICE_RUNNING = ss.dwCurrentState;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to stop any service from system
+ * @return Bool
+ * }
+function ServiceStop(aMachineName, aServiceName: string): boolean;
+var
+  schm,schs: SC_Handle;
+  ss: TServiceStatus;
+  dwChkP: DWord;
+begin
+  schm := OpenSCManager(PChar(aMachineName), nil, SC_MANAGER_CONNECT);
+  if (schm > 0) then begin
+    schs := OpenService(schm,  PChar(aServiceName), SERVICE_STOP or SERVICE_QUERY_STATUS);
+    if (schs > 0) then  begin
+      if (ControlService(schs, SERVICE_CONTROL_STOP, ss)) then begin
+        if (QueryServiceStatus(schs,ss)) then begin
+          while (SERVICE_STOPPED<> ss.dwCurrentState) do begin
+            dwChkP := ss.dwCheckPoint;
+            Sleep(ss.dwWaitHint);
+            if (not QueryServiceStatus(schs,ss)) then break;
+            if (ss.dwCheckPoint < dwChkP) then break;
+          end;
+        end;
+      end;
+      CloseServiceHandle(schs);
+    end;
+    CloseServiceHandle(schm);
+  end;
+  Result := SERVICE_STOPPED = ss.dwCurrentState;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to get status running service from system
+ * @return Values DWORD
+ * }
+function ServiceGetStatus(sMachine, sService: PChar): DWORD;
+  {******************************************}
+  {*** Parameters: ***}
+  {*** sService: specifies the name of the service to open
+  {*** sMachine: specifies the name of the target computer
+  {*** ***}
+  {*** Return Values: ***}
+  {*** -1 = Error opening service ***}
+  {*** 1 = SERVICE_STOPPED ***}
+  {*** 2 = SERVICE_START_PENDING ***}
+  {*** 3 = SERVICE_STOP_PENDING ***}
+  {*** 4 = SERVICE_RUNNING ***}
+  {*** 5 = SERVICE_CONTINUE_PENDING ***}
+  {*** 6 = SERVICE_PAUSE_PENDING ***}
+  {*** 7 = SERVICE_PAUSED ***}
+  {******************************************}
+var
+  SCManHandle, SvcHandle: SC_Handle;
+  SS: TServiceStatus;
+  dwStat: DWORD;
+begin
+  dwStat := 0;
+  // Open service manager handle.
+  SCManHandle := OpenSCManager(sMachine, nil, SC_MANAGER_CONNECT);
+  if (SCManHandle > 0) then
+  begin
+    SvcHandle := OpenService(SCManHandle, sService, SERVICE_QUERY_STATUS);
+    // if Service installed
+    if (SvcHandle > 0) then
+    begin
+      // SS structure holds the service status (TServiceStatus);
+      if (QueryServiceStatus(SvcHandle, SS)) then
+        dwStat := ss.dwCurrentState;
+      CloseServiceHandle(SvcHandle);
+    end;
+    CloseServiceHandle(SCManHandle);
+  end;
+  Result := dwStat;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to get status running service from system
+ * @return Bool
+ * }
+function ServiceRunning(sMachine, sService: PChar): Boolean;
+begin
+  Result := SERVICE_RUNNING = ServiceGetStatus(sMachine, sService);
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to create or delete task in a Task Scheduler
+ * }
+procedure ScheduleRunAtStartup(nCreate: Boolean; const ATaskName: string; const AFileName: string;
+  const AUserAccount: string);
+begin
+if nCreate = True then
+ begin
+  ShellExecute(0, nil, 'schtasks', PChar('/delete /f /tn "' + ATaskName + '"'), nil, SW_HIDE);
+  ShellExecute(0, nil, 'schtasks', PChar('/RL HIGHEST /create /tn "' + ATaskName + '" ' +
+    '/tr "' + AFileName + '" /sc ONLOGON /ru "' + GetLocalComputerName+'\'+AUserAccount + '"'), nil, SW_HIDE);
+ end else
+if nCreate = False then
+ begin
+  ShellExecute(0, nil, 'schtasks', PChar('/delete /f /tn "' + ATaskName + '"'), nil, SW_HIDE);
+ end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to check if exists task in a Task Scheduler
+ * @return Boolean
+ * }
+function CheckRunAtStartupByScheduledTask(const TaskName: string): Boolean;
+const
+  TASK_ENUM_HIDDEN = $1;
+var
+  TaskService: OleVariant;
+  TaskFolder: OleVariant;
+  TaskCollection: OleVariant;
+  Task: OleVariant;
+  i: Integer;
+begin
+  Result := False;
+  try
+    // Initialize COM library
+    CoInitialize(nil);
+    try
+      // Connect to Task Scheduler service
+      TaskService := CreateOleObject('Schedule.Service');
+      TaskService.Connect;
+
+      // Get the root task folder
+      TaskFolder := TaskService.GetFolder('\');
+
+      // Retrieve all tasks
+      TaskCollection := TaskFolder.GetTasks(TASK_ENUM_HIDDEN);
+
+      for i := 1 to TaskCollection.Count do
+      begin
+        Task := TaskCollection.Item[i];
+        if SameText(Task.Name, TaskName) then
+        begin
+          Result := True;
+          Exit;
+        end;
+      end;
+    finally
+      CoUninitialize;
+    end;
+  except
+    on E: Exception do
+      Writeln('Error: ', E.Message);
+  end;
+end;
 // ---------------------------------------------------------------------------
 
 // TASK AND WINDOWS MANAGER FUNCTIONS
@@ -254,7 +418,7 @@ end;
  * @param String Filename of the executable that generated the process
  * @return PID of the process (if value is not 0) or 0 if there has been an error
  * }
-function GetProcessID(ProcessExeFilename: String): Integer;
+function GetProcessID_(ProcessExeFilename: String): Integer;
 var
   Handle: tHandle;
   Process: tProcessEntry32;
@@ -349,6 +513,30 @@ begin
 end;
 // ---------------------------------------------------------------------------
 { **
+ * Function for killing a task
+ * @param ProcessID PID of the executable which created the process
+ * @return True or False
+ * }
+function TerminateProcessById(ProcessID: DWORD): Boolean;
+var
+  ProcessHandle: THandle;
+begin
+  // Open the process with the necessary privileges
+  ProcessHandle := OpenProcess(PROCESS_TERMINATE, False, ProcessID);
+  if ProcessHandle = 0 then
+  begin
+    Result := False;
+    Exit;
+  end;
+  try
+    // Attempt to terminate the process
+    Result := TerminateProcess(ProcessHandle, 0);
+  finally
+    CloseHandle(ProcessHandle);
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
  * Function for closing the windows of a process
  * @param ProcessExeFilename The filename of the executable which created the process
  * @return Success (0) or error code (1)
@@ -360,7 +548,7 @@ begin
   try
     WindowsHandleList := TList<Cardinal>.Create();
     // Finding out the PID of the selected task!
-    ProcessID1 := GetProcessID(ProcessExeFilename);
+    ProcessID1 := GetProcessID_(ProcessExeFilename);
     // Storing the handles of all active windows in an array!
     EnumWindows(@GetWindowsHandleList, 0);
     for I := 0 to WindowsHandleList.Count - 1 do begin
@@ -385,7 +573,7 @@ end;
  * @return Success (0) or error code (1)
  * }
 
-function HideWindowsForProcess(ProcessExeFilename: String): Integer;
+function HideWindowsForProcess(ListView: TListView; ProcessExeFilename: String): Integer;
 var
   I, ProcessID1, ProcessID2: Integer;
   L: integer;
@@ -393,11 +581,8 @@ var
 begin
   try
     WindowsHandleList := TList<Cardinal>.Create();
-    if (HiddenWindowsHandleList = nil) then begin
-      HiddenWindowsHandleList := TList<Cardinal>.Create();
-    end;
   // Finding out the PID of the selected task!
-    ProcessID1 := GetProcessID(ProcessExeFilename);
+    ProcessID1 := GetProcessID_(ProcessExeFilename);
   // Storing the handles of all active windows in an array!
     EnumWindows(@GetWindowsHandleList, 0);
     for I := 0 to WindowsHandleList.Count - 1 do begin
@@ -409,8 +594,7 @@ begin
         SendMessage(WindowsHandleList[I], WM_SYSCOMMAND, SC_MINIMIZE, 0);
         HideWindowFromTaskbar(WindowsHandleList[I]);
       // Saving the handles of the windows that need to be redisplayed!
-        HiddenWindowsHandleList.Add(WindowsHandleList[I]);
-        AddSubItemsToItemByName(ProcessesForm.ProcessListView,ProcessExeFilename,[IntToStr(WindowsHandleList[I])]);
+        AddSubItemsToItemByName(ListView, ProcessExeFilename,[IntToStr(WindowsHandleList[I])]);
       end;
     end;
     WindowsHandleList.Free();
@@ -432,7 +616,7 @@ begin
   try
     WindowsHandleList := TList<Cardinal>.Create();
   // Finding out the PID of the selected task!
-    ProcessID1 := GetProcessID(ProcessExeFilename);
+    ProcessID1 := GetProcessID_(ProcessExeFilename);
   // Storing the handles of all active windows in an array!
     EnumWindows(@GetWindowsHandleList, 0);
     for I := 0 to WindowsHandleList.Count - 1 do begin
@@ -463,7 +647,7 @@ begin
   try
     WindowsHandleList := TList<Cardinal>.Create();
   // Finding out the PID of the selected task!
-    ProcessID1 := GetProcessID(ProcessExeFilename);
+    ProcessID1 := GetProcessID_(ProcessExeFilename);
   // Storing the handles of all active windows in an array!
     EnumWindows(@GetWindowsHandleList, 0);
     for I := 0 to WindowsHandleList.Count - 1 do begin
@@ -489,7 +673,7 @@ end;
  * @param ActionType Action to take
  * @return Success (0) or error code (1)
  * }
-function KeywordsActionProcess(KeywordsList: TStringList; CaseSensitive: Boolean; ActionType: Integer): Integer;
+function KeywordsActionProcess(ListView: TListView; KeywordsList: TStringList; CaseSensitive: Boolean; ActionType: Integer): Integer;
 var
   I, J, PID: Integer;
   PIDList: TList<Integer>;
@@ -533,7 +717,7 @@ begin
         if (ActionType = ACTION_CLOSE_WINDOWS_FOR_PROCESS) then
           CloseWindowsForProcess(ExtractFileName(FProcessEntry32.szExeFile));
         if (ActionType = ACTION_HIDE_WINDOWS_FOR_PROCESS) then
-          HideWindowsForProcess(ExtractFileName(FProcessEntry32.szExeFile));
+          HideWindowsForProcess(ListView, ExtractFileName(FProcessEntry32.szExeFile));
         if (ActionType = ACTION_MINIMIZE_WINDOWS_FOR_PROCESS) then
           MinimizeWindowsForProcess(ExtractFileName(FProcessEntry32.szExeFile));
       end;
@@ -572,19 +756,13 @@ end;
  * Function for showing all hidden windows in taskbar
  * @return Success (0) or error code (1)
  * }
-function ShowAllHiddenWindowsInTaskbar(ProcessExeFilename: String): Integer;
+function ShowAllHiddenWindowsInTaskbar(ListView: TListView; ProcessExeFilename: String): Integer;
 var
   I: Integer;
   SubItems: TStringList;
 begin
   try
-    {Show all hidden processes
-    for I := 0 to HiddenWindowsHandleList.Count - 1 do begin
-      ShowWindowInTaskbar(HiddenWindowsHandleList[I]);
-    end;
-    HiddenWindowsHandleList.Clear();
-    }
-    SubItems := GetSubItemsFromItemName(ProcessesForm.ProcessListView, ProcessExeFilename);
+    SubItems := GetSubItemsFromItemName(ListView, ProcessExeFilename);
      try
       if SubItems.Count > 0 then
        begin
@@ -594,7 +772,7 @@ begin
      finally
       SubItems.Free;
      end;
-     DeleteItemByName(ProcessesForm.ProcessListView,ProcessExeFilename);
+     DeleteItemByName(ListView,ProcessExeFilename);
     Result := 1;
   except
     Result := 0;
@@ -619,6 +797,61 @@ begin
     Result := 0;
   except
     Result := 1;
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Functions for finding the WinHandle from PID of a certain process
+ * @param DWORD of the executable that generated the process
+ * }
+function EnumWindowsProcMatchPID(WHdl: HWND; EData: PEnumData): bool; stdcall;
+var
+  Wpid : DWORD;
+begin
+  Result := True;
+  GetWindowThreadProcessID(WHdl, @Wpid);
+  if (EData.WPid = Wpid) AND IsWindowVisible(WHdl) then
+  begin
+    EData.WHdl := WHdl;
+    Result := False;
+  end;
+end;
+
+function GetWinHandleFromProcId(ProcId: DWORD): HWND;
+var
+  EnumData: TEnumData;
+begin
+  ZeroMemory(@EnumData, SizeOf(EnumData));
+  EnumData.WPid := ProcId;
+  EnumWindows(@EnumWindowsProcMatchPID, LPARAM(@EnumData));
+  Result := EnumData.WHdl;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function for check if is running process
+ * @return Success (0) or error code (1)
+ * }
+function IsProcessRunning(const AProcessName: string): Boolean;
+var
+  SnapshotHandle: THandle;
+  ProcessEntry: TProcessEntry32;
+begin
+  Result := False;
+  SnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  if SnapshotHandle <> INVALID_HANDLE_VALUE then
+  begin
+    ProcessEntry.dwSize := SizeOf(ProcessEntry);
+    if Process32First(SnapshotHandle, ProcessEntry) then
+    begin
+      repeat
+        if CompareText(ExtractFileName(ProcessEntry.szExeFile), AProcessName) = 0 then
+        begin
+          Result := True;
+          Break;
+        end;
+      until not Process32Next(SnapshotHandle, ProcessEntry);
+    end;
+    CloseHandle(SnapshotHandle);
   end;
 end;
 // ---------------------------------------------------------------------------
@@ -724,6 +957,28 @@ begin
   end;
 end;
 // ---------------------------------------------------------------------------
+{ **
+ * Procedure to mute by process name or mute all system
+ * @param MuteValue Activate or deactivate mute
+ * }
+procedure MuteForProcess(Config: TMemIniFile; ProcessName: String; Mute: Boolean);
+begin
+if Config.ReadBool('General', 'Mute', False) then
+if Mute = True then
+begin
+ if FileExists(ExtractFilePath(ParamStr(0))+'svcl.exe') then
+  RunApplication(ExtractFilePath(ParamStr(0))+'svcl.exe', '/Mute "'+ProcessName+'"','',SW_HIDE)
+ else
+  SetMasterMute(True);
+end else
+ begin
+  if FileExists(ExtractFilePath(ParamStr(0))+'svcl.exe') then
+   RunApplication(ExtractFilePath(ParamStr(0))+'svcl.exe', '/Unmute "'+ProcessName+'"','',SW_HIDE)
+  else
+   SetMasterMute(False);
+ end;
+end;
+// ---------------------------------------------------------------------------
 
 // HISTORY CLEANING FUNCTIONS
 // ---------------------------------------------------------------------------
@@ -756,70 +1011,6 @@ begin
 end;
 // ---------------------------------------------------------------------------
 { **
- * Function for deleting Internet Explorer temporary files (cache & cookies)
- * @return Success (0) or error code (1)
- * }
-function DeleteInternetExplorerTemporaryFiles(): Integer;
-var
-  lpEntryInfo: PInternetCacheEntryInfo;
-  hCacheDir: LongWord;
-  dwEntrySize: LongWord;
-begin
-  try
-    dwEntrySize := 0;
-    FindFirstUrlCacheEntry(nil, TInternetCacheEntryInfo(nil^), dwEntrySize);
-    GetMem(lpEntryInfo, dwEntrySize);
-    if (dwEntrySize > 0) then begin
-      lpEntryInfo^.dwStructSize := dwEntrySize;
-    end;
-    hCacheDir := FindFirstUrlCacheEntry(nil, lpEntryInfo^, dwEntrySize);
-    if (hCacheDir <> 0) then begin
-      repeat
-        DeleteUrlCacheEntry(lpEntryInfo^.lpszSourceUrlName);
-        FreeMem(lpEntryInfo, dwEntrySize);
-        dwEntrySize := 0;
-        FindNextUrlCacheEntry(hCacheDir, TInternetCacheEntryInfo(nil^), dwEntrySize);
-        GetMem(lpEntryInfo, dwEntrySize);
-        if (dwEntrySize > 0) then begin
-          lpEntryInfo^.dwStructSize := dwEntrySize;
-        end;
-      until not FindNextUrlCacheEntry(hCacheDir, lpEntryInfo^, dwEntrySize);
-    end;
-    FreeMem(lpEntryInfo, dwEntrySize);
-    FindCloseUrlCache(hCacheDir);
-    Result := 1;
-  except
-    Result := 0;
-  end;
-end;
-// ---------------------------------------------------------------------------
-{ **
- * Function deleting Internet Explorer typed URLs
- * @return Success (0) or error code (1)
- * }
-function DeleteInternetExplorerTypedURLs(): Integer;
-var
-  Registry: TRegistry;
-  Key: String;
-begin
-  Registry := TRegistry.Create();
-  Registry.RootKey := HKEY_CURRENT_USER;
-  Key := 'Software\Microsoft\Internet Explorer\TypedURLs';
-  if Registry.DeleteKey(Key) then begin
-    Registry.CreateKey(Key);
-  end else begin
-    Registry.RootKey := HKEY_LOCAL_MACHINE;
-    Key := 'Software\Microsoft\Internet Explorer\TypedURLs';
-    if Registry.DeleteKey(Key) then begin
-      Registry.CreateKey(Key);
-    end;
-  end;
-  Registry.CloseKey();
-  Registry.Free();
-  Result := 0;
-end;
-// ---------------------------------------------------------------------------
-{ **
  * Wrapper for the function deleting all recent files
  * @return Success (0) or error code (1)
  * }
@@ -847,5 +1038,836 @@ begin
   end;
 end;
 // ---------------------------------------------------------------------------
+{ **
+ * Function to get special path of the windows folders
+ * @return PChar of the Directory
+ * }
+function GetSpecialPath( CSIDL: Word ): PChar;
+var
+  s: string;
+begin
+   SetLength( s, MAX_PATH );
+   if not SHGetSpecialFolderPath( 0, PChar( s ), CSIDL, false ) then s := '';
+   Result := PChar( s );
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Wrapper to delete history of the ethernet
+ * }
+procedure ClearDPS(isDPSServiceRunning: Boolean);
+var
+  s: PChar;
+begin
+  s := PChar(GetSpecialPath(CSIDL_WINDOWS) + '\System32\sru\');
+  if IsUserAnAdmin then
+   begin
+    if isDPSServiceRunning = False then DeleteFile(s+'SRUDB.dat') else
+     begin
+      if ServiceStop('','DPS') then
+      if DeleteFile(s+'SRUDB.dat') then ServiceStart('','DPS');
+     end;
+   end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Wrapper for the function deleting files from registry
+ * @return Success (0) or error code (1)
+ * }
+function RemoveFromRegistryWithMui(MyRoot: HKEY; Key,Name: String): Integer;
+var
+  Registry: TRegistry;
+  ExistsKey: String;
+begin
+  try
+    Registry := TRegistry.Create(KEY_ALL_ACCESS + KEY_WOW64_64KEY);
+    Registry.RootKey := MyRoot;
+    if not Registry.OpenKey(Key, True) then
+    begin
+      Result := 1;
+    end else begin
+     if Registry.ValueExists(Name+'.FriendlyAppName') then
+     ExistsKey := Name+'.FriendlyAppName' else
+     if Registry.ValueExists(Name+'.ApplicationCompany') then
+     ExistsKey := Name+'.ApplicationCompany';
+      if Registry.DeleteValue(ExistsKey) then
+      begin
+        Result := 0;
+      end else
+      begin
+        Result := 1;
+      end;
+    end;
+    Registry.CloseKey();
+    Registry.Free();
+  except
+    Result := 1;
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Wrapper for the function deleting files from registry
+ * @return Success (0) or error code (1)
+ * }
+function RemoveFromRegistryWithLocation(MyRoot: HKEY; Key,Name: String): Integer;
+var
+  Registry: TRegistry;
+begin
+  try
+    Registry := TRegistry.Create(KEY_ALL_ACCESS + KEY_WOW64_64KEY);
+    Registry.RootKey := MyRoot;
+    if not Registry.OpenKey(Key, True) then
+    begin
+      Result := 1;
+    end else
+    begin
+     if Registry.ValueExists(Name) then
+      if Registry.DeleteValue(Name) then
+      begin
+        Result := 0;
+      end else
+      begin
+        Result := 1;
+      end;
+    end;
+    Registry.CloseKey();
+    Registry.Free();
+  except
+    Result := 1;
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Wrapper for the function deleting all running files from process list from registry
+ * }
+procedure RemoveAllFromRegistry(AppName,AppLocation: String);
+var
+ TempList: TStringList;
+ I: Integer;
+begin
+TempList := TStringList.Create;
+try
+ TempList.Clear;
+ TempList.Add(ParamStr(0));
+ TempList.Add('svcl.exe');
+ TempList.Add(ExtractFileDir(ParamStr(0)));
+ if AppName <> '' then TempList.Add(AppName);
+ if AppLocation <> '' then TempList.Add(AppLocation);
+ for I := 0 to TempList.Count-1 do
+ begin
+  RemoveFromRegistryWithMui(HKEY_CLASSES_ROOT,'\Local Settings\Software\Microsoft\Windows\Shell\MuiCache\',TempList[I]);
+  RemoveFromRegistryWithMui(HKEY_CURRENT_USER,'\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache\',TempList[I]);
+  RemoveFromRegistryWithLocation(HKEY_CURRENT_USER,'\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FeatureUsage\AppSwitched\',TempList[I]);
+  RemoveFromRegistryWithLocation(HKEY_CURRENT_USER,'\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FeatureUsage\ShowJumpView\',TempList[I]);
+  RemoveFromRegistryWithLocation(HKEY_CURRENT_USER,'\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Compatibility Assistant\Store\',TempList[I]);
+  RemoveFromRegistryWithLocation(HKEY_CURRENT_USER,'\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\',TempList[I]);
+  RemoveFromRegistryWithLocation(HKEY_LOCAL_MACHINE,'\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\',TempList[I]);
+  RemoveFromRegistryWithMui(HKEY_USERS,'\'+GetCurrentUserSid+'\SOFTWARE\Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache\',TempList[I]);
+  RemoveFromRegistryWithLocation(HKEY_USERS,'\'+GetCurrentUserSid+'\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FeatureUsage\AppSwitched\',TempList[I]);
+  RemoveFromRegistryWithLocation(HKEY_USERS,'\'+GetCurrentUserSid+'\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Compatibility Assistant\Store\',TempList[I]);
+  RemoveFromRegistryWithMui(HKEY_USERS,'\'+GetCurrentUserSid+'_Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache\',TempList[I]);
+ end;
+finally
+  TempList.Free;
+end;
+end;
 
+procedure RemoveFromRegistryControlSet(AppLocation: String);
+var
+ TempList: TStringList;
+ I: Integer;
+begin
+TempList := TStringList.Create;
+try
+ TempList.Clear;
+ TempList.Add(ParamStr(0));
+ TempList.Add(ExtractFilePath(ParamStr(0))+'svcl.exe');
+ if AppLocation <> '' then TempList.Add(AppLocation);
+ for I := 0 to TempList.Count-1 do
+ begin
+  RemoveFromRegistryWithLocation(HKEY_LOCAL_MACHINE,'\SYSTEM\ControlSet001\Services\bam\State\UserSettings\'+GetCurrentUserSid+'\',GetDiskVolume(TempList[I])+RemoveDriveFromFile(TempList[I]));
+  RemoveFromRegistryWithLocation(HKEY_LOCAL_MACHINE,'\SYSTEM\CurrentControlSet\Services\bam\State\UserSettings\'+GetCurrentUserSid+'\',GetDiskVolume(TempList[I])+RemoveDriveFromFile(TempList[I]));
+ end;
+finally
+  TempList.Free;
+end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Wrapper for the function deleting all files from the folder
+ * @return Success (0) or error code (1)
+ * }
+function DeleteFilesFromFolder(sFiles: String; const FolderPath: string): Boolean;
+var
+  sFilesDirs: TStringDynArray;
+  sFilesPath: String;
+begin
+  if IsUserAnAdmin then
+   begin
+    sFilesDirs := TDirectory.GetFiles(FolderPath, sFiles+'*', TSearchOption.soAllDirectories);
+     for sFilesPath in sFilesDirs do
+      begin
+       if DeleteFile(sFilesPath) then
+       Result := True;
+      end;
+   end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Wrapper for the function deleting all files from the prefetch folder
+ * @return Success (0) or error code (1)
+ * }
+procedure DeleteFilesFromSysMaps(IntLocation: Integer; ProcessNames, FileLocation: String);
+var
+ TskMgrList: TStringList;
+ j: integer;
+ FolderLocation: String;
+begin
+case IntLocation of
+0: FolderLocation := GetSpecialPath(CSIDL_RECENT);
+1: FolderLocation := GetSpecialPath(CSIDL_WINDOWS) + '\Prefetch';
+end;
+ TskMgrList := TStringList.Create;
+  try
+   TskMgrList.Add(ExtractFileName(ChangeFileExt(ParamStr(0),'')));
+   TskMgrList.Add(ExtractFileName(ChangeFileExt(ProcessNames,'')));
+   TskMgrList.Add(ExtractFileName(ChangeFileExt(FileLocation,'')));
+   for J := 0 to TskMgrList.Count-1 do
+    DeleteFilesFromFolder(TskMgrList[J], FolderLocation);
+  finally
+   TskMgrList.Free;
+  end;
+end;
+// ---------------------------------------------------------------------------
+
+//GET CURRENT SID
+// ---------------------------------------------------------------------------
+{ **
+ * Function to get information about User Sid
+ * @return String CurrentUserSid
+ * }
+function ConvertSid(Sid: PSID; pszSidText: PChar; var dwBufferLen: DWORD): BOOL;
+const
+ SID_REVISION     = 1;
+var
+  psia: PSIDIdentifierAuthority;
+  dwSubAuthorities: DWORD;
+  dwSidRev: DWORD;
+  dwCounter: DWORD;
+  dwSidSize: DWORD;
+begin
+  Result := False;
+
+  dwSidRev := SID_REVISION;
+
+  if not IsValidSid(Sid) then Exit;
+
+  psia := GetSidIdentifierAuthority(Sid);
+
+  dwSubAuthorities := GetSidSubAuthorityCount(Sid)^;
+
+  dwSidSize := (15 + 12 + (12 * dwSubAuthorities) + 1) * SizeOf(Char);
+
+  if (dwBufferLen < dwSidSize) then
+  begin
+    dwBufferLen := dwSidSize;
+    SetLastError(ERROR_INSUFFICIENT_BUFFER);
+    Exit;
+  end;
+
+  StrFmt(pszSidText, 'S-%u-', [dwSidRev]);
+
+  if (psia.Value[0] <> 0) or (psia.Value[1] <> 0) then
+    StrFmt(pszSidText + StrLen(pszSidText),
+      '0x%.2x%.2x%.2x%.2x%.2x%.2x',
+      [psia.Value[0], psia.Value[1], psia.Value[2],
+      psia.Value[3], psia.Value[4], psia.Value[5]])
+  else
+    StrFmt(pszSidText + StrLen(pszSidText),
+      '%u',
+      [DWORD(psia.Value[5]) +
+      DWORD(psia.Value[4] shl 8) +
+      DWORD(psia.Value[3] shl 16) +
+      DWORD(psia.Value[2] shl 24)]);
+
+  dwSidSize := StrLen(pszSidText);
+
+  for dwCounter := 0 to dwSubAuthorities - 1 do
+  begin
+    StrFmt(pszSidText + dwSidSize, '-%u',
+      [GetSidSubAuthority(Sid, dwCounter)^]);
+    dwSidSize := StrLen(pszSidText);
+  end;
+
+  Result := True;
+end;
+
+function ObtainTextSid(hToken: THandle; pszSid: PChar;
+  var dwBufferLen: DWORD): BOOL;
+type
+  PTokenUser = ^TTokenUser;
+  TTokenUser = packed record
+    User: TSidAndAttributes;
+  end;
+
+var
+  dwReturnLength: DWORD;
+  dwTokenUserLength: DWORD;
+  tic: TTokenInformationClass;
+  ptu: Pointer;
+begin
+  Result := False;
+  dwReturnLength := 0;
+  dwTokenUserLength := 0;
+  tic := TokenUser;
+  ptu := nil;
+
+  if not GetTokenInformation(hToken, tic, ptu, dwTokenUserLength,
+    dwReturnLength) then
+  begin
+    if GetLastError = ERROR_INSUFFICIENT_BUFFER then
+    begin
+      ptu := HeapAlloc(GetProcessHeap, HEAP_ZERO_MEMORY, dwReturnLength);
+      if ptu = nil then Exit;
+      dwTokenUserLength := dwReturnLength;
+      dwReturnLength    := 0;
+
+      if not GetTokenInformation(hToken, tic, ptu, dwTokenUserLength,
+        dwReturnLength) then Exit;
+    end
+    else
+      Exit;
+  end;
+
+  if not ConvertSid((PTokenUser(ptu).User).Sid, pszSid, dwBufferLen) then Exit;
+
+  if not HeapFree(GetProcessHeap, 0, ptu) then Exit;
+
+  Result := True;
+end;
+
+function GetCurrentUserSid: string;
+var
+  hAccessToken: THandle;
+  bSuccess: BOOL;
+  dwBufferLen: DWORD;
+  szSid: array[0..260] of Char;
+begin
+  Result := '';
+
+  bSuccess := OpenThreadToken(GetCurrentThread, TOKEN_QUERY, True,
+    hAccessToken);
+  if not bSuccess then
+  begin
+    if GetLastError = ERROR_NO_TOKEN then
+      bSuccess := OpenProcessToken(GetCurrentProcess, TOKEN_QUERY,
+        hAccessToken);
+  end;
+  if bSuccess then
+  begin
+    ZeroMemory(@szSid, SizeOf(szSid));
+    dwBufferLen := SizeOf(szSid);
+
+    if ObtainTextSid(hAccessToken, szSid, dwBufferLen) then
+      Result := szSid;
+    CloseHandle(hAccessToken);
+  end;
+end;
+// ---------------------------------------------------------------------------
+
+// LISTVIEW FUNCTIONS
+// ---------------------------------------------------------------------------
+{ **
+ * Function to add items to ListView
+ * Example: AddSubItemsToItemByName(ListView1, 'Example Item', ['SubItem1', 'SubItem2']);
+ * }
+procedure AddSubItemsToItemByName(ListView: TListView; const ItemName: string; const SubItems: array of string);
+var
+  i, j: Integer;
+  Item: TListItem;
+  Exists: Boolean;
+begin
+  Exists := False;
+
+  // Iterate through all items to find a match by name
+  for i := 0 to ListView.Items.Count - 1 do
+  begin
+    Item := ListView.Items[i];
+    if Item.Caption = ItemName then
+    begin
+      Exists := True;
+
+      // Add new subitems to the existing item's SubItems
+      for j := Low(SubItems) to High(SubItems) do
+        Item.SubItems.Add(SubItems[j]);
+
+      Break; // Stop searching after finding the first match
+    end;
+  end;
+
+  // If no matching item was found, create a new item
+  if not Exists then
+  begin
+    Item := ListView.Items.Add;
+    Item.Caption := ItemName; // Set the name of the new item
+    for j := Low(SubItems) to High(SubItems) do
+      Item.SubItems.Add(SubItems[j]);
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to get subitems from ListView
+ * Result Add all subitems from seelct item to TStrinList
+ * }
+function GetSubItemsFromItemName(ListView: TListView; const ItemName: string): TStringList;
+var
+  i: Integer;
+  ListItem: TListItem;
+  SubItemList: TStringList;
+begin
+  SubItemList := TStringList.Create;
+  try
+    for i := 0 to ListView.Items.Count - 1 do
+    begin
+      ListItem := ListView.Items[i];
+      if ListItem.Caption = ItemName then
+      begin
+        SubItemList.AddStrings(ListItem.SubItems);
+        Break;
+      end;
+    end;
+    Result := SubItemList;
+  except
+    SubItemList.Free;
+    raise;
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to delete items to ListView
+ * }
+procedure DeleteItemByName(ListView: TListView; const ItemName: string);
+var
+  i: Integer;
+begin
+  for i := 0 to ListView.Items.Count - 1 do
+  begin
+    if ListView.Items[i].Caption = ItemName then
+    begin
+      ListView.Items.Delete(i); // Delete the matching item
+      Exit; // Exit after deleting the item to avoid accessing an invalid index
+    end;
+  end;
+end;
+// ---------------------------------------------------------------------------
+
+// DRIVE FUNCTIONS
+// ---------------------------------------------------------------------------
+{ **
+ * Function to extract Drive letter from file
+ * }
+function CurDrvFile(sFileName: String): Char;
+var
+  s1: string;
+  s2: Char;
+begin
+  s1 := ExtractFileDrive(sFileName);
+  s2 := s1[1];
+  CurDrvFile := s2;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to extract volume location: C: => \Device\HarddiskVolume1\
+ * }
+function GetQueryDosDevice(sDeviceName: LPCWSTR): String;
+var
+ arrCh : array [0..MAX_PATH] of char;
+begin
+if QueryDosDevice(sDeviceName, arrCh, MAX_PATH) <> 0 then
+   Result := arrCh;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to extract device volume: C:\file.exe=>\Device\HarddiskVolume1\
+ * }
+function GetDiskVolume(sFileName: String): String;
+var
+ tempString: LPCWSTR;
+begin
+ tempString := PWideChar(WideString(CurDrvFile(sFileName)+':'));
+ Result := GetQueryDosDevice(tempString);
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to remove drive form string C:\file.exe => \file.exe
+ * }
+function RemoveDriveFromFile(sFileName: String): String;
+begin
+ Result := StringReplace(sFileName, CurDrvFile(sFileName)+':', '', [rfReplaceAll]);
+end;
+// ---------------------------------------------------------------------------
+
+// TSTRINGS FUNCTIONS
+// ---------------------------------------------------------------------------
+{ **
+ * Function to find String in TStrings
+ * @return Success Item Index
+ * }
+function FindString(List: TStrings; s: string): Integer;
+var
+  i: Integer;
+begin
+  i := 0;
+  while (i < List.Count) and (List[i] <> s) do
+    inc(i);
+  Result := i;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to convert String to List
+ * @Example: String "aa;bb" = aa
+                              bb
+ * }
+procedure StrToList(const S, Sign: string; SList: TStrings);
+var
+  CurPos: integer;
+  CurStr: string;
+begin
+  SList.clear;
+  SList.BeginUpdate();
+  try
+    CurStr := S;
+    repeat
+      CurPos := Pos(Sign, CurStr);
+      if (CurPos > 0) then
+      begin
+        SList.Add(Copy(CurStr, 1, Pred(CurPos)));
+        CurStr := Trim(Copy(CurStr, CurPos + Length(Sign),
+          Length(CurStr) - CurPos - Length(Sign) + 1));
+      end
+      else
+        SList.Add(CurStr);
+    until CurPos = 0;
+  finally
+    SList.EndUpdate();
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to find String in TStrings with Case sensitive, best with False
+ * @return Success Item Index
+ * }
+function FindStringInStringList(sList: TStringList; const SearchStr: string; CaseSensitive: Boolean = False): Integer;
+var
+  i: Integer;
+  ItemText, TargetText: string;
+begin
+  Result := -1; // Default: not found
+
+  // Prepare the search string if case-insensitive search is required
+  if not CaseSensitive then
+    TargetText := LowerCase(SearchStr)
+  else
+    TargetText := SearchStr;
+
+  // Iterate through the items in the list box
+  for i := 0 to sList.Count - 1 do
+  begin
+    ItemText := sList[i];
+    if not CaseSensitive then
+      ItemText := LowerCase(ItemText);
+
+    if ItemText = TargetText then
+    begin
+      Result := i;
+      Exit;
+    end;
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to get the running all process from System to TStrings
+ * }
+procedure ProcessToList(MyList: TStrings);
+var
+  SnapshotHandle: THandle;
+  ProcessEntry: TProcessEntry32;
+begin
+  MyList.Clear;
+  SnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  if SnapshotHandle <> INVALID_HANDLE_VALUE then
+  begin
+    ProcessEntry.dwSize := SizeOf(ProcessEntry);
+    if Process32First(SnapshotHandle, ProcessEntry) then
+    begin
+      repeat
+       if Pos('.exe', ExtractFileName(ProcessEntry.szExeFile)) <> 0 then
+        MyList.Add(ExtractFileName(ProcessEntry.szExeFile));
+      until not Process32Next(SnapshotHandle, ProcessEntry);
+    end;
+    CloseHandle(SnapshotHandle);
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to remove dublicate in ListBox
+ * }
+procedure RemoveDuplicateItems(ListBox: TListBox);
+var
+  i, j: Integer;
+begin
+  if ListBox.Items.Count = 0 then
+    Exit;
+
+  for i := ListBox.Items.Count - 1 downto 0 do
+  begin
+    for j := i - 1 downto 0 do
+    begin
+      if SameText(ListBox.Items[i], ListBox.Items[j]) then
+      begin
+        ListBox.Items.Delete(i);
+        Break;
+      end;
+    end;
+  end;
+end;
+// ---------------------------------------------------------------------------
+
+// FILENAME FUNCTIONS
+// ---------------------------------------------------------------------------
+{ **
+ * Function to run any application from system
+ * @return ProcessID
+ * }
+function RunApplication(const AExecutableFile, AParameters, AWorkingDir : string;
+  const AShowOption: Integer = SW_SHOWNORMAL): Integer;
+var
+  _SEInfo: TShellExecuteInfo;
+begin
+  Result := 0;
+  FillChar(_SEInfo, SizeOf(_SEInfo), 0);
+  _SEInfo.cbSize := SizeOf(TShellExecuteInfo);
+  _SEInfo.fMask := SEE_MASK_NOCLOSEPROCESS;
+  // _SEInfo.Wnd := Application.Handle;
+  _SEInfo.lpFile := PChar(AExecutableFile);
+  _SEInfo.lpDirectory := PChar(AWorkingDir);
+  _SEInfo.lpParameters := PChar(AParameters);
+  _SEInfo.nShow := AShowOption;
+  if ShellExecuteEx(@_SEInfo) then
+  begin
+    WaitForInputIdle(_SEInfo.hProcess, 3000);
+    Result := GetProcessID(_SEInfo.hProcess);
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to  open explorer.exe with location of the filename
+ * }
+procedure OpenFileLocation(FileName: TFileName);
+begin
+  ShellExecute(Application.Handle, 'OPEN', PChar('explorer.exe'),
+           PChar('/select, "' + FileName + '"'), nil, SW_NORMAL);
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to open FileBrowser to select filename or folder from system
+ * @return Success
+ * }
+function SelectExe(const Caption: string; var Directory, Name: string): boolean;
+var
+  lpItemID : PItemIDList;
+  BrowseInfo : TBrowseInfo;
+  DisplayName : array[0..MAX_PATH] of char;
+  TempPath : array[0..MAX_PATH] of char;
+begin
+  Result:= false;
+  FillChar(BrowseInfo, sizeof(TBrowseInfo), #0);
+ with BrowseInfo do begin
+  hwndOwner := Application.Handle;
+  pszDisplayName := @DisplayName;
+  lpszTitle := PChar(Caption);
+  ulFlags := BIF_RETURNONLYFSDIRS or BIF_BROWSEINCLUDEFILES or BIF_USENEWUI;
+ end;
+  lpItemID := SHBrowseForFolder(BrowseInfo);
+ if lpItemId <> nil then
+  begin
+   SHGetPathFromIDList(lpItemID, TempPath);
+   Result := lpItemID <> nil;
+  if Result then
+   begin
+    Directory := TempPath;
+    Name := DisplayName;
+   end;
+  GlobalFreePtr(lpItemID);
+ end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to create log file
+ * }
+procedure LogWrite(LogType: String; LogFrom: String; LogMessage: String);
+var
+  FileName: string;
+  LogFile: TextFile;
+begin
+  Filename:= ExtractFilePath(Application.ExeName) + CurrentUserName + '.log';
+  AssignFile (LogFile, Filename);
+  if FileExists (FileName) then
+   Append (LogFile) // open existing file
+  else
+   Rewrite (LogFile); // create a new one
+    try
+     // write to the file and show error
+     Writeln (LogFile, DateTimeToStr (Now) + ', ' + LogType + ', ' + LogFrom + ', "' + LogMessage + '"');
+    finally
+     // close the file
+     CloseFile (LogFile);
+    end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to get bool to string
+ * @return String of Bool
+ * }
+function ABBoolToStr(B: Boolean; UseBoolStrs: Boolean = False): string;
+procedure VerifyBoolStrArray;
+begin
+  if Length(TrueBoolStrs) = 0 then
+  begin
+    SetLength(TrueBoolStrs, 1);
+    TrueBoolStrs[0] := DefaultTrueBoolStr;
+  end;
+  if Length(FalseBoolStrs) = 0 then
+  begin
+    SetLength(FalseBoolStrs, 1);
+    FalseBoolStrs[0] := DefaultFalseBoolStr;
+  end;
+end;
+
+const
+  cSimpleBoolStrs: array [boolean] of String = ('False', 'True');
+begin
+  if UseBoolStrs then
+  begin
+    VerifyBoolStrArray;
+    if B then
+      Result := TrueBoolStrs[0]
+    else
+      Result := FalseBoolStrs[0];
+  end
+  else
+    Result := cSimpleBoolStrs[Ord(B) <> 0];
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to rename section in INI
+ * @return of True
+ * }
+function RenameSection(IniFile:TCustomIniFile; FromName,ToName:string):boolean;
+var List:   TStrings;
+    n,v:    string;
+    i:      integer;
+begin
+  if IniFile.SectionExists(ToName) then Exit(False);
+  if not IniFile.SectionExists(FromName) then Exit(False);
+
+  List:=TStringList.Create;
+  try
+    IniFile.ReadSectionValues(FromName,List);
+    for i:=0 to List.count-1 do begin
+      n:=List.Names[i];
+      v:=List.ValueFromIndex[i];
+      IniFile.WriteString(ToName,n,v);
+    end;
+  finally
+    List.free;
+  end;
+  IniFile.EraseSection(FromName);
+  IniFile.UpdateFile;
+  Result:=True;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to get all process list from INI to TabControl
+ * }
+procedure ScanProcessListFromIni(Config: TMemIniFile; TabList: TTabControl);
+begin
+ Config.ReadSections(TabList.Tabs);
+ if Config.SectionExists('General') then
+ TabList.Tabs.Delete(FindString(TabList.Tabs,'General'));
+ if TabList.Tabs.Count <> -1 then TabList.TabIndex := 0;
+end;
+// ---------------------------------------------------------------------------
+
+// ENCRYPTION FUNCTIONS
+// ---------------------------------------------------------------------------
+{ **
+ * Function to encrypt String
+ * @return AnsiString
+ * }
+function Encode(Source, Key: AnsiString): AnsiString;
+var
+  i: Integer;
+  s: Byte;
+begin
+  Result := '';
+  for i := 1 to Length(Source) do
+  begin
+    if Length(Key) > 0 then
+      s := Byte(Key[1 + ((i - 1) mod Length(Key))]) xor Byte(Source[i])
+    else
+      s := Byte(Source[i]);
+    Result := Result + AnsiLowerCase(IntToHex(s, 2));
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to decrypt String
+ * @return AnsiString
+ * }
+function Decode(Source, Key: AnsiString): AnsiString;
+var
+  i: Integer;
+  s: AnsiChar;
+begin
+  Result := '';
+  for i := 0 to Length(Source) div 2 - 1 do
+  begin
+    s := AnsiChar(StrToIntDef('$' + Copy(Source, (i * 2) + 1, 2), Ord(' ')));
+    if Length(Key) > 0 then
+      s := AnsiChar(Byte(Key[1 + (i mod Length(Key))]) xor Byte(s));
+    Result := Result + s;
+  end;
+end;
+// ---------------------------------------------------------------------------
+
+// IMAGES FUNCTIONS
+// ---------------------------------------------------------------------------
+{ **
+ * Function to add language images from resource to ImageList
+ * }
+procedure LangImgFromRes(ImageList: TImageList);
+var
+ TempImage: TPNGImage;
+ Bitmap: TBitmap;
+begin
+ TempImage := TPNGImage.Create;
+ Bitmap := TBitmap.Create;
+  try
+   TempImage.LoadFromResourceName(hInstance,'lng_usa');
+   Bitmap.Assign(TempImage);
+   ImageList.Add(Bitmap, nil);
+
+   TempImage.LoadFromResourceName(hInstance,'lng_russian');
+   Bitmap.Assign(TempImage);
+   ImageList.Add(Bitmap, nil);
+
+   TempImage.LoadFromResourceName(hInstance,'lng_romania');
+   Bitmap.Assign(TempImage);
+   ImageList.Add(Bitmap, nil);
+  finally
+   FreeAndNil(TempImage);
+   FreeAndNil(Bitmap);
+  end;
+end;
+// ---------------------------------------------------------------------------
 end.

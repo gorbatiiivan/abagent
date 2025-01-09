@@ -4,9 +4,9 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, IniFiles,
-  Character, Vcl.ComCtrls, Vcl.Menus, ActiveX, Vcl.ExtCtrls, Vcl.TitleBarCtrls,
-  HotKeyManager, System.ImageList, Vcl.ImgList, Vcl.Buttons;
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, System.IniFiles,
+  System.Character, Vcl.ComCtrls, Vcl.Menus, WinApi.ActiveX, Vcl.ExtCtrls,
+  Vcl.TitleBarCtrls, System.ImageList, Vcl.ImgList, Vcl.Buttons, HotKeyManager;
 
 const
   TIMER1 = 1;
@@ -70,8 +70,11 @@ type
     Main_N7: TMenuItem;
     Main_N8: TMenuItem;
     LangImgList: TImageList;
-    Main_BTN11: TButton;
     Main_LBL5: TLabel;
+    Edit5: TEdit;
+    Main_LBL6: TLabel;
+    Main_BTN11: TButton;
+    Main_CHKBOX9: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Main_CHKBOX1Click(Sender: TObject);
@@ -108,11 +111,18 @@ type
     procedure Main_LBL5Click(Sender: TObject);
     procedure Main_LBL5MouseEnter(Sender: TObject);
     procedure Main_LBL5MouseLeave(Sender: TObject);
+    procedure Main_CHKBOX9Click(Sender: TObject);
+    procedure Main_CHKBOX2Click(Sender: TObject);
+    procedure Main_CHKBOX3Click(Sender: TObject);
+    procedure Main_RADGrp1Click(Sender: TObject);
+    procedure Main_CHKBOX7Click(Sender: TObject);
+    procedure Main_CHKBOX8Click(Sender: TObject);
+    procedure Main_RADGrp2Click(Sender: TObject);
   private
     TskMgrList: TStringList;
-    ProcessList: TListBox;
+    ProcessList: TStringList;
 
-    procedure MyExcept(Sender:TObject; E:Exception);
+    procedure SilentException(Sender:TObject; E:Exception);
     function GetFConfig: TMemIniFile;
     procedure HotKeyManagerHotKeyPressed(HotKey: Cardinal; Index: Word);
     procedure WithoutWMHotkey;
@@ -137,8 +147,8 @@ var
 
 implementation
 
-uses Utils, SystemUtils, ShutdownUnit, SPGetSid, lnkForm, HotKeyChanger,
-     LNK_Utils, Help, Processes, Translation, LNK_Properties;
+uses SystemUtils, ShutdownUnit, lnkForm, HotKeyChanger, LNK_Utils, Help,
+     Processes, Translation, LNK_Properties;
 
 {$R *.dfm}
 
@@ -175,26 +185,28 @@ begin
 with MainForm do DoUpdateProcesses();
 end;
 
-procedure TRun(ProcessName, ExePath, Section, WorkingDir: String);
+procedure TRun(ProcessName, ExePath, Section, WorkingDir, Parameters: String; NotRunApp: Boolean);
 begin
 with MainForm do
-if EnableHotKey = True then  //Daca este false in bosshotkey nu se deschide/ascunde/vazut procesul
+if EnableHotKey = True then
  begin
   //Daca procesul nu exista, se deschide la dorinta pe hotkey
-  if not IsProcessRunning(ProcessName) and (Main_CHKBOX4.Checked = False) then
+  if not IsProcessRunning(ProcessName) and (NotRunApp = False) then
    begin
-    RunApplication(ExePath, '', WorkingDir);
+    //Check if FileLocation Box is empty
+    if ExePath <> '' then
+    RunApplication(ExePath, Parameters, WorkingDir);
    end else
    //Cand procesul e deschis, se apasa pe hotkey el se ascunde
-   if isWindow(GetWinHandleFromProcId(GetProcessID(ProcessName))) then
+   if isWindow(GetWinHandleFromProcId(GetProcessID_(ProcessName))) then
     begin
-     SetMasterMute(FConfig.ReadBool('General', 'Mute', Main_CHKBOX3.Checked));
-     HideWindowsForProcess(ProcessName);
+     MuteForProcess(FConfig,ProcessName, True);
+     HideWindowsForProcess(ProcessesForm.ProcessListView, ProcessName);
      end else
      //Daca procesul este ascuns, el se face vazut
     begin
-     if FConfig.ReadBool('General', 'Mute', Main_CHKBOX3.Checked) then SetMasterMute(False);
-     ShowAllHiddenWindowsInTaskbar(ProcessName);
+     MuteForProcess(FConfig,ProcessName, False);
+     ShowAllHiddenWindowsInTaskbar(ProcessesForm.ProcessListView, ProcessName);
      if FConfig.ReadInteger(Section,'ProcState',0) = 0 then
      RestoreWindowsForProcess(ProcessName);
     end;
@@ -247,6 +259,7 @@ with MainForm do
   Main_LBL4.Caption := _(GLOBAL_CPTN_LBL_LBL4, aLanguageID);
   Main_LBL5.Caption := _(GLOBAL_CPTN_LBL_LBL5, aLanguageID);
   Main_LBL5.Hint := _(GLOBAL_HINT_LBL_LBL5, aLanguageID);
+  Main_LBL6.Caption := _(LNK_HINT_BTN_BTN2, aLanguageID)+' :';
   Main_GrpBox3.Caption := _(GLOBAL_CPTN_GRPBOX_GrpBox3, aLanguageID);
   Main_CHKBOX5.Caption := _(GLOBAL_CPTN_CHKBOX_CHKBOX5, aLanguageID);
   Main_BTN7.Hint := _(GLOBAL_HINT_BTN_BTN4, aLanguageID);
@@ -263,6 +276,7 @@ with MainForm do
   Main_CHKBOX7.Caption := _(GLOBAL_CPTN_CHKBOX_CHKBOX7, aLanguageID);
   Main_CHKBOX7.Hint := _(GLOBAL_HINT_CHKBOX_CHKBOX7, aLanguageID);
   Main_CHKBOX8.Caption := _(GLOBAL_CPTN_CHKBOX_CHKBOX8, aLanguageID);
+  Main_CHKBOX9.Caption := _(GLOBAL_CPTN_CHKBOX_CHKBOX9, aLanguageID);
   Main_GrpBox6.Caption := _(GLOBAL_CPTN_GRPBOX_GrpBox2, aLanguageID);
   Main_BTN9.Hint := _(GLOBAL_HINT_BTN_BTN5, aLanguageID);
   Main_BTN10.Caption := _(GLOBAL_CPTN_BTN_BTN10, aLanguageID);
@@ -288,6 +302,8 @@ if FirstRun = True then
  begin
   GetFConfig;
   FConfig.WriteString('General','MainKey','Shift+Ctrl+Alt+F12');
+  FConfig.WriteString('General','GlobalHotKey','');
+  FConfig.WriteBool('General','EnableGlobalHotKey',False);
   FConfig.WriteString('General','ClearData_Key','');
   FConfig.WriteString('General','BossKey','');
   FConfig.WriteString('General','Task Manager Name',Encode('SystemInformer.exe;ProcessHacker.exe;procexp.exe;procexp64.exe;Taskmgr.exe;perfmon.exe;ProcessActivityView.exe;ProcessThreadsView.exe','N90fL6FF9SXx+S'));
@@ -302,8 +318,8 @@ if FirstRun = True then
   FConfig.WriteInteger('General','TabIndex',0);
   FConfig.WriteBool('General','TimerForm_TimerInTray',False);
   FConfig.WriteString('General','TimerForm_Timer_Key','');
-  FConfig.WriteInteger('General','LNKForm_Width',300);
-  FConfig.WriteInteger('General','LNKForm_Height',500);
+  FConfig.WriteInteger('General','LNKForm_Width',803);
+  FConfig.WriteInteger('General','LNKForm_Height',505);
   FConfig.WriteString('General','LNKForm_Favorites_Key','');
   FConfig.WriteBool('General','LNKForm_FavoriteInTray',False);
   FConfig.WriteString('General','Language',EN_US);
@@ -313,6 +329,7 @@ if FirstRun = True then
   FConfig.WriteString('0','Key','');
   FConfig.WriteInteger('0','ProcState',0);
   FConfig.WriteString('0','WorkingDir',Encode(ExtractFileDir(GetNotepad),'N90fL6FF9SXx+S'));
+  FConfig.WriteString('0','Parameters',Encode('','N90fL6FF9SXx+S'));
   FConfig.WriteBool('0', 'NoRunFile', False);
 
   FConfig.UpdateFile;
@@ -324,7 +341,9 @@ if Write = true then
   FConfig.WriteString(IntToStr(PTab.TabIndex),'Location', Encode(Edit2.Text,'N90fL6FF9SXx+S'));
   FConfig.WriteInteger(IntToStr(PTab.TabIndex),'ProcState',Main_RADGrp1.ItemIndex);
   FConfig.WriteString(IntToStr(PTab.TabIndex),'WorkingDir',Encode(Edit4.Text,'N90fL6FF9SXx+S'));
-  FConfig.WriteBool(IntToStr(PTab.TabIndex), 'NoRunFile', Main_CHKBOX4.Checked);
+  FConfig.WriteString(IntToStr(PTab.TabIndex),'Parameters',Encode(Edit5.Text,'N90fL6FF9SXx+S'));
+  FConfig.WriteBool(IntToStr(PTab.TabIndex), 'NoRunFile', Main_CHKBOX4.Checked);  
+  FConfig.WriteBool('General','EnableGlobalHotKey',Main_CHKBOX9.Checked);
   FConfig.WriteBool('General', 'AutoCloseAPP', Main_CHKBOX5.Checked);
   FConfig.WriteBool('General', 'Mute', Main_CHKBOX3.Checked);
   FConfig.WriteBool('General', 'EnabledLogFile', Main_CHKBOX2.Checked);
@@ -343,6 +362,10 @@ if Write = true then
   //Read all process to tabs
   ScanProcessListFromIni(FConfig,PTab);
   PTab.TabIndex := FConfig.ReadInteger('General','TabIndex',0);
+  Main_CHKBOX9.Checked := FConfig.ReadBool('General','EnableGlobalHotKey',False);
+  //Load Main_BTN5 caption from global or no
+  if FConfig.ReadBool('General','EnableGlobalHotKey',False) = True then
+  Main_BTN5.Caption := FConfig.ReadString('General','GlobalHotKey', '') else
   Main_BTN5.Caption := FConfig.ReadString(IntToStr(PTab.TabIndex),'Key', '');
   Main_BTN8.Caption := FConfig.ReadString('General','BossKey', '');
   //daca bosscheckbox este true atunci se activeaza bosskey
@@ -359,11 +382,15 @@ if Write = true then
    EnableHotKey := True;
    Main_CHKBOX6.Checked := False;
   end;
-  //registered all process hotkey
+  //registered process hotkeys
+  if FConfig.ReadBool('General','EnableGlobalHotKey',False) = True then
+  HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','GlobalHotKey', ''),True))
+  else begin
   for I := 0 to PTab.Tabs.Count-1 do
    begin
     HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString(IntToStr(I),'Key', ''),True));
    end;
+  end;
 
   Main_BTN9.Caption := FConfig.ReadString('General','ClearData_Key', '');
   HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','ClearData_Key', ''),True));
@@ -373,7 +400,6 @@ if Write = true then
 
   Main_CHKBOX1.Checked := CheckRunAtStartupByScheduledTask(ExtractFileName(ChangeFileExt(ParamStr(0),'')));
 
-  Main_CHKBOX4.Checked := FConfig.ReadBool(IntToStr(PTab.TabIndex), 'NoRunFile', Main_CHKBOX4.Checked);
   //Close process when taskmanager running
   if FConfig.ReadBool('General', 'AutoCloseAPP', Main_CHKBOX5.Checked) then
    begin
@@ -384,13 +410,14 @@ if Write = true then
     Main_CHKBOX5.Checked := False;
    end;
 
-  Main_CHKBOX3.Checked := FConfig.ReadBool('General', 'Mute', Main_CHKBOX3.Checked);
   //Log file
   if FConfig.ReadBool('General', 'EnabledLogFile', Main_CHKBOX2.Checked) then
    begin
     Main_CHKBOX2.Checked := True;
     LogWrite('User: ' + CurrentUserName, 'asAdmin: '+ABBoolToStr(HasAdministratorRights()), 'Open');
    end else Main_CHKBOX2.Checked := False;
+
+  Main_CHKBOX3.Checked := FConfig.ReadBool('General', 'Mute', Main_CHKBOX3.Checked);
 
   Main_CHKBOX7.Checked := FConfig.ReadBool('General', 'Ethernet_Task', Main_CHKBOX7.Checked);
 
@@ -403,8 +430,10 @@ if Write = true then
 
   Edit1.Text := Decode(FConfig.ReadString(IntToStr(PTab.TabIndex),'Name',''),'N90fL6FF9SXx+S');
   Edit2.Text := Decode(FConfig.ReadString(IntToStr(PTab.TabIndex),'Location',''),'N90fL6FF9SXx+S');
-  Edit3.Text := Decode(FConfig.ReadString('General','Task Manager Name', Edit3.Text),'N90fL6FF9SXx+S');
-  Edit4 .Text := Decode(FConfig.ReadString(IntToStr(PTab.TabIndex),'WorkingDir',''),'N90fL6FF9SXx+S');
+  Edit3.Text := Decode(FConfig.ReadString('General','Task Manager Name', ''),'N90fL6FF9SXx+S');
+  Edit4.Text := Decode(FConfig.ReadString(IntToStr(PTab.TabIndex),'WorkingDir',''),'N90fL6FF9SXx+S');
+  Edit5.Text := Decode(FConfig.ReadString(IntToStr(PTab.TabIndex),'Parameters',''),'N90fL6FF9SXx+S');
+  Main_CHKBOX4.Checked := FConfig.ReadBool(IntToStr(PTab.TabIndex), 'NoRunFile', False);
   MousePosBox.ItemIndex := FConfig.ReadInteger('General', 'CursorPos', 0);
   MousePosBoxChange(Self);
 
@@ -421,12 +450,9 @@ end;
 // FORM ACTIONS
 //------------------------------------------------------------------------------
 
-procedure TMainForm.MyExcept(Sender:TObject; E:Exception);
+procedure TMainForm.SilentException(Sender: TObject; E: Exception);
 begin
-  {If E is Exception then
-    Exit
-  else
-    Exit}
+  // Do nothing to suppress all error messages
 end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -444,17 +470,25 @@ LogImg.Picture.Graphic := LoadImageResource('log24');
 TimerImg.Picture.Graphic := LoadImageResource('time24');
 FavImg.Picture.Graphic := LoadImageResource('star24');
 
-//Application.OnException := MyExcept;
+//Application.OnException := SilentException;
 
 //Create HotKeyManager
 HotKeyManager := THotKeyManager.Create(Self);
 HotKeyManager.OnHotKeyPressed := HotKeyManagerHotKeyPressed;
+
 //Read inifile
-RegIni(False, False);
+if not FileExists(ExtractFilePath(Application.ExeName) + CurrentUserName + '.ini') then
+ begin
+  Application.ShowMainForm := True;
+  RegIni(False, True);
+ end else
+ begin
+  //Application.ShowMainForm := False;
+  RegIni(False, False);
+ end;
 
 TskMgrList := TStringList.Create;
-ProcessList := TListBox.CreateParented(Handle);
-ProcessList.Visible := False;
+ProcessList := TStringList.Create;
 
 ReportMemoryLeaksOnShutdown := False;
 
@@ -475,12 +509,11 @@ FConfig.Free;
 //Clear all hotkeys
 HotKeyManager.ClearHotKeys;
 HotKeyManager.Free;
-
+//Free components
 TskMgrList.Free;
 ProcessList.Free;
 KillTimer(Handle,TIMER1);
 KillTimer(Handle,TIMER2);
-
 //daca serviciul din windows nu era in true atunci nu se va da start la DPS
 if isDPSServiceRunning = True then
 if not ServiceRunning(nil, 'DPS') then ServiceStart('','DPS');
@@ -499,8 +532,7 @@ with MainForm do
 begin
 if HasAdministratorRights() then
  begin
-  ClearDPS;
-  Application.ProcessMessages;
+  ClearDPS(isDPSServiceRunning);
   for I := 0 to PTab.Tabs.Count-1 do
    begin
     AppName := Decode(FConfig.ReadString(IntToStr(I),'Name',''),'N90fL6FF9SXx+S');
@@ -508,6 +540,7 @@ if HasAdministratorRights() then
     DeleteFilesFromSysMaps(0,AppName,ExtractFileName(ChangeFileExt(AppLocation,'.lnk')));
     DeleteFilesFromSysMaps(1,AppName,ExtractFileName(ChangeFileExt(AppLocation,'.lnk')));
     RemoveAllFromRegistry(AppName,AppLocation);
+    RemoveFromRegistryControlSet(AppLocation);
    end;
  end;
 end;
@@ -515,7 +548,7 @@ end;
 
 procedure TMainForm.HotKeyManagerHotKeyPressed(HotKey: Cardinal; Index: Word);
 var
- AppName, AppLocation, WorkingDir: String;
+ AppName, AppLocation, WorkingDir, Parameters, GlobalKey: String;
  I,l: Integer;
 begin
 //Get Mainform HotKey
@@ -562,15 +595,22 @@ if TextToHotKey(FConfig.ReadString('General','ClearData_Key', ''),True) = HotKey
 //Get Process HotKey
 for I := 0 to PTab.Tabs.Count-1 do
  begin
+  //Load information from ini
   AppName := Decode(FConfig.ReadString(IntToStr(I),'Name',''),'N90fL6FF9SXx+S');
   AppLocation := Decode(FConfig.ReadString(IntToStr(I),'Location',''),'N90fL6FF9SXx+S');
   WorkingDir := Decode(FConfig.ReadString(IntToStr(I),'WorkingDir',''),'N90fL6FF9SXx+S');
-  if TextToHotKey(FConfig.ReadString(IntToStr(I),'Key', ''),True) = HotKey then
-   TRun(AppName, AppLocation, IntToStr(I), WorkingDir);
+  Parameters := Decode(FConfig.ReadString(IntToStr(I),'Parameters',''),'N90fL6FF9SXx+S');
+  //Check is global key or not
+  if FConfig.ReadBool('General','EnableGlobalHotKey',False) = False then
+  GlobalKey := FConfig.ReadString(IntToStr(I),'Key', '') else
+  GlobalKey := FConfig.ReadString('General','GlobalHotKey', '');
+  //Run process
+  if TextToHotKey(GlobalKey,True) = HotKey then
+   TRun(AppName, AppLocation, IntToStr(I), WorkingDir, Parameters, Main_CHKBOX4.Checked);
  end;
 end;
 
-procedure TMainForm.WithoutWMHotkey; //Se ascunde de la mouse
+procedure TMainForm.WithoutWMHotkey; //Hide from mouse
 var
   ProcessName: String;
   I: Integer;
@@ -579,44 +619,44 @@ for I := 0 to PTab.Tabs.Count-1 do
  begin
   ProcessName := Decode(FConfig.ReadString(IntToStr(I),'Name',''),'N90fL6FF9SXx+S');
   if IsProcessRunning(ProcessName) then
-  if isWindowVisible(GetWinHandleFromProcId(GetProcessID(ProcessName))) then
+  if isWindowVisible(GetWinHandleFromProcId(GetProcessID_(ProcessName))) then
    begin
-    HideWindowsForProcess(ProcessName);
-    SetMasterMute(FConfig.ReadBool('General', 'Mute', Main_CHKBOX3.Checked));
+    HideWindowsForProcess(ProcessesForm.ProcessListView, ProcessName);
+    MuteForProcess(FConfig,ProcessName, True);
    end;
  end;
 end;
 
 //procedure for create task managers list
-
 procedure TMainForm.DoUpdateProcesses();
 var
   i,j: integer;
-  KillResult: Integer;
-  AppName, AppLocation: String;
+  Terminated: Boolean;
+  AppName: String;
 begin
+  Terminated := False;
+  //Get process list
   ProcessToList(ProcessList);
-
-  //aici se inchide procesul cand se deschide taskmgr.exe
-  if FConfig.ReadBool('General', 'AutoCloseAPP', Main_CHKBOX5.Checked) then
+  //Hide all processes when is running Task managers
+  if FConfig.ReadBool('General', 'AutoCloseAPP', False) then
   begin
    if Edit3.Text <> '' then
    begin
    // killing only if running name from Edit3
     StrToList(Edit3.Text,';',TskMgrList);
     for j := 0 to TskMgrList.Count - 1 do
-    if IsExistFromList(TskMgrList[j], ProcessList) then
+    if FindStringInStringList(ProcessList,TskMgrList[j],False) <> -1 then
      begin
      //kill all running process
       for i := 0 to PTab.Tabs.Count-1 do
         begin
          AppName := Decode(FConfig.ReadString(IntToStr(i),'Name',''),'N90fL6FF9SXx+S');
-         KillResult := KillProcess(AppName);
+         if IsProcessRunning(AppName) then
+         Terminated := TerminateProcessById(GetProcessID_(AppName));
         end;
-
       //Get ClearData
       if FConfig.ReadBool('General', 'Ethernet_Task', False) then
-      if KillResult <> 0 then ClearAllData() else Exit;
+      if Terminated then ClearAllData();
      end;
    end;
   end;
@@ -631,6 +671,8 @@ case MousePosBox.ItemIndex of
  0: KillTimer(Handle,TIMER1);
  1..4: SetTimer(Handle,TIMER1,100,@TimerCallBack1);
 end;
+FConfig.WriteInteger('General', 'CursorPos', MousePosBox.ItemIndex);
+FConfig.UpdateFile;
 end;
 
 procedure TMainForm.Main_CHKBOX1Click(Sender: TObject);
@@ -642,20 +684,46 @@ with Sender as TCheckBox do
 ScheduleRunAtStartup(Checked,ExtractFileName(ChangeFileExt(Application.ExeName,'')),Application.ExeName,User);
 end;
 
+procedure TMainForm.Main_CHKBOX2Click(Sender: TObject);
+begin
+with Sender as TCheckBox do
+ begin
+  FConfig.WriteBool('General', 'EnabledLogFile', Checked);
+  FConfig.UpdateFile;
+ end;
+end;
+
+procedure TMainForm.Main_CHKBOX3Click(Sender: TObject);
+begin
+with Sender as TCheckBox do
+ begin
+  FConfig.WriteBool('General', 'Mute', Checked);
+  FConfig.UpdateFile;
+ end;
+end;
+
 procedure TMainForm.Main_CHKBOX4Click(Sender: TObject);
 begin
 with Sender as TCheckBox do
  begin
   Edit2.Enabled := not Checked;
   Edit4.Enabled := not Checked;
+  Edit5.Enabled := not Checked;
   Main_BTN6.Enabled := not Checked;
+  FConfig.WriteBool(IntToStr(PTab.TabIndex), 'NoRunFile', Checked);
+  FConfig.UpdateFile;
  end;
 end;
 
 procedure TMainForm.Main_CHKBOX5Click(Sender: TObject);
 begin
-with Sender as TCheckBox do if Checked then
-SetTimer(Handle,TIMER2,1000,@TimerCallBack2) else KillTimer(Handle,TIMER2);
+with Sender as TCheckBox do
+ begin
+  if Checked then
+  SetTimer(Handle,TIMER2,1000,@TimerCallBack2) else KillTimer(Handle,TIMER2);
+  FConfig.WriteBool('General', 'AutoCloseAPP', Checked);
+  FConfig.UpdateFile;
+ end;
 end;
 
 procedure TMainForm.Main_CHKBOX6Click(Sender: TObject);
@@ -665,8 +733,77 @@ with Sender as TCheckBox do
   if Checked = True then
    HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','BossKey', ''),True))
   else
-   HotKeyManager.RemoveHotKey(TextToHotKey(FConfig.ReadString('General','BossKey', ''),True));
+   begin
+    HotKeyManager.RemoveHotKey(TextToHotKey(FConfig.ReadString('General','BossKey', ''),True));
+    EnableHotKey := True;
+   end;
+  FConfig.WriteBool('General', 'BossCheckBox', Checked);
+  FConfig.UpdateFile;
  end;
+end;
+
+procedure TMainForm.Main_CHKBOX7Click(Sender: TObject);
+begin
+with Sender as TCheckBox do
+ begin
+  FConfig.WriteBool('General', 'Ethernet_Task', Checked);
+  FConfig.UpdateFile;
+ end;
+end;
+
+procedure TMainForm.Main_CHKBOX8Click(Sender: TObject);
+begin
+with Sender as TCheckBox do
+ begin
+  FConfig.WriteBool('General', 'BossClearEthernetData', Checked);
+  FConfig.UpdateFile;
+ end;
+end;
+
+procedure TMainForm.Main_CHKBOX9Click(Sender: TObject);
+var
+ I: Integer;
+ AppName: String;
+begin
+with Sender as TCheckBox do
+ begin
+  if Checked = True then
+   begin        
+    Main_BTN5.Caption := FConfig.ReadString('General','GlobalHotKey', '');
+    for I := 0 to PTab.Tabs.Count-1 do
+    begin
+     //Unregistered Multi HotKey
+     HotKeyManager.RemoveHotKey(TextToHotKey(FConfig.ReadString(IntToStr(I),'Key', ''),True));
+     //Hide all hidden processes
+     {AppName := Decode(FConfig.ReadString(IntToStr(I),'Name',''),'N90fL6FF9SXx+S');
+     HideWindowsForProcess(ProcessesForm.ProcessListView,AppName);}
+     //Registered One HotKey for process
+     HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','GlobalHotKey', ''),True));
+    end;
+   end else
+   begin
+    Main_BTN5.Caption := FConfig.ReadString(IntToStr(MainForm.PTab.TabIndex),'Key', '');
+    //Unregistered all Process HotKey
+    HotKeyManager.RemoveHotKey(TextToHotKey(FConfig.ReadString('General','GlobalHotKey', ''),True));
+    //Registered Multi HotKey for processes
+    for I := 0 to PTab.Tabs.Count-1 do
+    HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString(IntToStr(I),'Key', ''),True));
+   end;
+   FConfig.WriteBool('General','EnableGlobalHotKey', Checked);
+   FConfig.UpdateFile;
+ end;
+end;
+
+procedure TMainForm.Main_RADGrp1Click(Sender: TObject);
+begin
+FConfig.WriteInteger(IntToStr(PTab.TabIndex),'ProcState',Main_RADGrp1.ItemIndex);
+FConfig.UpdateFile;
+end;
+
+procedure TMainForm.Main_RADGrp2Click(Sender: TObject);
+begin
+FConfig.WriteInteger('General','BossProcState',Main_RADGrp2.ItemIndex);
+FConfig.UpdateFile;
 end;
 
 procedure TMainForm.Main_BTN5Click(Sender: TObject);
@@ -676,15 +813,25 @@ with HotKeyForm do
   Position := poDesktopCenter;
   ActiveControl := Edit1;
   HOTKEYCHANGER_BTN1Click(Sender);
-  Edit1.Text := MainForm.FConfig.ReadString(IntToStr(MainForm.PTab.TabIndex),'Key', '');
+  if FConfig.ReadBool('General','EnableGlobalHotKey',False) = True then  
+  Edit1.Text := FConfig.ReadString('General','GlobalHotKey', '') else
+  Edit1.Text := FConfig.ReadString(IntToStr(PTab.TabIndex),'Key', '');
   if (Showmodal <> mrCancel) then
    begin
-    MainForm.HotKeyManager.RemoveHotKey(TextToHotKey(MainForm.FConfig.ReadString(IntToStr(MainForm.PTab.TabIndex),'Key', ''),True));
-    MainForm.FConfig.WriteString(IntToStr(MainForm.PTab.TabIndex),'Key',Edit1.Text);
-    MainForm.FConfig.UpdateFile;
+    if FConfig.ReadBool('General','EnableGlobalHotKey',False) = True then
+    begin
+     HotKeyManager.RemoveHotKey(TextToHotKey(FConfig.ReadString('General','GlobalHotKey', ''),True));
+     FConfig.WriteString('General','GlobalHotKey',Edit1.Text);
+     FConfig.UpdateFile;
+    end else
+    begin
+     HotKeyManager.RemoveHotKey(TextToHotKey(FConfig.ReadString(IntToStr(PTab.TabIndex),'Key', ''),True));
+     FConfig.WriteString(IntToStr(PTab.TabIndex),'Key',Edit1.Text);
+     FConfig.UpdateFile;
+    end;
     if Edit1.Text <> '' then
-    MainForm.HotKeyManager.AddHotKey(TextToHotKey(Edit1.Text,True));
-    MainForm.Main_BTN5.Caption := Edit1.Text;
+    HotKeyManager.AddHotKey(TextToHotKey(Edit1.Text,True));
+    Main_BTN5.Caption := Edit1.Text;
    end;
  end;
 end;
@@ -696,15 +843,15 @@ with HotKeyForm do
   Position := poDesktopCenter;
   ActiveControl := Edit1;
   HOTKEYCHANGER_BTN1Click(Sender);
-  Edit1.Text := MainForm.FConfig.ReadString('General','ClearData_Key', '');
+  Edit1.Text := FConfig.ReadString('General','ClearData_Key', '');
   if (Showmodal <> mrCancel) then
    begin
-    MainForm.HotKeyManager.RemoveHotKey(TextToHotKey(MainForm.FConfig.ReadString('General','ClearData_Key', ''),True));
-    MainForm.FConfig.WriteString('General','ClearData_Key',Edit1.Text);
-    MainForm.FConfig.UpdateFile;
+    HotKeyManager.RemoveHotKey(TextToHotKey(FConfig.ReadString('General','ClearData_Key', ''),True));
+    FConfig.WriteString('General','ClearData_Key',Edit1.Text);
+    FConfig.UpdateFile;
     if Edit1.Text <> '' then
-    MainForm.HotKeyManager.AddHotKey(TextToHotKey(Edit1.Text,True));
-    MainForm.Main_BTN9.Caption := Edit1.Text;
+    HotKeyManager.AddHotKey(TextToHotKey(Edit1.Text,True));
+    Main_BTN9.Caption := Edit1.Text;
    end;
  end;
 end;
@@ -716,16 +863,16 @@ with HotKeyForm do
   Position := poDesktopCenter;
   ActiveControl := Edit1;
   HOTKEYCHANGER_BTN1Click(Sender);
-  Edit1.Text := MainForm.FConfig.ReadString('General','BossKey', '');
+  Edit1.Text := FConfig.ReadString('General','BossKey', '');
   if (Showmodal <> mrCancel) then
    begin
-    MainForm.HotKeyManager.RemoveHotKey(TextToHotKey(MainForm.FConfig.ReadString('General','BossKey', ''),True));
-    MainForm.FConfig.WriteString('General','BossKey',Edit1.Text);
-    MainForm.FConfig.UpdateFile;
-    MainForm.Main_BTN8.Caption := Edit1.Text;
+    HotKeyManager.RemoveHotKey(TextToHotKey(FConfig.ReadString('General','BossKey', ''),True));
+    FConfig.WriteString('General','BossKey',Edit1.Text);
+    FConfig.UpdateFile;
+    Main_BTN8.Caption := Edit1.Text;
     if Edit1.Text <> '' then
-    if MainForm.Main_CHKBOX6.Checked = True then
-    MainForm.HotKeyManager.AddHotKey(TextToHotKey(Edit1.Text,True));
+    if Main_CHKBOX6.Checked = True then
+    HotKeyManager.AddHotKey(TextToHotKey(Edit1.Text,True));
    end;
  end;
 end;
@@ -772,14 +919,14 @@ with ProcessesForm do
   PageControl1.ActivePage := TabSheet2;
   ActiveControl := ProcessListView;
   Proc_BTN1.Visible := False;
-  Proc_BTN2.OnClick := Proc_BTN2_1Click;
   Proc_BTN2.Caption := _(PROC_CPTN_BTN_BTN2_1, FConfig.ReadString('General','Language',EN_US));
-  ProcessToList(ListBox1);
-  ListBox1.Sorted := True;
-  ListBox1.Items.Delete(FindString(ListBox1.Items,ExtractFileName(ParamStr(0))));
-  if (Showmodal <> mrCancel) and (ListBox1.ItemIndex <> -1) then
+  if (Showmodal <> mrCancel) then
    begin
-    Edit1.Text := ListBox1.Items[ListBox1.ItemIndex];
+    if ProcessListView.Selected <> nil then
+     begin
+      KillProcess(ProcessListView.Selected.Caption);
+      ProcessListView.Selected.Delete;
+     end;
    end;
  end;
 end;
@@ -802,9 +949,9 @@ with ProcessesForm do
   PageControl1.ActivePage := TabSheet1;
   ActiveControl := ListBox1;
   Proc_BTN1.Visible := True;
-  Proc_BTN2.OnClick := nil;
   Proc_BTN2.Caption := _(PROC_CPTN_BTN_BTN2, FConfig.ReadString('General','Language',EN_US));
-  ProcessToList(ListBox1);
+  ProcessToList(ListBox1.Items);
+  RemoveDuplicateItems(ListBox1);
   ListBox1.Sorted := True;
   ListBox1.Items.Delete(FindString(ListBox1.Items,ExtractFileName(ParamStr(0))));
   if (Showmodal <> mrCancel) and (ListBox1.ItemIndex <> -1) then
@@ -822,9 +969,9 @@ with ProcessesForm do
   PageControl1.ActivePage := TabSheet1;
   ActiveControl := ListBox1;
   Proc_BTN1.Visible := True;
-  Proc_BTN2.OnClick := nil;
   Proc_BTN2.Caption := _(PROC_CPTN_BTN_BTN2, FConfig.ReadString('General','Language',EN_US));
-  ProcessToList(ListBox1);
+  ProcessToList(ListBox1.Items);
+  RemoveDuplicateItems(ListBox1);
   ListBox1.Sorted := True;
   ListBox1.Items.Delete(FindString(ListBox1.Items,ExtractFileName(ParamStr(0))));
   if (Showmodal <> mrCancel) and (ListBox1.ItemIndex <> -1) then
@@ -890,8 +1037,12 @@ Edit1.Text := Decode(FConfig.ReadString(IntToStr(PTab.TabIndex),'Name',''),'N90f
 Edit2.Text := Decode(FConfig.ReadString(IntToStr(PTab.TabIndex),'Location',''),'N90fL6FF9SXx+S');
 Main_CHKBOX4.Checked := FConfig.ReadBool(IntToStr(PTab.TabIndex), 'NoRunFile', Main_CHKBOX4.Checked);
 Main_RADGrp1.ItemIndex := FConfig.ReadInteger(IntToStr(PTab.TabIndex),'ProcState',0);
-Main_BTN5.Caption := FConfig.ReadString(IntToStr(PTab.TabIndex),'Key', '');
+if FConfig.ReadBool('General','EnableGlobalHotKey',False) = True then
+  Main_BTN5.Caption := FConfig.ReadString('General','GlobalHotKey', '')
+else
+  Main_BTN5.Caption := FConfig.ReadString(IntToStr(PTab.TabIndex),'Key', '');
 Edit4.Text := Decode(FConfig.ReadString(IntToStr(PTab.TabIndex),'WorkingDir',''),'N90fL6FF9SXx+S');
+Edit5.Text := Decode(FConfig.ReadString(IntToStr(PTab.TabIndex),'Parameters',''),'N90fL6FF9SXx+S');
 end;
 
 procedure TMainForm.Main_BTN2Click(Sender: TObject);
@@ -904,6 +1055,7 @@ FConfig.WriteString(IntToStr(PTab.TabIndex),'Key','');
 FConfig.WriteBool(IntToStr(PTab.TabIndex), 'NoRunFile', False);
 FConfig.WriteInteger(IntToStr(PTab.TabIndex),'ProcState',0);
 FConfig.WriteString(IntToStr(PTab.TabIndex),'WorkingDir','');
+FConfig.WriteString(IntToStr(PTab.TabIndex),'Parameters','');
 FConfig.UpdateFile;
 PTabChange(Sender);
 end;
@@ -915,11 +1067,12 @@ begin
 if PTab.Tabs.Count <> 0 then
 if MessageDlg(_(GLOBAL_TEXT_MSG2, FConfig.ReadString('General','Language',EN_US)), mtConfirmation, [mbYes, mbNo], 0) = mrYes then
    begin
+    if FConfig.ReadBool('General','EnableGlobalHotKey',False) = False then
     HotKeyManager.RemoveHotKey(TextToHotKey(FConfig.ReadString(IntToStr(PTab.TabIndex),'Key', ''),True));
     FConfig.EraseSection(PTab.Tabs[PTab.TabIndex]);
     FConfig.UpdateFile;
     PTab.Tabs.Delete(PTab.TabIndex);
-    //Daca mai sunt taburi atunci se sterge, in caz contrar se face unul gol
+    //if Tabs count -1 to create new
     if PTab.Tabs.Count = 0 then Main_BTN2Click(Sender) else
      begin
       for I := 0 to PTab.Tabs.Count-1 do
@@ -998,14 +1151,14 @@ with HotKeyForm do
   Position := poDesktopCenter;
   ActiveControl := Edit1;
   HOTKEYCHANGER_BTN1Click(Sender);
-  Edit1.Text := MainForm.FConfig.ReadString('General','MainKey', 'Shift+Ctrl+Alt+F12');
+  Edit1.Text := FConfig.ReadString('General','MainKey', 'Shift+Ctrl+Alt+F12');
   if (Showmodal <> mrCancel) then
    begin
-    MainForm.HotKeyManager.RemoveHotKey(TextToHotKey(MainForm.FConfig.ReadString('General','MainKey', 'Shift+Ctrl+Alt+F12'),True));
-    MainForm.FConfig.WriteString('General','MainKey',Edit1.Text);
-    MainForm.FConfig.UpdateFile;
+    HotKeyManager.RemoveHotKey(TextToHotKey(FConfig.ReadString('General','MainKey', 'Shift+Ctrl+Alt+F12'),True));
+    FConfig.WriteString('General','MainKey',Edit1.Text);
+    FConfig.UpdateFile;
     if Edit1.Text <> '' then
-    MainForm.HotKeyManager.AddHotKey(TextToHotKey(Edit1.Text,True));
+    HotKeyManager.AddHotKey(TextToHotKey(Edit1.Text,True));
    end;
  end;
 end;

@@ -63,7 +63,7 @@ object Properties: TProperties
     end
     object LNKPROP_BTN1: TButton
       Left = 440
-      Top = 220
+      Top = 219
       Width = 23
       Height = 23
       Hint = 'Click to change icon'

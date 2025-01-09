@@ -58,10 +58,6 @@ object ProcessesForm: TProcessesForm
     ActivePage = TabSheet2
     Align = alClient
     TabOrder = 1
-    ExplicitLeft = 32
-    ExplicitTop = 64
-    ExplicitWidth = 353
-    ExplicitHeight = 313
     object TabSheet1: TTabSheet
       Caption = 'TabSheet1'
       object ListBox1: TListBox
@@ -73,8 +69,6 @@ object ProcessesForm: TProcessesForm
         ItemHeight = 13
         TabOrder = 0
         OnDblClick = ListBox1DblClick
-        ExplicitWidth = 418
-        ExplicitHeight = 440
       end
     end
     object TabSheet2: TTabSheet
@@ -91,16 +85,14 @@ object ProcessesForm: TProcessesForm
         Columns = <
           item
             AutoSize = True
+            Caption = 'Hidding processes'
           end>
+        ColumnClick = False
         ReadOnly = True
-        ShowColumnHeaders = False
         SortType = stText
         TabOrder = 0
         ViewStyle = vsReport
-        ExplicitLeft = 4
-        ExplicitTop = 24
-        ExplicitWidth = 337
-        ExplicitHeight = 277
+        OnDblClick = ProcessListViewDblClick
       end
     end
   end

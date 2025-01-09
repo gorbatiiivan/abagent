@@ -4,8 +4,8 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Menus, Vcl.StdCtrls,
-  Vcl.ComCtrls, Vcl.ExtCtrls;
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Menus, Vcl.StdCtrls, Vcl.ComCtrls,
+  Vcl.ExtCtrls;
 
 type
   TShutdownForm = class(TForm)
@@ -84,7 +84,7 @@ var
 
 implementation
 
-uses Unit1, HotKeyChanger, HotKeyManager, lnkForm, Translation, Utils;
+uses Unit1, HotKeyChanger, HotKeyManager, lnkForm, Translation, SystemUtils;
 
 function SetSuspendState( Hibernate, ForceCritical, DisableWakeEvent: Boolean): Boolean; stdcall; external 'powrprof.dll';
 

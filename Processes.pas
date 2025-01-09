@@ -3,8 +3,9 @@ unit Processes;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Vcl.ComCtrls;
 
 type
   TProcessesForm = class(TForm)
@@ -20,12 +21,12 @@ type
     procedure ListBox1DblClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure Proc_BTN1Click(Sender: TObject);
+    procedure ProcessListViewDblClick(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
     procedure Translate(aLanguageID: String);
-    procedure Proc_BTN2_1Click(Sender: TObject);
   end;
 
 var
@@ -33,7 +34,7 @@ var
 
 implementation
 
-uses Utils, Unit1, Translation, SystemUtils;
+uses Unit1, Translation, SystemUtils;
 
 {$R *.dfm}
 
@@ -42,6 +43,7 @@ begin
  Caption := _(PROC_CPTN, aLanguageID);
  Proc_BTN1.Caption := _(PROC_CPTN_BTN_BTN1, aLanguageID);
  Proc_BTN3.Caption := _(HOTKEYCHANGER_CPTN_BTN_BTN3, aLanguageID);
+ ProcessListView.Columns.Items[0].Caption := _(PROC_CPTN_COL1_LSTVIEW1, aLanguageID);
 end;
 
 procedure TProcessesForm.FormCreate(Sender: TObject);
@@ -53,26 +55,21 @@ end;
 
 procedure TProcessesForm.Proc_BTN1Click(Sender: TObject);
 begin
-ProcessToList(ListBox1);
+ProcessToList(ListBox1.Items);
+RemoveDuplicateItems(ListBox1);
 ListBox1.Sorted := True;
 ListBox1.Items.Delete(FindString(ListBox1.Items,ExtractFileName(ParamStr(0))));
-end;
-
-procedure TProcessesForm.Proc_BTN2_1Click(Sender: TObject);
-var
- ProcName: String;
-begin
-if ProcessListView.Selected <> nil then
- begin
-  ProcName := ProcessListView.Selected.Caption;
-  KillProcess(ProcName);
-  ProcessListView.Selected.Delete;
- end;
 end;
 
 procedure TProcessesForm.ListBox1DblClick(Sender: TObject);
 begin
 if ListBox1.ItemIndex <> -1 then
+ProcessesForm.ModalResult := mrOk;
+end;
+
+procedure TProcessesForm.ProcessListViewDblClick(Sender: TObject);
+begin
+if ProcessListView.ItemIndex <> -1 then
 ProcessesForm.ModalResult := mrOk;
 end;
 

@@ -5,8 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, System.ImageList, Vcl.ImgList,
-  Vcl.Menus, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls, IniFiles,
-  ShellAPI, CommCtrl, ActiveX, Vcl.ToolWin;
+  Vcl.Menus, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Buttons, Vcl.ComCtrls, System.IniFiles,
+  Winapi.ShellAPI, Winapi.CommCtrl, Winapi.ActiveX, Vcl.ToolWin;
 
 type
   TLNK_Form = class(TForm)
@@ -138,10 +138,34 @@ var
 
 implementation
 
-uses LNK_Utils, LNK_Properties, Unit1, ShutdownUnit, Utils,
-     HotKeyChanger, HotKeyManager, Translation, SystemUtils;
+uses LNK_Utils, LNK_Properties, Unit1, ShutdownUnit, HotKeyChanger,
+     HotKeyManager, Translation, SystemUtils;
 
 {$R *.dfm}
+
+// SOME FUNCTIONS
+//------------------------------------------------------------------------------
+procedure AddItem(Section, FileName, FilePath, Parameters, IconLocation, WorkingDir: string);
+begin
+with lnk_Form do
+ begin
+   if not (FLists.ValueExists(lnk_Form.Caption,FileName)) then
+    begin
+     FLists.WriteString(Section,FileName,FilePath+'|'+Parameters+'|'+
+                      IconLocation+'|'+WorkingDir+'|');
+     FLists.UpdateFile;
+     InsertItem := List.Items.Add;
+     InsertItem.Caption:= FileName;
+     InsertItem.SubItems.Add(FilePath);
+     InsertItem.SubItems.Add(Parameters);
+     InsertItem.SubItems.Add(IconLocation);
+     InsertItem.SubItems.Add(WorkingDir);
+     AddIconsToList(IconLocation,ImageList2);
+     InsertItem.ImageIndex := ImageList2.Count-1;
+  end;
+end;
+end;
+//------------------------------------------------------------------------------
 
 procedure TLNK_Form.Translate(aLanguageID: String);
 var
@@ -354,6 +378,7 @@ if Write = true then
   Width := MainForm.FConfig.ReadInteger('General','LNKForm_Width',Width);
   Height := MainForm.FConfig.ReadInteger('General','LNKForm_Height',Height);
   Caption := MainForm.FConfig.ReadString('General','LNKForm_Section','');
+  if Caption <> '' then
   Tabs.TabIndex := FindString(Tabs.Tabs,Caption);
   LNK_GEN_MENU_N4.Checked := MainForm.FConfig.ReadBool('General','LNKForm_OffScreenPos',True);
   PosLocked := MainForm.FConfig.ReadBool('General','LNKForm_OffScreenPos',True);
@@ -387,7 +412,6 @@ LNK_BTN1.DropDownMenu := FPopup;
 LNK_BTN2.DropDownMenu := FPopup;
 LNK_BTN3.DropDownMenu := FPopup;
 FPopup.OwnerDraw := True;
-LNK_Form.ScaleForPPI(110);
 List.ShowColumnHeaders := False;
 InsertItem := List.Items.Add;
 GetFLists;
@@ -884,7 +908,7 @@ end;
 
 procedure TLNK_Form.LNK_LST_MENU_N7Click(Sender: TObject);
 var
- PName,PLocation,PWorkinDir,NewFilePath, WorkingDirPath: String;
+ PName,PLocation,PWorkinDir,PParameter,NewFilePath, WorkingDirPath: String;
 begin
 if not FileExists(List.Selected.SubItems[0]) then
 ShowMessage(_(LNK_GLOBAL_TEXT_MSG7,MainForm.FConfig.ReadString('General','Language',EN_US))) else
@@ -908,6 +932,7 @@ with MainForm do
     if List.Selected.SubItems[3] = '' then
     PWorkinDir := ExtractFilePath(List.Selected.SubItems[0]) else
     PWorkinDir := List.Selected.SubItems[3];
+    PParameter := List.Selected.SubItems[1];
    end;
 
   PTab.Tabs.Add(IntToStr(PTab.Tabs.Count));
@@ -918,6 +943,7 @@ with MainForm do
   FConfig.WriteBool(IntToStr(PTab.TabIndex), 'NoRunFile', False);
   FConfig.WriteInteger(IntToStr(PTab.TabIndex),'ProcState',0);
   FConfig.WriteString(IntToStr(PTab.TabIndex),'WorkingDir',Encode(PWorkinDir,'N90fL6FF9SXx+S'));
+  FConfig.WriteString(IntToStr(PTab.TabIndex),'Parameters',Encode(PParameter,'N90fL6FF9SXx+S'));
   FConfig.UpdateFile;
   LNK_SPD_BTN3Click(Sender);
   Visible := True;

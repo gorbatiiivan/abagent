@@ -14,10 +14,8 @@ uses
   HotKeyChanger in 'HotKeyChanger.pas' {HotKeyForm},
   Processes in 'Processes.pas' {ProcessesForm},
   Help in 'Help.pas' {HelpForm},
-  Utils in 'Utils.pas',
   MMDevApi in 'MMDevApi.pas',
   SystemUtils in 'SystemUtils.pas',
-  SPGetSid in 'SPGetSid.pas',
   HotKeyManager in 'HotKeyManager.pas',
   LNK_Utils in 'LNK_Utils.pas',
   Translation in 'Translation.pas';
@@ -45,12 +43,6 @@ if Win32MajorVersion >= 6 then
   Application.CreateForm(THotKeyForm, HotKeyForm);
   Application.CreateForm(THelpForm, HelpForm);
   Application.CreateForm(TProcessesForm, ProcessesForm);
-  //Application.ShowMainForm := False;
-  if not FileExists(ExtractFilePath(Application.ExeName) + CurrentUserName + '.ini') then
-  begin
-    Application.ShowMainForm := True;
-    MainForm.RegIni(False, True);
-  end;
   Application.Run;
  end else Exit;
 end.

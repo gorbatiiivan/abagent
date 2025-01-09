@@ -62,7 +62,7 @@ object MainForm: TMainForm
     Width = 437
     Height = 73
     Caption = 'Task Managers'
-    TabOrder = 1
+    TabOrder = 7
     object Main_CHKBOX5: TCheckBox
       Left = 15
       Top = 17
@@ -98,7 +98,7 @@ object MainForm: TMainForm
     Width = 203
     Height = 52
     Caption = 'Hide process using the mouse'
-    TabOrder = 2
+    TabOrder = 3
     object MousePosBox: TComboBox
       Left = 16
       Top = 21
@@ -133,7 +133,7 @@ object MainForm: TMainForm
     Width = 437
     Height = 92
     Caption = 'Clear data (need Admin Privileges)'
-    TabOrder = 3
+    TabOrder = 9
     object Main_CHKBOX7: TCheckBox
       Left = 16
       Top = 32
@@ -142,6 +142,7 @@ object MainForm: TMainForm
       Hint = 'It only works if the checkbox "Task Managers" is checked'
       Caption = 'When starting Task Managers'
       TabOrder = 0
+      OnClick = Main_CHKBOX7Click
     end
     object Main_GrpBox6: TGroupBox
       Left = 273
@@ -149,7 +150,7 @@ object MainForm: TMainForm
       Width = 154
       Height = 64
       Caption = 'HotKey'
-      TabOrder = 1
+      TabOrder = 2
       object Main_BTN9: TButton
         Left = 8
         Top = 22
@@ -166,7 +167,18 @@ object MainForm: TMainForm
       Width = 251
       Height = 17
       Caption = 'When hide from Boss HotKey'
-      TabOrder = 2
+      TabOrder = 1
+      OnClick = Main_CHKBOX8Click
+    end
+    object Main_BTN11: TButton
+      Left = 246
+      Top = 15
+      Width = 21
+      Height = 21
+      Hint = 'Help'
+      Caption = '?'
+      TabOrder = 3
+      OnClick = Main_BTN11Click
     end
   end
   object Main_GrpBox4: TGroupBox
@@ -175,7 +187,7 @@ object MainForm: TMainForm
     Width = 153
     Height = 140
     Caption = 'Boss HotKey'
-    TabOrder = 4
+    TabOrder = 8
     object Main_CHKBOX6: TCheckBox
       Left = 16
       Top = 17
@@ -196,6 +208,7 @@ object MainForm: TMainForm
         'Hide process'
         'Kill process')
       TabOrder = 1
+      OnClick = Main_RADGrp2Click
     end
     object Main_BTN8: TButton
       Left = 8
@@ -213,7 +226,8 @@ object MainForm: TMainForm
     Width = 387
     Height = 17
     Caption = 'Enabled log file'
-    TabOrder = 5
+    TabOrder = 1
+    OnClick = Main_CHKBOX2Click
   end
   object Main_BTN10: TButton
     Left = 451
@@ -221,7 +235,7 @@ object MainForm: TMainForm
     Width = 153
     Height = 25
     Caption = 'Save'
-    TabOrder = 6
+    TabOrder = 11
     OnClick = Main_BTN10Click
   end
   object TitleBarPanel1: TTitleBarPanel
@@ -293,7 +307,7 @@ object MainForm: TMainForm
     Width = 596
     Height = 258
     Style = tsButtons
-    TabOrder = 8
+    TabOrder = 6
     OnChange = PTabChange
     object Main_LBL2: TLabel
       Left = 15
@@ -333,18 +347,27 @@ object MainForm: TMainForm
     object Main_GrpBox2: TGroupBox
       Left = 286
       Top = 32
-      Width = 154
+      Width = 166
       Height = 62
       Caption = 'HotKey'
       TabOrder = 2
       object Main_BTN5: TButton
         Left = 8
-        Top = 24
-        Width = 137
+        Top = 32
+        Width = 150
         Height = 25
         Hint = 'Click to change HotKey'
         TabOrder = 0
         OnClick = Main_BTN5Click
+      end
+      object Main_CHKBOX9: TCheckBox
+        Left = 8
+        Top = 14
+        Width = 150
+        Height = 17
+        Caption = 'Global Hot-Key'
+        TabOrder = 1
+        OnClick = Main_CHKBOX9Click
       end
     end
     object Main_RADGrp1: TRadioGroup
@@ -358,6 +381,7 @@ object MainForm: TMainForm
         'Normal'
         'Minimized')
       TabOrder = 3
+      OnClick = Main_RADGrp1Click
     end
     object GroupBox8: TGroupBox
       Left = 15
@@ -378,6 +402,13 @@ object MainForm: TMainForm
         Width = 65
         Height = 13
         Caption = 'Working dir:'
+      end
+      object Main_LBL6: TLabel
+        Left = 287
+        Top = 88
+        Width = 62
+        Height = 13
+        Caption = 'Parameters :'
       end
       object Main_CHKBOX4: TCheckBox
         Left = 14
@@ -408,9 +439,16 @@ object MainForm: TMainForm
       object Edit4: TEdit
         Left = 14
         Top = 104
-        Width = 459
+        Width = 267
         Height = 21
         TabOrder = 3
+      end
+      object Edit5: TEdit
+        Left = 287
+        Top = 104
+        Width = 267
+        Height = 21
+        TabOrder = 4
       end
     end
   end
@@ -420,7 +458,8 @@ object MainForm: TMainForm
     Width = 387
     Height = 17
     Caption = 'Mute when hide'
-    TabOrder = 9
+    TabOrder = 2
+    OnClick = Main_CHKBOX3Click
   end
   object Main_BTN2: TButton
     Left = 556
@@ -429,7 +468,7 @@ object MainForm: TMainForm
     Height = 21
     Hint = 'New tab'
     Caption = '+'
-    TabOrder = 10
+    TabOrder = 4
     OnClick = Main_BTN2Click
   end
   object Main_BTN3: TButton
@@ -439,18 +478,8 @@ object MainForm: TMainForm
     Height = 21
     Hint = 'Remove tab'
     Caption = 'X'
-    TabOrder = 11
+    TabOrder = 5
     OnClick = Main_BTN3Click
-  end
-  object Main_BTN11: TButton
-    Left = 254
-    Top = 487
-    Width = 21
-    Height = 21
-    Hint = 'Help'
-    Caption = '?'
-    TabOrder = 12
-    OnClick = Main_BTN11Click
   end
   object FavTray: TTrayIcon
     Icon.Data = {
