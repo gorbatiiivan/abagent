@@ -63,6 +63,8 @@ type
     Tile1: TMenuItem;
     Icon1: TMenuItem;
     LNK_BTN3: TButton;
+    LNK_LST_MENU_N3_N1: TMenuItem;
+    LNK_LST_MENU_N3_N2: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -72,7 +74,6 @@ type
     procedure LNK_BTN1Click(Sender: TObject);
     procedure LNK_SPD_BTN3Click(Sender: TObject);
     procedure LNK_LST_MENU_N15Click(Sender: TObject);
-    procedure LNK_LST_MENU_N3Click(Sender: TObject);
     procedure LNK_GEN_MENU_N2Click(Sender: TObject);
     procedure LNK_GEN_MENU_N3Click(Sender: TObject);
     procedure LNK_LST_MENU_N4Click(Sender: TObject);
@@ -102,6 +103,8 @@ type
     procedure N33Click(Sender: TObject);
     procedure LNK_BTN3DropDownClick(Sender: TObject);
     procedure LNK_BTN3Click(Sender: TObject);
+    procedure LNK_LST_MENU_N3_N2Click(Sender: TObject);
+    procedure LNK_LST_MENU_N3_N1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -120,6 +123,7 @@ type
     procedure moveitemclick(Sender: TObject);
     procedure deleteitemclick(Sender: TObject);
     procedure Translate(aLanguageID: String);
+    procedure OpenFileDir(DialogTitle: String; isFileName: Boolean);
   protected
     procedure WndProc(var Msg: TMessage); message WM_ACTIVATE;
     procedure CreateParams(var Params: TCreateParams); override;
@@ -138,8 +142,8 @@ var
 
 implementation
 
-uses LNK_Utils, LNK_Properties, Unit1, ShutdownUnit, HotKeyChanger,
-     HotKeyManager, Translation, SystemUtils;
+uses LNK_Properties, Unit1, ShutdownUnit, HotKeyChanger, HotKeyManager,
+     Translation, SystemUtils;
 
 {$R *.dfm}
 
@@ -160,10 +164,68 @@ with lnk_Form do
      InsertItem.SubItems.Add(Parameters);
      InsertItem.SubItems.Add(IconLocation);
      InsertItem.SubItems.Add(WorkingDir);
-     AddIconsToList(IconLocation,ImageList2);
+     AddIconsToList(IconLocation, ImageList2, CurrentIconStyle);
      InsertItem.ImageIndex := ImageList2.Count-1;
   end;
 end;
+end;
+
+procedure ADDControlPanelList(PopupMenu: TPopupMenu; Config: TMemIniFile; OnClick: TNotifyEvent);
+var
+  MenuItem : TMenuItem;
+begin
+  PopupMenu.Items.Clear;
+
+  MenuItem := TMenuItem.Create(PopupMenu);
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG2,Config.ReadString('General','Language',EN_US));
+  MenuItem.Hint := '/root,"shell:::{26EE0668-A00A-44D7-9371-BEB064C98683}"';
+  MenuItem.OnClick := OnClick;
+  PopupMenu.Items.Add(MenuItem);
+
+  MenuItem := TMenuItem.Create(PopupMenu);
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG3,Config.ReadString('General','Language',EN_US));
+  MenuItem.Hint := '/root,"shell:::{21EC2020-3AEA-1069-A2DD-08002B30309D}"';
+  MenuItem.OnClick := OnClick;
+  PopupMenu.Items.Add(MenuItem);
+
+  MenuItem := TMenuItem.Create(PopupMenu);
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG4,Config.ReadString('General','Language',EN_US));
+  MenuItem.Hint := '/root,"shell:::{ED7BA470-8E54-465E-825C-99712043E01C}"';
+  MenuItem.OnClick := OnClick;
+  PopupMenu.Items.Add(MenuItem);
+
+  MenuItem := TMenuItem.Create(PopupMenu);
+  MenuItem.Caption := '-';
+  PopupMenu.Items.Add(MenuItem);
+
+  MenuItem := TMenuItem.Create(PopupMenu);
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG5,Config.ReadString('General','Language',EN_US));
+  MenuItem.Hint := '/root,"shell:::{74246bfc-4c96-11d0-abef-0020af6b0b7a}"';
+  MenuItem.OnClick := OnClick;
+  PopupMenu.Items.Add(MenuItem);
+
+  MenuItem := TMenuItem.Create(PopupMenu);
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG6,Config.ReadString('General','Language',EN_US));
+  MenuItem.Hint := '/root,"shell:::{BB06C0E4-D293-4f75-8A90-CB05B6477EEE}"';
+  MenuItem.OnClick := OnClick;
+  PopupMenu.Items.Add(MenuItem);
+end;
+
+procedure GetPersonalFolders(ToolBar: TToolBar; Config: TMemIniFile; OnClick: TNotifyEvent);
+var
+ I: Integer;
+begin
+  //Delete all buttons
+  for I := ToolBar.ButtonCount - 1 downto 0 do
+  ToolBar.Buttons[I].Free;
+  //Create buttons
+  AddButtonToToolbar(OnClick, ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG7,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Desktop),4,0);
+  AddButtonToToolbar(OnClick, ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG8,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Documents),5,1);
+  AddButtonToToolbar(OnClick, ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG9,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Downloads),6,2);
+  AddButtonToToolbar(OnClick, ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG10,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Music),7,3);
+  AddButtonToToolbar(OnClick, ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG11,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Pictures),8,4);
+  AddButtonToToolbar(OnClick, ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG12,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_SavedGames),9,5);
+  AddButtonToToolbar(OnClick, ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG13,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Videos),10,6);
 end;
 //------------------------------------------------------------------------------
 
@@ -180,6 +242,8 @@ begin
   LNK_LST_MENU_N1.Caption := _(LNK_CPTN_MENUITEM_LST_N1, aLanguageID);
   LNK_LST_MENU_N2.Caption := _(LNK_CPTN_MENUITEM_LST_N2, aLanguageID);
   LNK_LST_MENU_N3.Caption := _(LNK_CPTN_MENUITEM_LST_N3, aLanguageID);
+  LNK_LST_MENU_N3_N1.Caption := _(LNK_CPTN_MENUITEM_LST_N3_N1, aLanguageID);
+  LNK_LST_MENU_N3_N2.Caption := _(LNK_CPTN_MENUITEM_LST_N3_N2, aLanguageID);
   LNK_LST_MENU_N4.Caption := _(LNK_CPTN_MENUITEM_LST_N4, aLanguageID);
   LNK_LST_MENU_N5.Caption := _(LNK_CPTN_MENUITEM_LST_N5, aLanguageID);
   LNK_LST_MENU_N6.Caption := _(LNK_CPTN_MENUITEM_LST_N6, aLanguageID);
@@ -204,7 +268,7 @@ begin
   LNK_BTN3.Hint := _(LNK_HINT_SPDBTN_BTN2, aLanguageID);
   LNK_SPD_BTN3.Hint := _(GLOBAL_HINT_CAPT_BTN1, aLanguageID)+' (Esc)';
   //Create buttons
-  GetPersonalFolders(ToolBar1, MainForm.FConfig);
+  GetPersonalFolders(ToolBar1, MainForm.FConfig, ToolBarOnClick);
 end;
 
 //Window procedure.............................................................
@@ -339,7 +403,7 @@ begin
     InsertItem := List.Items.Add;
     InsertItem.Caption:= StringList[I];
     StrToList(FLists.ReadString(Tabs.Tabs[Tabs.TabIndex], StringList[I], ''),'|',InsertItem.SubItems);
-    AddIconsToList(InsertItem.SubItems[2],ImageList2);
+    AddIconsToList(InsertItem.SubItems[2], ImageList2, CurrentIconStyle);
     InsertItem.ImageIndex := i;
    end;
   finally
@@ -427,7 +491,7 @@ if Tabs.Tabs.Count = 0 then
  end;
 TabsChange(Sender);
 DragAcceptFiles(LNK_Form.Handle,true);
-GetPersonalFolders(ToolBar1, MainForm.FConfig);
+GetPersonalFolders(ToolBar1, MainForm.FConfig, ToolBarOnClick);
 AddIconsToImgList(ImageList1);
 Translate(MainForm.FConfig.ReadString('General','Language',EN_US));
 end;
@@ -495,7 +559,8 @@ if Key = ORD(VK_DELETE) then LNK_LST_MENU_N4Click(Sender);
 if Shift = [ssCtrl] then
  begin
   case Key of
-   Ord('N'): LNK_LST_MENU_N3Click(Sender);
+   Ord('N'): LNK_LST_MENU_N3_N1Click(Sender);
+   Ord('D'): LNK_LST_MENU_N3_N2Click(Sender);
    Ord('P'): LNK_LST_MENU_N7Click(Sender);
    Ord('F'): LNK_LST_MENU_N8Click(Sender);
    Ord('L'): LNK_LST_MENU_N2Click(Sender);
@@ -572,7 +637,7 @@ begin
 if FindEdit.Text = '' then TabsChange(Self) else
  begin
   FindTextFromTXT(ExtractFilePath(Application.ExeName) + CurrentUserName + '.ablst',
-                  FindEdit.Text, List, FLists);
+                  FindEdit.Text, List, FLists, ImageList2, CurrentIconStyle);
   List.SortType := stText;
   ChangeIcons(CurrentIconSize);
   Caption := Tabs.Tabs[Tabs.TabIndex];
@@ -610,33 +675,45 @@ with Properties do
   end;
 end;
 
-procedure TLNK_Form.LNK_LST_MENU_N3Click(Sender: TObject);
+procedure TLNK_Form.OpenFileDir(DialogTitle: String; isFileName: Boolean);
 var
- s,d: string;
- NewFilePath, WorkingDirPath, IconPath: String;
+ sFileName, NewFilePath, WorkingDirPath, IconPath: String;
+ Title, FileName, OKName: PChar;
 begin
-  s := ''; d := '';
-  if SelectExe(_(LNK_GLOBAL_TEXT_MSG1,MainForm.FConfig.ReadString('General','Language',EN_US)),s,d) then
+Title := PChar(_(DialogTitle, MainForm.FConfig.ReadString('General','Language',EN_US)));
+FileName := PChar(_(LNK_GLOBAL_TEXT_MSG4, MainForm.FConfig.ReadString('General','Language',EN_US)));
+OKName := PChar(_(PROC_CPTN_BTN_BTN2, MainForm.FConfig.ReadString('General','Language',EN_US)));
+  if OpenFileDialog(Title, FileName, OKName, isFileName, sFileName) then
    begin
-    if ExtractFileExt(s) = '.lnk' then
+    if ExtractFileExt(sFileName) = '.lnk' then
      begin
-      NewFilePath := WideUpperCase(PathFromLNK(s));
-      WorkingDirPath := WideUpperCase(WorkingDirFromLNK(s));
+      NewFilePath := WideUpperCase(PathFromLNK(sFileName));
+      WorkingDirPath := WideUpperCase(WorkingDirFromLNK(sFileName));
       if WorkingDirPath = ExtractFileDir(NewFilePath) then
       WorkingDirPath := '';
       //if is .lnk then extractfiledir from file
       if FileExists(NewFilePath) then
-      AddItem(Tabs.Tabs[Tabs.TabIndex],ChangeFileExt(d,''),NewFilePath,'',
-              NewFilePath,WorkingDirPath)
+      AddItem(Tabs.Tabs[Tabs.TabIndex],ExtractFileName(ChangeFileExt(sFileName,'')),
+              NewFilePath, '', NewFilePath, WorkingDirPath)
       else
       //else if is dir write curently dir
-      AddItem(Tabs.Tabs[Tabs.TabIndex],ChangeFileExt(d,''),NewFilePath,'',
-              NewFilePath,WorkingDirPath)
+      AddItem(Tabs.Tabs[Tabs.TabIndex],ExtractFileName(ChangeFileExt(sFileName,'')),
+              NewFilePath, '', NewFilePath, WorkingDirPath)
      end else
       //if not File .lnk to read filename from file
-      AddItem(Tabs.Tabs[Tabs.TabIndex],ChangeFileExt(d,''),WideUpperCase(s),'',
-              WideUpperCase(s),'');
+      AddItem(Tabs.Tabs[Tabs.TabIndex],ExtractFileName(ChangeFileExt(sFileName,'')),
+              WideUpperCase(sFileName), '', WideUpperCase(sFileName), '');
    end;
+end;
+
+procedure TLNK_Form.LNK_LST_MENU_N3_N1Click(Sender: TObject);
+begin
+OpenFileDir(GLOBAL_TEXT_DIAG1, True);
+end;
+
+procedure TLNK_Form.LNK_LST_MENU_N3_N2Click(Sender: TObject);
+begin
+OpenFileDir(GLOBAL_TEXT_DIAG2, False);
 end;
 
 procedure TLNK_Form.LNK_LST_MENU_N4Click(Sender: TObject);
@@ -656,6 +733,7 @@ begin
 Transl1 := _(LNK_GLOBAL_TEXT_MSG3,MainForm.FConfig.ReadString('General','Language',EN_US));
 Transl2 := _(LNK_GLOBAL_TEXT_MSG4,MainForm.FConfig.ReadString('General','Language',EN_US));
 if InputQuery(Transl1, Transl2, NewTabStr) then
+if NewTabStr <> '' then
 if FLists.SectionExists(NewTabStr) then
 ShowMessage(_(LNK_GLOBAL_TEXT_MSG5,MainForm.FConfig.ReadString('General','Language',EN_US))) else
  begin
@@ -839,7 +917,8 @@ end;
 
 procedure TLNK_Form.RecycleOnClick(Sender: TObject);
 begin
- DeleteRecycleBinFiles();
+ if DeleteRecycleBinFiles() = 0 then
+ LNK_BTN3.ImageIndex := 3;
 end;
 
 procedure TLNK_Form.ToolBarOnClick(Sender: TObject);
@@ -851,14 +930,14 @@ end;
 
 procedure TLNK_Form.LNK_BTN1DropDownClick(Sender: TObject);
 begin
-ADDListDrives(FPopup, MainForm.FConfig, DriveOnClick);
+ADDListDrives(FPopup, DriveOnClick,
+_(LNK_UTILS_GLOBAL_TEXT_MSG1,MainForm.FConfig.ReadString('General','Language',EN_US)));
 end;
 
 procedure TLNK_Form.LNK_BTN2DropDownClick(Sender: TObject);
 begin
 ADDControlPanelList(FPopup, MainForm.FConfig, ControlPanelOnClick);
 end;
-
 
 procedure TLNK_Form.LNK_BTN3DropDownClick(Sender: TObject);
 var
@@ -868,6 +947,7 @@ FPopup.Items.Clear;
 MenuItem := TMenuItem.Create(FPopup);
 MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG14,MainForm.FConfig.ReadString('General','Language',EN_US));
 MenuItem.OnClick := RecycleOnClick;
+MenuItem.Enabled := not IsRecycleBinEmpty;
 FPopup.Items.Add(MenuItem);
 end;
 
@@ -970,6 +1050,9 @@ if not isWindowVisible(Handle) then
    SetForegroundWindow(Handle);
   end;
 LNK_Form.ActiveControl := LNK_Form.List;
+//Check if RecycleBin is empty or is full
+if not IsRecycleBinEmpty then
+LNK_BTN3.ImageIndex := 2 else LNK_BTN3.ImageIndex := 3;
 end;
 
 procedure OpenFileLocation(sFile: String);
@@ -1007,7 +1090,7 @@ else
   Tabs.Tabs.Add(TranslApps);
   Tabs.TabIndex := FindString(Tabs.Tabs,TranslApps);
   List.Clear;
-  AddSystemApps(List, 0);
+  AddSystemApps(List, 0, ImageList2, CurrentIconSize);
   ChangeIcons(CurrentIconSize);
   for I := 0 to List.Items.Count-1 do
    begin
@@ -1032,7 +1115,7 @@ else
   Tabs.Tabs.Add(TranslDirs);
   Tabs.TabIndex := FindString(Tabs.Tabs,TranslDirs);
   List.Clear;
-  AddSystemApps(List, 1);
+  AddSystemApps(List, 1, ImageList2, CurrentIconSize);
   ChangeIcons(CurrentIconSize);
   for I := 0 to List.Items.Count-1 do
    begin

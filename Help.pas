@@ -52,11 +52,14 @@ begin
   HELPFORM_LSTVIEW1.Items.Item[5].Caption := _(HELPFORM_TEXT_LSTVIEW_ITEM6, aLanguageID);
   HELPFORM_LSTVIEW1.Items.Item[6].Caption := _(LNK_CPTN_MENUITEM_LST_N1, aLanguageID);
   HELPFORM_LSTVIEW1.Items.Item[7].Caption := _(LNK_CPTN_MENUITEM_LST_N2, aLanguageID);
-  HELPFORM_LSTVIEW1.Items.Item[8].Caption := _(LNK_CPTN_MENUITEM_LST_N3, aLanguageID);
-  HELPFORM_LSTVIEW1.Items.Item[9].Caption := _(LNK_CPTN_MENUITEM_LST_N4, aLanguageID);
-  HELPFORM_LSTVIEW1.Items.Item[10].Caption := _(LNK_CPTN_MENUITEM_LST_N7, aLanguageID);
-  HELPFORM_LSTVIEW1.Items.Item[11].Caption := _(LNK_CPTN_MENUITEM_LST_N8, aLanguageID);
-  HELPFORM_LSTVIEW1.Items.Item[12].Caption := _(LNK_CPTN_MENUITEM_LST_N15, aLanguageID);
+  HELPFORM_LSTVIEW1.Items.Item[8].Caption := _(LNK_CPTN_MENUITEM_LST_N3, aLanguageID)+
+                     ' '+LowerCase(_(LNK_CPTN_MENUITEM_LST_N3_N1, aLanguageID));
+  HELPFORM_LSTVIEW1.Items.Item[9].Caption := _(LNK_CPTN_MENUITEM_LST_N3, aLanguageID)+
+                     ' '+LowerCase(_(LNK_CPTN_MENUITEM_LST_N3_N2, aLanguageID));
+  HELPFORM_LSTVIEW1.Items.Item[10].Caption := _(LNK_CPTN_MENUITEM_LST_N4, aLanguageID);
+  HELPFORM_LSTVIEW1.Items.Item[11].Caption := _(LNK_CPTN_MENUITEM_LST_N7, aLanguageID);
+  HELPFORM_LSTVIEW1.Items.Item[12].Caption := _(LNK_CPTN_MENUITEM_LST_N8, aLanguageID);
+  HELPFORM_LSTVIEW1.Items.Item[13].Caption := _(LNK_CPTN_MENUITEM_LST_N15, aLanguageID);
 end;
 
 procedure THelpForm.FormCreate(Sender: TObject);

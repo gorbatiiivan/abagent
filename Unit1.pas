@@ -147,8 +147,8 @@ var
 
 implementation
 
-uses SystemUtils, ShutdownUnit, lnkForm, HotKeyChanger, LNK_Utils, Help,
-     Processes, Translation, LNK_Properties;
+uses SystemUtils, ShutdownUnit, lnkForm, HotKeyChanger, Help, Processes,
+     Translation, LNK_Properties;
 
 {$R *.dfm}
 
@@ -198,11 +198,12 @@ if EnableHotKey = True then
     RunApplication(ExePath, Parameters, WorkingDir);
    end else
    //Cand procesul e deschis, se apasa pe hotkey el se ascunde
-   if isWindow(GetWinHandleFromProcId(GetProcessID_(ProcessName))) then
+   if isWindowVisible(GetWinHandleFromProcId(GetProcessID_(ProcessName))) then
     begin
      MuteForProcess(FConfig,ProcessName, True);
      HideWindowsForProcess(ProcessesForm.ProcessListView, ProcessName);
      end else
+    if not isWindowVisible(GetWinHandleFromProcId(GetProcessID_(ProcessName))) then
      //Daca procesul este ascuns, el se face vazut
     begin
      MuteForProcess(FConfig,ProcessName, False);
@@ -580,7 +581,7 @@ if TextToHotKey(FConfig.ReadString('General','BossKey', ''),True) = HotKey then
   for l := 0 to PTab.Tabs.Count-1 do
    begin
     AppName := Decode(FConfig.ReadString(IntToStr(l),'Name',''),'N90fL6FF9SXx+S');
-    KillProcess(AppName);
+    TerminateProcessById(GetProcessID_(AppName));
    end;
   end;
   // se porneste ClearAllData daca se apasa pe boss_hotkey
@@ -604,9 +605,11 @@ for I := 0 to PTab.Tabs.Count-1 do
   if FConfig.ReadBool('General','EnableGlobalHotKey',False) = False then
   GlobalKey := FConfig.ReadString(IntToStr(I),'Key', '') else
   GlobalKey := FConfig.ReadString('General','GlobalHotKey', '');
+
   //Run process
   if TextToHotKey(GlobalKey,True) = HotKey then
-   TRun(AppName, AppLocation, IntToStr(I), WorkingDir, Parameters, Main_CHKBOX4.Checked);
+   TRun(AppName, AppLocation, IntToStr(I), WorkingDir, Parameters,
+        FConfig.ReadBool(IntToStr(I), 'NoRunFile', False));
  end;
 end;
 
@@ -645,7 +648,7 @@ begin
    // killing only if running name from Edit3
     StrToList(Edit3.Text,';',TskMgrList);
     for j := 0 to TskMgrList.Count - 1 do
-    if FindStringInStringList(ProcessList,TskMgrList[j],False) <> -1 then
+    if FindStringInStringList(ProcessList,TskMgrList[j],True) <> -1 then
      begin
      //kill all running process
       for i := 0 to PTab.Tabs.Count-1 do
@@ -768,7 +771,7 @@ begin
 with Sender as TCheckBox do
  begin
   if Checked = True then
-   begin        
+   begin
     Main_BTN5.Caption := FConfig.ReadString('General','GlobalHotKey', '');
     for I := 0 to PTab.Tabs.Count-1 do
     begin
@@ -885,17 +888,19 @@ end;
 
 procedure TMainForm.Main_BTN6Click(Sender: TObject);
 var
-  s,d: String;
-  NewFilePath, WorkingDirPath: String;
+  sFileName, NewFilePath, WorkingDirPath: String;
+  Title, FileName, OKName: PChar;
 begin
-s := ''; d:= '';
-if SelectExe(String(_('GLOBAL_HINT_BTN_BTN6', FConfig.ReadString('General','Language',EN_US))), s,d) then
+Title := PChar(_(GLOBAL_TEXT_DIAG1, FConfig.ReadString('General','Language',EN_US)));
+FileName := PChar(_(LNK_GLOBAL_TEXT_MSG4, FConfig.ReadString('General','Language',EN_US)));
+OKName := PChar(_(PROC_CPTN_BTN_BTN2, FConfig.ReadString('General','Language',EN_US)));
+if OpenFileDialog(Title, FileName, OKName, True, sFileName, ExtractFileDir(Edit2.Text)) then
  begin
-  if ExtractFileExt(s) = '.lnk' then
+  if ExtractFileExt(sFileName) = '.lnk' then
    begin
     //Extract info from .lnk
-    NewFilePath := PathFromLNK(s);
-    WorkingDirPath := WorkingDirFromLNK(s);
+    NewFilePath := PathFromLNK(sFileName);
+    WorkingDirPath := WorkingDirFromLNK(sFileName);
     if FileExists(NewFilePath) then
      begin
       Edit1.Text := ExtractFileName(NewFilePath);
@@ -904,9 +909,9 @@ if SelectExe(String(_('GLOBAL_HINT_BTN_BTN6', FConfig.ReadString('General','Lang
      end;
    end else
    begin
-    Edit1.Text := ExtractFileName(d);
-    Edit2.Text := s;
-    Edit4.Text := ExtractFilePath(s);
+    Edit1.Text := ExtractFileName(sFileName);
+    Edit2.Text := sFileName;
+    Edit4.Text := ExtractFilePath(sFileName);
    end;
  end;
 end;
@@ -924,7 +929,7 @@ with ProcessesForm do
    begin
     if ProcessListView.Selected <> nil then
      begin
-      KillProcess(ProcessListView.Selected.Caption);
+      TerminateProcessById(GetProcessID_(ProcessListView.Selected.Caption));
       ProcessListView.Selected.Delete;
      end;
    end;
@@ -1088,7 +1093,13 @@ end;
 procedure TMainForm.FavTrayClick(Sender: TObject);
 begin
 with LNK_Form do
-if Active = False then SetForegroundWindow(Handle);
+if Active = False then
+ begin
+  SetForegroundWindow(Handle);
+  //Check if RecycleBin is empty or is full
+  if not IsRecycleBinEmpty then
+  LNK_BTN3.ImageIndex := 2 else LNK_BTN3.ImageIndex := 3;
+ end;
 end;
 
 procedure TMainForm.FavTrayDblClick(Sender: TObject);
@@ -1100,6 +1111,9 @@ if Visible = False then
    Show;
    SetForegroundWindow(Handle);
    LNK_Form.ActiveControl := LNK_Form.List;
+   //Check if RecycleBin is empty or is full
+   if not IsRecycleBinEmpty then
+   LNK_BTN3.ImageIndex := 2 else LNK_BTN3.ImageIndex := 3;
   end else Hide;
 end;
 

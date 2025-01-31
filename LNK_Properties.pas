@@ -33,7 +33,7 @@ var
 
 implementation
 
-uses Unit1, LNK_Utils, SystemUtils, Translation;
+uses Unit1, SystemUtils, Translation;
 
 {$R *.dfm}
 
@@ -57,16 +57,19 @@ end;
 
 procedure TProperties.LNKPROP_BTN1Click(Sender: TObject);
 var
-  s,d: string;
-  Index: Word;
+ sFileName: string;
+ Index: Word;
+ Title, FileName, OKName: PChar;
 begin
-  s := ''; d := '';
-  Index := 0;
-  if SelectExe(_(PROC_GLOBAL_TEXT_MSG1, MainForm.FConfig.ReadString('General','Language',EN_US)),s,d) then
-   begin
-    LNKPROP_EDIT5.Text := WideUpperCase(s);
-    Image1.Picture.Icon.Handle := ExtractAssociatedIcon(hInstance,PChar(s),Index);
-   end;
+ Index := 0;
+ Title := PChar(_(GLOBAL_TEXT_DIAG1, MainForm.FConfig.ReadString('General','Language',EN_US)));
+ FileName := PChar(_(LNK_GLOBAL_TEXT_MSG4, MainForm.FConfig.ReadString('General','Language',EN_US)));
+ OKName := PChar(_(PROC_CPTN_BTN_BTN2, MainForm.FConfig.ReadString('General','Language',EN_US)));
+ if OpenFileDialog(Title, FileName, OKName, True, sFileName, ExtractFileDir(LNKPROP_EDIT2.Text)) then
+  begin
+   LNKPROP_EDIT5.Text := WideUpperCase(sFileName);
+   Image1.Picture.Icon.Handle := ExtractAssociatedIcon(hInstance,PChar(sFileName),Index);
+  end;
 end;
 
 end.

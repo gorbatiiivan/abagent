@@ -17,7 +17,6 @@ uses
   MMDevApi in 'MMDevApi.pas',
   SystemUtils in 'SystemUtils.pas',
   HotKeyManager in 'HotKeyManager.pas',
-  LNK_Utils in 'LNK_Utils.pas',
   Translation in 'Translation.pas';
 
 {$R *.res}

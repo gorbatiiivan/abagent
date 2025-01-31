@@ -104,7 +104,7 @@ object LNK_Form: TLNK_Form
       Width = 34
       Height = 32
       Hint = 'Timer'
-      ImageIndex = 10
+      ImageIndex = 11
       Images = ImageList1
       Flat = True
       OnClick = LNK_SPD_BTN1Click
@@ -193,8 +193,16 @@ object LNK_Form: TLNK_Form
     end
     object LNK_LST_MENU_N3: TMenuItem
       Caption = 'Create a shortcut'
-      ShortCut = 16462
-      OnClick = LNK_LST_MENU_N3Click
+      object LNK_LST_MENU_N3_N1: TMenuItem
+        Caption = 'From file'
+        ShortCut = 16462
+        OnClick = LNK_LST_MENU_N3_N1Click
+      end
+      object LNK_LST_MENU_N3_N2: TMenuItem
+        Caption = 'From folder'
+        ShortCut = 16452
+        OnClick = LNK_LST_MENU_N3_N2Click
+      end
     end
     object LNK_LST_MENU_N4: TMenuItem
       Caption = 'Remove shortcut'
