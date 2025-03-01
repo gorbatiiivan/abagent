@@ -113,7 +113,7 @@ const
    LNK_GLOBAL_TEXT_MSG10 = 'LNK_GLOBAL_TEXT_MSG10';
    LNK_HINT_BTN_BTN1 = 'LNK_HINT_BTN_BTN1';
    LNK_HINT_BTN_BTN2 = 'LNK_HINT_BTN_BTN2';
-   LNK_HINT_SPDBTN_BTN2 = 'LNK_HINT_BTN_SPDBTN2';
+   LNK_HINT_SPDBTN_BTN2 = 'LNK_HINT_SPDBTN_BTN2';
    // LNK_Utils
    //---------------------------------------------------------------------------
    LNK_UTILS_GLOBAL_TEXT_MSG1 = 'LNK_UTILS_GLOBAL_TEXT_MSG1';
@@ -142,6 +142,7 @@ const
    LNKPROP_CPTN_LBLEDIT5 = 'LNKPROP_CPTN_LBLEDIT5';
    PROC_HINT_BTN_BTN1 = 'PROC_HINT_BTN_BTN1';
    PROC_GLOBAL_TEXT_MSG1 = 'PROC_GLOBAL_TEXT_MSG1';
+   PROC_HINT_BTN_BTN4 = 'PROC_HINT_BTN_BTN4';
    // TimerForm
    //---------------------------------------------------------------------------
    Timer_CPTN_GRPBOX_GrpBox1 = 'Timer_CPTN_GRPBOX_GrpBox1';
@@ -394,7 +395,7 @@ if aLanguageID = EN_US then
      Result := 'My Computer';
   if StringID  = LNK_HINT_BTN_BTN2 then
      Result := 'Parameters';
-  if StringID  = LNK_UTILS_GLOBAL_TEXT_MSG1 then
+  if StringID  = LNK_HINT_SPDBTN_BTN2 then
      Result := 'Recycle Bin';
   // LNK_Utils
   //----------------------------------------------------------------------------
@@ -446,6 +447,8 @@ if aLanguageID = EN_US then
      Result := 'Click to change icon';
   if StringID  = PROC_GLOBAL_TEXT_MSG1 then
      Result := 'Select file';
+  if StringID  = PROC_HINT_BTN_BTN4 then
+     Result := 'Click to change location';
   // TimerForm
   //----------------------------------------------------------------------------
   if StringID  = Timer_CPTN_GRPBOX_GrpBox1 then
@@ -762,6 +765,8 @@ if aLanguageID = RU_RU then
      Result := 'Нажмите, чтобы изменить значок';
   if StringID  = PROC_GLOBAL_TEXT_MSG1 then
      Result := 'Выберите файл';
+  if StringID  = PROC_HINT_BTN_BTN4 then
+     Result := 'Нажмите, чтобы изменить местоположение';
   // TimerForm
   //----------------------------------------------------------------------------
   if StringID  = Timer_CPTN_GRPBOX_GrpBox1 then
@@ -1080,6 +1085,8 @@ if aLanguageID = RO_RO then
      Result := 'Faceți clic pentru a schimba pictograma';
   if StringID  = PROC_GLOBAL_TEXT_MSG1 then
      Result := 'Selectați un fișier';
+  if StringID  = PROC_HINT_BTN_BTN4 then
+     Result := 'Faceţi clic pentru a schimba locaţia';
   // TimerForm
   //----------------------------------------------------------------------------
   if StringID  = Timer_CPTN_GRPBOX_GrpBox1 then

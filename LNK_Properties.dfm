@@ -31,7 +31,7 @@ object Properties: TProperties
     object LNKPROP_EDIT2: TLabeledEdit
       Left = 70
       Top = 75
-      Width = 398
+      Width = 363
       Height = 21
       EditLabel.Width = 26
       EditLabel.Height = 13
@@ -58,7 +58,7 @@ object Properties: TProperties
       EditLabel.Width = 59
       EditLabel.Height = 13
       EditLabel.Caption = 'Parameters:'
-      TabOrder = 2
+      TabOrder = 3
       Text = ''
     end
     object LNKPROP_BTN1: TButton
@@ -68,7 +68,7 @@ object Properties: TProperties
       Height = 23
       Hint = 'Click to change icon'
       Caption = '>>'
-      TabOrder = 5
+      TabOrder = 6
       OnClick = LNKPROP_BTN1Click
     end
     object LNKPROP_EDIT4: TLabeledEdit
@@ -79,7 +79,7 @@ object Properties: TProperties
       EditLabel.Width = 65
       EditLabel.Height = 13
       EditLabel.Caption = 'Working dir:'
-      TabOrder = 3
+      TabOrder = 4
       Text = ''
     end
     object LNKPROP_EDIT5: TLabeledEdit
@@ -90,8 +90,17 @@ object Properties: TProperties
       EditLabel.Width = 70
       EditLabel.Height = 13
       EditLabel.Caption = 'Icon location:'
-      TabOrder = 4
+      TabOrder = 5
       Text = ''
+    end
+    object LNKPROP_BTN4: TButton
+      Left = 440
+      Top = 74
+      Width = 23
+      Height = 23
+      Caption = '>>'
+      TabOrder = 2
+      OnClick = LNKPROP_BTN4Click
     end
   end
   object LNKPROP_BTN2: TButton

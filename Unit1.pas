@@ -5,8 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, System.IniFiles,
-  System.Character, Vcl.ComCtrls, Vcl.Menus, WinApi.ActiveX, Vcl.ExtCtrls,
-  Vcl.TitleBarCtrls, System.ImageList, Vcl.ImgList, Vcl.Buttons, HotKeyManager;
+  Vcl.ComCtrls, Vcl.Menus, Vcl.ExtCtrls, Vcl.ImgList, Vcl.Buttons, System.ImageList,
+  Vcl.TitleBarCtrls, HotKeyManager;
 
 const
   TIMER1 = 1;
@@ -170,12 +170,12 @@ end;
 //timer pentru sa se ascunda procesul de la mouse
 procedure TimerCallBack1(uTimerID, uMessage: UINT; dwUser, dw1, dw2: DWORD); stdcall;
 begin
-with MainForm do
+with MainForm , Mouse.CursorPos do
 case MousePosBox.ItemIndex of
-  1: if (Mouse.CursorPos.X = Screen.DesktopLeft) then WithoutWMHotkey;
-  2: if (Mouse.CursorPos.X = Screen.DesktopWidth -1) then WithoutWMHotkey;
-  3: if (Mouse.CursorPos.Y = Screen.DesktopTop) then WithoutWMHotkey;
-  4: if (Mouse.CursorPos.Y = Screen.DesktopHeight -1) then WithoutWMHotkey;
+  1: if (X = Screen.DesktopLeft) then WithoutWMHotkey;
+  2: if (X = Screen.DesktopWidth -1) then WithoutWMHotkey;
+  3: if (Y = Screen.DesktopTop) then WithoutWMHotkey;
+  4: if (Y = Screen.DesktopHeight -1) then WithoutWMHotkey;
 end;
 end;
 
@@ -203,7 +203,6 @@ if EnableHotKey = True then
      MuteForProcess(FConfig,ProcessName, True);
      HideWindowsForProcess(ProcessesForm.ProcessListView, ProcessName);
      end else
-    if not isWindowVisible(GetWinHandleFromProcId(GetProcessID_(ProcessName))) then
      //Daca procesul este ascuns, el se face vazut
     begin
      MuteForProcess(FConfig,ProcessName, False);
@@ -913,6 +912,11 @@ if OpenFileDialog(Title, FileName, OKName, True, sFileName, ExtractFileDir(Edit2
     Edit2.Text := sFileName;
     Edit4.Text := ExtractFilePath(sFileName);
    end;
+  //Save changes
+  FConfig.WriteString(IntToStr(PTab.TabIndex),'Name', Encode(Edit1.Text,'N90fL6FF9SXx+S'));
+  FConfig.WriteString(IntToStr(PTab.TabIndex),'Location', Encode(Edit2.Text,'N90fL6FF9SXx+S'));
+  FConfig.WriteString(IntToStr(PTab.TabIndex),'WorkingDir',Encode(Edit4.Text,'N90fL6FF9SXx+S'));
+  FConfig.UpdateFile;
  end;
 end;
 
@@ -962,6 +966,8 @@ with ProcessesForm do
   if (Showmodal <> mrCancel) and (ListBox1.ItemIndex <> -1) then
    begin
     Edit1.Text := ListBox1.Items[ListBox1.ItemIndex];
+    FConfig.WriteString(IntToStr(PTab.TabIndex),'Name', Encode(Edit1.Text,'N90fL6FF9SXx+S'));
+    FConfig.UpdateFile;
    end;
  end;
 end;

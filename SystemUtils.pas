@@ -153,8 +153,7 @@ function CheckRunAtStartupByScheduledTask(const TaskName: string): Boolean;
 
 // WINDOWS TASK SCHEDULING FUNCTIONS
 // ---------------------------------------------------------------------------
-function GetProcessID_(ProcessExeFilename: String): Integer;
-function GetRunningCountForProcess(ProcessExeFilename: String): Integer;
+function GetProcessID_(ProcessExeFilename: String): DWORD;
 function TerminateProcessById(ProcessID: DWORD): Boolean;
 function CloseWindowsForProcess(ProcessExeFilename: String): Integer;
 function HideWindowsForProcess(ListView: TListView; ProcessExeFilename: String): Integer;
@@ -165,7 +164,7 @@ function ShowAllHiddenWindowsInTaskbar(ListView: TListView; ProcessExeFilename: 
 function HideWindowFromTaskbar(hWndOwner: HWnd): Integer;
 function EnumWindowsProcMatchPID(WHdl: HWND; EData: PEnumData): bool; stdcall;
 function GetWinHandleFromProcId(ProcId: DWORD): HWND;
-function IsProcessRunning(const AProcessName: string): Boolean;
+function IsProcessRunning(const AFileName: string): Boolean;
 // ---------------------------------------------------------------------------
 
 // SOUND CONTROL FUNCTIONS
@@ -205,6 +204,9 @@ procedure DeleteAt(cbActive: TTabControl;idx: Integer);
 procedure AddMenuItem(Menu: TMenuItem; Tabs: TTabControl; OnClick: TNotifyEvent);
 procedure AddButtonToToolbar(OnClick: TNotifyEvent; var bar: TToolBar; hint: string;
   caption: string; imageindex: Integer; addafteridx: integer = -1);
+procedure ADDControlPanelList(ParentMenu: TMenuItem; Config: TMemIniFile; OnClick: TNotifyEvent);
+procedure LoadMenuFromINI(Config: TMemIniFile; PopupMenu: TPopupMenu; ImageList: TImageList;
+OnClick, OnDrivesClick, OnControlClick, OnNewControlClick, OnRecycleClick: TNotifyEvent);
 // ---------------------------------------------------------------------------
 
 // DRIVE FUNCTIONS
@@ -248,6 +250,7 @@ function GetSpecialFolderLocation(const Folder: Integer; const FolderNew: TGUID)
 procedure AddSystemApps(ListView: TListView; AIndex: Integer; sImageList: TImageList;
                         CurrentIconSize: Integer);
 function GetNotepad: String;
+function CheckPathType(const Path: string): Boolean;
 // ---------------------------------------------------------------------------
 
 // ENCRYPTION FUNCTIONS
@@ -269,6 +272,8 @@ procedure AddIconsToImgList(ImageList: TImageList);
 // ---------------------------------------------------------------------------
 
 implementation
+
+uses Translation;
 
 var
   EndpointVolume: IAudioEndpointVolume = nil;
@@ -553,54 +558,30 @@ end;
  * @param String Filename of the executable that generated the process
  * @return PID of the process (if value is not 0) or 0 if there has been an error
  * }
-function GetProcessID_(ProcessExeFilename: String): Integer;
+function GetProcessID_(ProcessExeFilename: String): DWORD;
 var
-  Handle: tHandle;
-  Process: tProcessEntry32;
-  GotProcess: Boolean;
-begin
-  Handle := CreateToolHelp32SnapShot(TH32CS_SNAPALL, 0);
-  Process.dwSize := SizeOf(Process);
-  GotProcess := Process32First(Handle, Process);
-{$B-}
-  if (GotProcess and (Process.szExeFile <> ProcessExeFilename) and (Process.szExeFile <> UpperCase(ProcessExeFilename)) and (Process.szExeFile <> LowerCase(ProcessExeFilename))) then begin
-    repeat
-      GotProcess := Process32Next(Handle, Process);
-    until ((not GotProcess) or (Process.szExeFile = ProcessExeFilename) or (Process.szExeFile = UpperCase(ProcessExeFilename)) or (Process.szExeFile = LowerCase(ProcessExeFilename)));
-  end;
-{$B+}
-  if GotProcess then begin
-    Result := Process.th32ProcessID;
-  end else begin
-    Result := 0;
-  end;
-  CloseHandle(Handle);
-end;
-// ---------------------------------------------------------------------------
-{ **
- * Function for counting the number of running processes by a given filename
- * @param String Filename of the executable that generated the process
- * @return Number of running processes by the given filename
- * }
-function GetRunningCountForProcess(ProcessExeFilename: String): Integer;
-var
-  Handle: tHandle;
-  Process: tProcessEntry32;
-  GotProcess: Boolean;
+  Snapshot: THandle;
+  ProcessEntry: TProcessEntry32;
 begin
   Result := 0;
-  Handle := CreateToolHelp32SnapShot(TH32CS_SNAPALL, 0);
-  Process.dwSize := SizeOf(Process);
-  GotProcess := Process32First(Handle, Process);
-{$B-}
-  while (GotProcess) do begin
-    if ((Process.szExeFile = ProcessExeFilename) or (Process.szExeFile = UpperCase(ProcessExeFilename)) or (Process.szExeFile = LowerCase(ProcessExeFilename))) then begin
-      Inc(Result);
+  Snapshot := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  if Snapshot = INVALID_HANDLE_VALUE then
+    Exit;
+  try
+    ProcessEntry.dwSize := SizeOf(TProcessEntry32);
+    if Process32First(Snapshot, ProcessEntry) then
+    begin
+      repeat
+        if SameText(ExtractFileName(ProcessEntry.szExeFile), ProcessExeFilename) then
+        begin
+          Result := ProcessEntry.th32ProcessID;
+          Break;
+        end;
+      until not Process32Next(Snapshot, ProcessEntry);
     end;
-    GotProcess := Process32Next(Handle, Process);
+  finally
+    CloseHandle(Snapshot);
   end;
-{$B+}
-  CloseHandle(Handle);
 end;
 // ---------------------------------------------------------------------------
 { **
@@ -875,28 +856,27 @@ end;
  * Function for check if is running process
  * @return Success (0) or error code (1)
  * }
-function IsProcessRunning(const AProcessName: string): Boolean;
+function IsProcessRunning(const AFileName: string): Boolean;
 var
-  SnapshotHandle: THandle;
+  Snapshot: THandle;
   ProcessEntry: TProcessEntry32;
 begin
   Result := False;
-  SnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-  if SnapshotHandle <> INVALID_HANDLE_VALUE then
+  Snapshot := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  if Snapshot = INVALID_HANDLE_VALUE then Exit;
+
+  ProcessEntry.dwSize := SizeOf(TProcessEntry32);
+  if Process32First(Snapshot, ProcessEntry) then
   begin
-    ProcessEntry.dwSize := SizeOf(ProcessEntry);
-    if Process32First(SnapshotHandle, ProcessEntry) then
-    begin
-      repeat
-        if CompareText(ExtractFileName(ProcessEntry.szExeFile), AProcessName) = 0 then
-        begin
-          Result := True;
-          Break;
-        end;
-      until not Process32Next(SnapshotHandle, ProcessEntry);
-    end;
-    CloseHandle(SnapshotHandle);
+    repeat
+      if SameText(ExtractFileName(ProcessEntry.szExeFile), AFileName) then
+      begin
+        Result := True;
+        Break;
+      end;
+    until not Process32Next(Snapshot, ProcessEntry);
   end;
+  CloseHandle(Snapshot);
 end;
 // ---------------------------------------------------------------------------
 
@@ -1528,6 +1508,7 @@ begin
     end;
   end;
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to get section to items to TStrings
  * }
@@ -1544,6 +1525,7 @@ begin
   if idx >= 0 then
     CbActive.Tabs.Delete(idx);
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to add menu item
  * }
@@ -1561,6 +1543,7 @@ for I := 0 to tabs.Tabs.Count-1 do
   Menu.Add(menuItem);
  end;
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to add custom button to ToolBar
  * }
@@ -1598,6 +1581,216 @@ begin
     newbtn.Left := 0;
 
   newbtn.Parent := bar;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to add ControlPanel list to TMenuItem
+ * }
+procedure ADDControlPanelList(ParentMenu: TMenuItem; Config: TMemIniFile; OnClick: TNotifyEvent);
+var
+  MenuItem : TMenuItem;
+begin
+  MenuItem := TMenuItem.Create(ParentMenu.Owner);
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG2,Config.ReadString('General','Language',EN_US));
+  MenuItem.Hint := '/root,"shell:::{26EE0668-A00A-44D7-9371-BEB064C98683}"';
+  MenuItem.OnClick := OnClick;
+  ParentMenu.Add(MenuItem);
+
+  MenuItem := TMenuItem.Create(ParentMenu.Owner);
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG3,Config.ReadString('General','Language',EN_US));
+  MenuItem.Hint := '/root,"shell:::{21EC2020-3AEA-1069-A2DD-08002B30309D}"';
+  MenuItem.OnClick := OnClick;
+  ParentMenu.Add(MenuItem);
+
+  MenuItem := TMenuItem.Create(ParentMenu.Owner);
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG4,Config.ReadString('General','Language',EN_US));
+  MenuItem.Hint := '/root,"shell:::{ED7BA470-8E54-465E-825C-99712043E01C}"';
+  MenuItem.OnClick := OnClick;
+  ParentMenu.Add(MenuItem);
+
+  MenuItem := TMenuItem.Create(ParentMenu.Owner);
+  MenuItem.Caption := '-';
+  ParentMenu.Add(MenuItem);
+
+  MenuItem := TMenuItem.Create(ParentMenu.Owner);
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG5,Config.ReadString('General','Language',EN_US));
+  MenuItem.Hint := '/root,"shell:::{74246bfc-4c96-11d0-abef-0020af6b0b7a}"';
+  MenuItem.OnClick := OnClick;
+  ParentMenu.Add(MenuItem);
+
+  MenuItem := TMenuItem.Create(ParentMenu.Owner);
+  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG6,Config.ReadString('General','Language',EN_US));
+  MenuItem.Hint := '/root,"shell:::{BB06C0E4-D293-4f75-8A90-CB05B6477EEE}"';
+  MenuItem.OnClick := OnClick;
+  ParentMenu.Add(MenuItem);
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to load all items from INI to PopupMenu
+ * }
+procedure LoadMenuFromINI(Config: TMemIniFile; PopupMenu: TPopupMenu; ImageList: TImageList;
+OnClick, OnDrivesClick, OnControlClick, OnNewControlClick, OnRecycleClick: TNotifyEvent);
+
+ function GetSystemIcon(const FileName: string): Integer;
+ var
+  SHFileInfo: TSHFileInfo;
+ begin
+  //Let's make sure ImageList1 is initialized
+  if ImageList.Count = 0 then
+    ImageList.Handle := ImageList_Create(16, 16, ILC_COLOR32 or ILC_MASK, 0, 10);
+  //Getting a system icon
+  if SHGetFileInfo(PChar(FileName), 0, SHFileInfo, SizeOf(SHFileInfo),
+    SHGFI_ICON or SHGFI_SMALLICON or SHGFI_SHELLICONSIZE or SHGFI_SYSICONINDEX
+                              or SHGFI_TYPENAME or SHGFI_DISPLAYNAME) <> 0 then
+  begin
+    Result := ImageList_AddIcon(ImageList.Handle, SHFileInfo.hIcon);
+    DestroyIcon(SHFileInfo.hIcon);
+  end
+  else
+    Result := -1;
+ end;
+
+ procedure AddMenuSeparator(AMenu: TPopupMenu);
+ var
+  Separator: TMenuItem;
+ begin
+  if AMenu = nil then Exit;
+  Separator := TMenuItem.Create(AMenu);
+  Separator.Caption := '-';
+  AMenu.Items.Add(Separator);
+ end;
+
+ function FindMenuItem(Menu: TMenuItem; const Caption: string): TMenuItem;
+ var
+  i: Integer;
+ begin
+  Result := nil; // Default return value if not found
+  // Check the current menu item
+  if SameText(Menu.Caption, Caption) then
+  begin
+    Result := Menu;
+    Exit;
+  end;
+  // Recursively search in submenus
+  for i := 0 to Menu.Count - 1 do
+  begin
+    Result := FindMenuItem(Menu.Items[i], Caption);
+    if Result <> nil then
+      Exit; // Stop searching when found
+  end;
+ end;
+
+ procedure ADDNewControlToList(ParentMenu: TMenuItem; Config: TMemIniFile; OnClick: TNotifyEvent);
+ var
+  MenuItem : TMenuItem;
+ begin
+  MenuItem := TMenuItem.Create(ParentMenu.Owner);
+  MenuItem.Caption := _(LNK_HINT_BTN_BTN2, Config.ReadString('General','Language',EN_US));
+  MenuItem.OnClick := OnClick;
+  ParentMenu.Add(MenuItem);
+ end;
+
+var
+  INI: TMemIniFile;
+  Sections, Items: TStringList;
+  i, j, IconIndex: Integer;
+  MenuItem, SubMenuItem: TMenuItem;
+  ItemName, ItemCommand, Section: string;
+  StringList: TStringList;
+  hicon: TIcon;
+begin
+  if not (Assigned(PopupMenu) and Assigned(ImageList) and Assigned(Config)) then Exit;
+
+  INI := TMemIniFile.Create(ExtractFilePath(Application.ExeName) +
+                                    CurrentUserName + '.ablst',TEncoding.UTF8);
+  Sections := TStringList.Create;
+  Items := TStringList.Create;
+  StringList := TStringList.Create;
+  hicon:= TIcon.Create;
+  try
+    //Add drive list
+    ADDListDrives(PopupMenu, OnDrivesClick,
+    _(LNK_UTILS_GLOBAL_TEXT_MSG1,Config.ReadString('General','Language',EN_US)));
+    AddMenuSeparator(PopupMenu);
+
+    //Add ControlPanel list
+    MenuItem := TMenuItem.Create(PopupMenu);
+    try
+    MenuItem.Caption := _(LNK_HINT_BTN_BTN2, Config.ReadString('General','Language',EN_US));
+    PopupMenu.Items.Add(MenuItem);
+    ADDNewControlToList(FindMenuItem(PopupMenu.Items,_(LNK_HINT_BTN_BTN2, Config.ReadString('General','Language',EN_US))), Config, OnNewControlClick);
+    AddMenuSeparator(PopupMenu);
+    ADDControlPanelList(FindMenuItem(PopupMenu.Items,_(LNK_HINT_BTN_BTN2, Config.ReadString('General','Language',EN_US))), Config, OnControlClick);
+    AddMenuSeparator(PopupMenu);
+    except
+      MenuItem.Free;
+      raise;
+    end;
+    //Add RecycleBin
+    MenuItem := TMenuItem.Create(PopupMenu);
+    try
+    MenuItem.Caption := _(LNK_HINT_SPDBTN_BTN2,Config.ReadString('General','Language',EN_US));
+    MenuItem.OnClick := OnRecycleClick;
+    PopupMenu.Items.Add(MenuItem);
+    AddMenuSeparator(PopupMenu);
+    except
+      MenuItem.Free;
+      raise;
+    end;
+
+    // Load sections from INI
+    INI.ReadSections(Sections);
+    for i := 0 to Sections.Count - 1 do
+    begin
+      Section := Sections[i];
+      SubMenuItem := TMenuItem.Create(PopupMenu);
+      try
+      SubMenuItem.Caption := Section;
+      PopupMenu.Items.Add(SubMenuItem);
+
+      INI.ReadSectionValues(Section, Items);
+      Items.Sort;
+
+      for j := 0 to Items.Count - 1 do
+      begin
+        ItemName := Items.Names[j];
+        ItemCommand := Items.ValueFromIndex[j];
+
+        //Need to extract Icon Location
+        StrToList(ItemCommand,'|',StringList);
+
+        //GetSystemIcons
+        if SameText(ExtractFileExt(StringList[2]), '.ico') and FileExists(StringList[2]) then
+        begin
+           hicon.LoadFromFile(StringList[2]);
+         IconIndex := ImageList_AddIcon(ImageList.Handle, hicon.Handle);
+        end else
+        IconIndex := GetSystemIcon(StringList[2]);
+
+        MenuItem := TMenuItem.Create(PopupMenu);
+        try
+        MenuItem.Caption := ItemName;
+        MenuItem.Hint := ItemCommand;
+        MenuItem.OnClick := OnClick;
+        MenuItem.ImageIndex := IconIndex;
+        SubMenuItem.Add(MenuItem);
+        except
+            MenuItem.Free;
+            raise;
+        end;
+      end;
+    except
+        SubMenuItem.Free;
+        raise;
+      end;
+    end;
+  finally
+    INI.Free;
+    Sections.Free;
+    Items.Free;
+    StringList.Free;
+    hicon.Free;
+  end;
 end;
 // ---------------------------------------------------------------------------
 
@@ -2143,7 +2336,7 @@ begin
     sl.Delete(FindString(sl,'['+sl4[h]+']'));
 
     for i := sl.Count-1 downto 0 do
-      if Pos(String(WideUpperCase(searchText)), String(WideUpperCase(sl[i])))<>0 then
+      if Pos(String(UpperCase(searchText)), String(UpperCase(sl[i])))<>0 then
        begin
         StrToList(sl[i],'=',sl2);
         StrToList(sl[i],'|',sl3);
@@ -2221,10 +2414,10 @@ var
 begin
  InsItem := ListView.Items.Add;
  InsItem.Caption:= ACaption;
- InsItem.SubItems.Add(WideUpperCase(Path));
+ InsItem.SubItems.Add(Path);
  InsItem.SubItems.Add(Param);
- InsItem.SubItems.Add(WideUpperCase(Path)); //insert icon path
- Insitem.SubItems.Add(WideUpperCase(WorkingDir)); //insert workdir
+ InsItem.SubItems.Add(Path); //insert icon path
+ Insitem.SubItems.Add(WorkingDir); //insert workdir
  AddIconsToList(PChar(InsItem.SubItems.Strings[2]), sImageList, CurrentIconSize);
  Insitem.ImageIndex := sImageList.Count-1;
 end;
@@ -2352,6 +2545,25 @@ end;
 function GetNotepad: String;
 begin
   Result := GetSpecialFolderLocation(-1, FOLDERID_System)+'notepad.exe';
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to check if is file or folder
+ * @return False is folder or True is file
+ * }
+function CheckPathType(const Path: string): Boolean;
+var
+  SearchRec: TSearchRec;
+begin
+  if FindFirst(Path, faAnyFile, SearchRec) = 0 then
+  try
+    if (SearchRec.Attr and faDirectory) <> 0 then
+      Result := False
+    else
+      Result := True;
+  finally
+    FindClose(SearchRec);
+  end;
 end;
 // ---------------------------------------------------------------------------
 

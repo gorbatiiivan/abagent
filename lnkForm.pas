@@ -65,6 +65,8 @@ type
     LNK_BTN3: TButton;
     LNK_LST_MENU_N3_N1: TMenuItem;
     LNK_LST_MENU_N3_N2: TMenuItem;
+    TrayPopupMenu: TPopupMenu;
+    TrayImageList: TImageList;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -105,6 +107,7 @@ type
     procedure LNK_BTN3Click(Sender: TObject);
     procedure LNK_LST_MENU_N3_N2Click(Sender: TObject);
     procedure LNK_LST_MENU_N3_N1Click(Sender: TObject);
+    procedure TrayPopupMenuPopup(Sender: TObject);
   private
     { Private declarations }
   public
@@ -114,7 +117,7 @@ type
     function GetFLists: TMemIniFile;
     procedure ListPath;
     procedure RegIni(Write: Boolean);
-    procedure ChangeIcons(Size: Integer);
+    procedure ChangeIcons(Size: Cardinal);
     procedure DriveOnClick(Sender: TObject);
     procedure ControlPanelOnClick(Sender: TObject);
     procedure RecycleOnClick(Sender: TObject);
@@ -124,6 +127,7 @@ type
     procedure deleteitemclick(Sender: TObject);
     procedure Translate(aLanguageID: String);
     procedure OpenFileDir(DialogTitle: String; isFileName: Boolean);
+    procedure TrayMenuItemClick(Sender: TObject);
   protected
     procedure WndProc(var Msg: TMessage); message WM_ACTIVATE;
     procedure CreateParams(var Params: TCreateParams); override;
@@ -137,7 +141,7 @@ var
   PosLocked: Boolean = True;
   ON_DragOnDrop: Boolean = False;
   CurrentTab: Integer;//Ctrl+Tab
-  CurrentIconSize: Integer = 0;
+  CurrentIconSize: Cardinal = 0;
   CurrentIconStyle: Integer = 0;
 
 implementation
@@ -168,47 +172,6 @@ with lnk_Form do
      InsertItem.ImageIndex := ImageList2.Count-1;
   end;
 end;
-end;
-
-procedure ADDControlPanelList(PopupMenu: TPopupMenu; Config: TMemIniFile; OnClick: TNotifyEvent);
-var
-  MenuItem : TMenuItem;
-begin
-  PopupMenu.Items.Clear;
-
-  MenuItem := TMenuItem.Create(PopupMenu);
-  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG2,Config.ReadString('General','Language',EN_US));
-  MenuItem.Hint := '/root,"shell:::{26EE0668-A00A-44D7-9371-BEB064C98683}"';
-  MenuItem.OnClick := OnClick;
-  PopupMenu.Items.Add(MenuItem);
-
-  MenuItem := TMenuItem.Create(PopupMenu);
-  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG3,Config.ReadString('General','Language',EN_US));
-  MenuItem.Hint := '/root,"shell:::{21EC2020-3AEA-1069-A2DD-08002B30309D}"';
-  MenuItem.OnClick := OnClick;
-  PopupMenu.Items.Add(MenuItem);
-
-  MenuItem := TMenuItem.Create(PopupMenu);
-  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG4,Config.ReadString('General','Language',EN_US));
-  MenuItem.Hint := '/root,"shell:::{ED7BA470-8E54-465E-825C-99712043E01C}"';
-  MenuItem.OnClick := OnClick;
-  PopupMenu.Items.Add(MenuItem);
-
-  MenuItem := TMenuItem.Create(PopupMenu);
-  MenuItem.Caption := '-';
-  PopupMenu.Items.Add(MenuItem);
-
-  MenuItem := TMenuItem.Create(PopupMenu);
-  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG5,Config.ReadString('General','Language',EN_US));
-  MenuItem.Hint := '/root,"shell:::{74246bfc-4c96-11d0-abef-0020af6b0b7a}"';
-  MenuItem.OnClick := OnClick;
-  PopupMenu.Items.Add(MenuItem);
-
-  MenuItem := TMenuItem.Create(PopupMenu);
-  MenuItem.Caption := _(LNK_UTILS_GLOBAL_TEXT_MSG6,Config.ReadString('General','Language',EN_US));
-  MenuItem.Hint := '/root,"shell:::{BB06C0E4-D293-4f75-8A90-CB05B6477EEE}"';
-  MenuItem.OnClick := OnClick;
-  PopupMenu.Items.Add(MenuItem);
 end;
 
 procedure GetPersonalFolders(ToolBar: TToolBar; Config: TMemIniFile; OnClick: TNotifyEvent);
@@ -334,8 +297,8 @@ begin
      //if File is .lnk extract filename from lnk information
      if ExtractFileExt(s) = '.lnk' then
      begin
-      FileDir := WideUpperCase(PathFromLNK(s));
-      WorkingDirPath := WideUpperCase(WorkingDirFromLNK(s));
+      FileDir := PathFromLNK(s);
+      WorkingDirPath := WorkingDirFromLNK(s);
       if WorkingDirPath = ExtractFileDir(FileDir) then
       WorkingDirPath := '';
       //if is .lnk then extractfiledir from file
@@ -349,7 +312,7 @@ begin
      end else
       //if not File .lnk to read filename from file
       AddItem(Tabs.Tabs[Tabs.TabIndex],ExtractFileName(ChangeFileExt(s,'')),
-              WideUpperCase(s),'',WideUpperCase(s),'');
+              s,'',s,'');
     end;
     DragFinish(HF);
   end;
@@ -357,7 +320,7 @@ end;
 
 //Some functions and procedure.................................................
 
-procedure TLNK_Form.ChangeIcons(Size: Integer);
+procedure TLNK_Form.ChangeIcons(Size: Cardinal);
 begin
 case Size of
 0:
@@ -403,7 +366,7 @@ begin
     InsertItem := List.Items.Add;
     InsertItem.Caption:= StringList[I];
     StrToList(FLists.ReadString(Tabs.Tabs[Tabs.TabIndex], StringList[I], ''),'|',InsertItem.SubItems);
-    AddIconsToList(InsertItem.SubItems[2], ImageList2, CurrentIconStyle);
+    AddIconsToList(InsertItem.SubItems[2], ImageList2, CurrentIconSize);
     InsertItem.ImageIndex := i;
    end;
   finally
@@ -687,8 +650,8 @@ OKName := PChar(_(PROC_CPTN_BTN_BTN2, MainForm.FConfig.ReadString('General','Lan
    begin
     if ExtractFileExt(sFileName) = '.lnk' then
      begin
-      NewFilePath := WideUpperCase(PathFromLNK(sFileName));
-      WorkingDirPath := WideUpperCase(WorkingDirFromLNK(sFileName));
+      NewFilePath := PathFromLNK(sFileName);
+      WorkingDirPath := WorkingDirFromLNK(sFileName);
       if WorkingDirPath = ExtractFileDir(NewFilePath) then
       WorkingDirPath := '';
       //if is .lnk then extractfiledir from file
@@ -702,7 +665,7 @@ OKName := PChar(_(PROC_CPTN_BTN_BTN2, MainForm.FConfig.ReadString('General','Lan
      end else
       //if not File .lnk to read filename from file
       AddItem(Tabs.Tabs[Tabs.TabIndex],ExtractFileName(ChangeFileExt(sFileName,'')),
-              WideUpperCase(sFileName), '', WideUpperCase(sFileName), '');
+              sFileName, '', sFileName, '');
    end;
 end;
 
@@ -936,7 +899,9 @@ end;
 
 procedure TLNK_Form.LNK_BTN2DropDownClick(Sender: TObject);
 begin
-ADDControlPanelList(FPopup, MainForm.FConfig, ControlPanelOnClick);
+//ADDControlPanelList(FPopup, MainForm.FConfig, ControlPanelOnClick);
+FPopup.Items.Clear;
+ADDControlPanelList(FPopup.Items, MainForm.FConfig, ControlPanelOnClick);
 end;
 
 procedure TLNK_Form.LNK_BTN3DropDownClick(Sender: TObject);
@@ -1125,6 +1090,28 @@ else
    end;
   FLists.UpdateFile;
  end;
+end;
+
+procedure TLNK_Form.TrayPopupMenuPopup(Sender: TObject);
+begin
+LoadMenuFromINI(MainForm.FConfig,TrayPopupMenu, TrayImageList, TrayMenuItemClick,
+ DriveOnClick, ControlPanelOnClick, LNK_BTN2Click, LNK_BTN3Click);
+end;
+
+procedure TLNK_Form.TrayMenuItemClick(Sender: TObject);
+var
+ WorkingDir : String;
+ StringList: TStringList;
+begin
+ StringList := TStringList.Create;
+  try
+   StrToList(TMenuItem(Sender).Hint,'|',StringList);
+   if StringList[3] <> '' then
+   WorkingDir := StringList[3] else WorkingDir := StringList[0];
+   RunApplication(StringList[0], StringList[1], WorkingDir);
+  finally
+   StringList.Free;
+  end;
 end;
 
 end.

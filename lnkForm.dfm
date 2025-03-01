@@ -359,4 +359,16 @@ object LNK_Form: TLNK_Form
     Left = 51
     Top = 278
   end
+  object TrayPopupMenu: TPopupMenu
+    Images = TrayImageList
+    OnPopup = TrayPopupMenuPopup
+    Left = 43
+    Top = 343
+  end
+  object TrayImageList: TImageList
+    ColorDepth = cd32Bit
+    DrawingStyle = dsTransparent
+    Left = 83
+    Top = 343
+  end
 end
