@@ -276,10 +276,10 @@ object MainForm: TMainForm
       Center = True
       PopupMenu = ShutdownForm.PopupMenu1
       Transparent = True
-      OnClick = TimerImgClick
+      OnClick = TimerTrayIconDblClick
     end
     object FavImg: TImage
-      Left = 89
+      Left = 92
       Top = 3
       Width = 24
       Height = 24
@@ -288,7 +288,7 @@ object MainForm: TMainForm
       Center = True
       PopupMenu = LNK_Form.GeneralMenu
       Transparent = True
-      OnClick = FavImgClick
+      OnClick = FavTrayDblClick
     end
     object MainImg: TImage
       Left = 8

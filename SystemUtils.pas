@@ -205,8 +205,17 @@ procedure AddMenuItem(Menu: TMenuItem; Tabs: TTabControl; OnClick: TNotifyEvent)
 procedure AddButtonToToolbar(OnClick: TNotifyEvent; var bar: TToolBar; hint: string;
   caption: string; imageindex: Integer; addafteridx: integer = -1);
 procedure ADDControlPanelList(ParentMenu: TMenuItem; Config: TMemIniFile; OnClick: TNotifyEvent);
-procedure LoadMenuFromINI(Config: TMemIniFile; PopupMenu: TPopupMenu; ImageList: TImageList;
+procedure LoadMenuFromINI(Config, ListConfig: TMemIniFile; PopupMenu: TPopupMenu; ImageList: TImageList;
 OnClick, OnDrivesClick, OnControlClick, OnNewControlClick, OnRecycleClick: TNotifyEvent);
+function ButtonExists(ToolBar: TToolBar; Hint: string): Boolean;
+procedure LoadToolButtons(ToolBar: TToolBar; Config: TMemIniFile; ImageList: TImageList;
+  OnButtonClick: TNotifyEvent);
+procedure AddToolButton(ToolBar: TToolBar; Hint, Caption: string; Config: TMemIniFile;
+   ImageList: TImageList; OnButtonClick: TNotifyEvent);
+procedure DeleteToolButton(ToolBar: TToolBar; Hint: string; Config: TMemIniFile;
+  ImageList: TImageList; OnButtonClick: TNotifyEvent);
+procedure AddItemToButtonPopup(ToolBar: TToolBar; Config: TMemIniFile; Form: TForm;
+   OnButtonClick: TNotifyEvent);
 // ---------------------------------------------------------------------------
 
 // DRIVE FUNCTIONS
@@ -245,10 +254,12 @@ procedure GetShellLinkInfo(const LinkFile: WideString; var SLI: TShellLinkInfo);
 function PathFromLNK(LinkFileName: String): String;
 function WorkingDirFromLNK(LinkFileName: String): String;
 procedure FindTextFromTXT(const fileName, searchText: string; ListView: TListView;
-          Config: TMemIniFile; sImageList: TImageList; CurrentIconSize: Integer);
+  Config: TMemIniFile; sImageList: TImageList; CurrentIconSize: Integer);
 function GetSpecialFolderLocation(const Folder: Integer; const FolderNew: TGUID): String;
 procedure AddSystemApps(ListView: TListView; AIndex: Integer; sImageList: TImageList;
-                        CurrentIconSize: Integer);
+  CurrentIconSize: Integer);
+procedure GetPersonalFolders(ToolBar: TToolBar; Config: TMemIniFile; LangName: String;
+  ImageList: TImageList; Form: TForm; OnToolBarClick, OnMenuClick: TNotifyEvent);
 function GetNotepad: String;
 function CheckPathType(const Path: string): Boolean;
 // ---------------------------------------------------------------------------
@@ -662,7 +673,6 @@ end;
  * @param ProcessExeFilename The filename of the executable which created the process
  * @return Success (0) or error code (1)
  * }
-
 function HideWindowsForProcess(ListView: TListView; ProcessExeFilename: String): Integer;
 var
   I, ProcessID1, ProcessID2: Integer;
@@ -841,7 +851,7 @@ begin
     Result := False;
   end;
 end;
-
+// ---------------------------------------------------------------------------
 function GetWinHandleFromProcId(ProcId: DWORD): HWND;
 var
   EnumData: TEnumData;
@@ -1064,6 +1074,7 @@ begin
     Result := 1;
   end;
 end;
+// ---------------------------------------------------------------------------
 { **
  * Wrapper for the function to get status contains files in Recycle Bin
  * @return Boolean (True) or if full (False)
@@ -1220,7 +1231,7 @@ finally
   TempList.Free;
 end;
 end;
-
+// ---------------------------------------------------------------------------
 procedure RemoveFromRegistryControlSet(AppLocation: String);
 var
  TempList: TStringList;
@@ -1350,7 +1361,7 @@ begin
 
   Result := True;
 end;
-
+// ---------------------------------------------------------------------------
 function ObtainTextSid(hToken: THandle; pszSid: PChar;
   var dwBufferLen: DWORD): BOOL;
 type
@@ -1394,7 +1405,7 @@ begin
 
   Result := True;
 end;
-
+// ---------------------------------------------------------------------------
 function GetCurrentUserSid: string;
 var
   hAccessToken: THandle;
@@ -1516,6 +1527,8 @@ function ReadDirectory(List : TStrings; Config: TMemIniFile): Integer;
 begin
 List.Clear;
 Config.ReadSections(List);
+if Config.SectionExists('ToolBar') then
+List.Delete(FindString(List,'Toolbar'));
 end;
 { **
  * Function to delete tab from TTabControl
@@ -1628,7 +1641,7 @@ end;
 { **
  * Function to load all items from INI to PopupMenu
  * }
-procedure LoadMenuFromINI(Config: TMemIniFile; PopupMenu: TPopupMenu; ImageList: TImageList;
+procedure LoadMenuFromINI(Config, ListConfig: TMemIniFile; PopupMenu: TPopupMenu; ImageList: TImageList;
 OnClick, OnDrivesClick, OnControlClick, OnNewControlClick, OnRecycleClick: TNotifyEvent);
 
  function GetSystemIcon(const FileName: string): Integer;
@@ -1691,7 +1704,6 @@ OnClick, OnDrivesClick, OnControlClick, OnNewControlClick, OnRecycleClick: TNoti
  end;
 
 var
-  INI: TMemIniFile;
   Sections, Items: TStringList;
   i, j, IconIndex: Integer;
   MenuItem, SubMenuItem: TMenuItem;
@@ -1701,8 +1713,6 @@ var
 begin
   if not (Assigned(PopupMenu) and Assigned(ImageList) and Assigned(Config)) then Exit;
 
-  INI := TMemIniFile.Create(ExtractFilePath(Application.ExeName) +
-                                    CurrentUserName + '.ablst',TEncoding.UTF8);
   Sections := TStringList.Create;
   Items := TStringList.Create;
   StringList := TStringList.Create;
@@ -1739,7 +1749,7 @@ begin
     end;
 
     // Load sections from INI
-    INI.ReadSections(Sections);
+    ListConfig.ReadSections(Sections);
     for i := 0 to Sections.Count - 1 do
     begin
       Section := Sections[i];
@@ -1748,7 +1758,7 @@ begin
       SubMenuItem.Caption := Section;
       PopupMenu.Items.Add(SubMenuItem);
 
-      INI.ReadSectionValues(Section, Items);
+      ListConfig.ReadSectionValues(Section, Items);
       Items.Sort;
 
       for j := 0 to Items.Count - 1 do
@@ -1785,11 +1795,146 @@ begin
       end;
     end;
   finally
-    INI.Free;
     Sections.Free;
     Items.Free;
     StringList.Free;
     hicon.Free;
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to check if exist button from ToolBar
+ * }
+function ButtonExists(ToolBar: TToolBar; Hint: string): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  for i := 0 to ToolBar.ButtonCount - 1 do
+  begin
+    if SameText(ToolBar.Buttons[i].Hint, Hint) then
+    begin
+      Result := True;
+      Break;
+    end;
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to load all buttons from INI to ToolBar
+ * }
+procedure LoadToolButtons(ToolBar: TToolBar; Config: TMemIniFile; ImageList: TImageList;
+   OnButtonClick: TNotifyEvent);
+
+ procedure ClearToolbarButtons(Toolbar: TToolBar; ImageList: TImageList);
+ var
+  i: Integer;
+ begin
+  for i := Toolbar.ButtonCount - 1 downto 0 do
+    Toolbar.Buttons[i].Free;
+  ImageList.Clear;
+ end;
+
+var
+  ButtonList: TStringList;
+  NewButton: TToolButton;
+  i: Integer;
+  TempButtons: TList;
+  TempList: TStringList;
+begin
+  // Clear existing buttons
+  ClearToolbarButtons(ToolBar, ImageList);
+
+  ButtonList := TStringList.Create;
+  TempButtons := TList.Create;
+  TempList := TStringList.Create;
+  try
+    Config.ReadSectionValues('Toolbar', ButtonList);
+    for i := 0 to ButtonList.Count - 1 do
+    begin
+      if not ButtonExists(ToolBar, ButtonList.Names[i]) then
+      begin
+        NewButton := TToolButton.Create(ToolBar);
+        NewButton.Parent := ToolBar;
+        NewButton.Hint := ButtonList.Names[i];
+        NewButton.Caption := ButtonList.ValueFromIndex[i];
+        NewButton.ShowHint := True;
+        NewButton.OnClick := OnButtonClick;
+        TempButtons.Add(NewButton);
+
+        //Add icons
+        StrToList(ButtonList.ValueFromIndex[i],'|',TempList);
+        if TempList.Count <> -1 then
+         begin
+          AddIconsToList(TempList[2], ImageList, SHIL_LARGE);
+          NewButton.ImageIndex := i;
+         end;
+
+      end;
+    end;
+  finally
+    for i := 0 to TempButtons.Count - 1 do
+    begin
+      if not TToolButton(TempButtons[i]).Parent.ContainsControl(TToolButton(TempButtons[i])) then
+        TToolButton(TempButtons[i]).Free;
+    end;
+    TempButtons.Free;
+    ButtonList.Free;
+    TempList.Free;
+  end;
+
+  //If buttons is 0 then ToolBar is not visible
+  if ToolBar.ButtonCount <> 0 then
+  ToolBar.Visible := True else ToolBar.Visible := False;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to add button to INI and ToolBar
+ * }
+procedure AddToolButton(ToolBar: TToolBar; Hint, Caption: string; Config: TMemIniFile;
+   ImageList: TImageList; OnButtonClick: TNotifyEvent);
+begin
+ Config.WriteString('Toolbar', Hint, Caption);
+ Config.UpdateFile;
+
+ LoadToolButtons(ToolBar, Config, ImageList, OnButtonClick);
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to remove button from INI and ToolBar
+ * }
+procedure DeleteToolButton(ToolBar: TToolBar; Hint: string; Config: TMemIniFile;
+  ImageList: TImageList; OnButtonClick: TNotifyEvent);
+begin
+ Config.DeleteKey('Toolbar', Hint);
+ Config.UpdateFile;
+
+ LoadToolButtons(ToolBar, Config, ImageList, OnButtonClick);
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to add popup menu to all buttons from ToolBar
+ * }
+procedure AddItemToButtonPopup(ToolBar: TToolBar; Config: TMemIniFile; Form: TForm;
+   OnButtonClick: TNotifyEvent);
+var
+  NewMenuItem: TMenuItem;
+  Popup: TPopupMenu;
+  i: Integer;
+begin
+  // Create a single popup menu instance
+  Popup := TPopupMenu.Create(Form);
+
+  // Add the new menu item to the popup menu
+  NewMenuItem := TMenuItem.Create(Popup);
+  NewMenuItem.Caption := _(LNK_CPTN_MENUITEM_LST_N16_2, Config.ReadString('General','Language',EN_US));
+  NewMenuItem.OnClick := OnButtonClick; // Assign the event handler
+  Popup.Items.Add(NewMenuItem);
+
+  // Assign the same popup menu to all buttons in the toolbar
+  for i := 0 to ToolBar.ButtonCount - 1 do
+  begin
+    ToolBar.Buttons[i].PopupMenu := Popup;
   end;
 end;
 // ---------------------------------------------------------------------------
@@ -1838,6 +1983,7 @@ function RemoveDriveFromFile(sFileName: String): String;
 begin
  Result := StringReplace(sFileName, CurDrvFile(sFileName)+':', '', [rfReplaceAll]);
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to convert KB to TB
  * }
@@ -1873,6 +2019,7 @@ begin
   if Units then
     Result := Result + TypeSpace;
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to get the free size on the disk
  * }
@@ -1883,6 +2030,7 @@ begin
   Free   := DiskFree(Ord(Drive) - 64);
   Result := DiskFloatToString(Free,Units);
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to get the size on the disk
  * }
@@ -1893,6 +2041,7 @@ begin
   Size   := DiskSize(Ord(Drive) - 64);
   Result := DiskFloatToString(Size,Units);
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to add drives list to PopupMenu
  * }
@@ -2254,6 +2403,7 @@ begin
  TabList.Tabs.Delete(FindString(TabList.Tabs,'General'));
  if TabList.Tabs.Count <> -1 then TabList.TabIndex := 0;
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to get information on an existing shell link
  * }
@@ -2291,6 +2441,7 @@ begin
   OleCheck(SL.GetHotKey(HotKey));
  end;
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to get path from shell link
  * }
@@ -2301,6 +2452,7 @@ begin
  GetShellLinkInfo(LinkFileName, data);
  Result := data.PathName;
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to get workdir from shell link
  * }
@@ -2311,6 +2463,77 @@ begin
  GetShellLinkInfo(LinkFileName, data);
  Result := data.WorkingDirectory;
 end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to find and delete sections from INI and aasign to TStringsList
+ * }
+function LoadIniWithoutSections(const FileName: string; const SectionsToDelete: array of string): TStringList;
+var
+  SourceLines: TStringList;
+  ResultLines: TStringList;
+  i, j: Integer;
+  Line: string;
+  CurrentSection: string;
+  InDeletedSection: Boolean;
+begin
+  ResultLines := TStringList.Create; // Initialize Result immediately
+  SourceLines := TStringList.Create;
+  try
+    if FileExists(FileName) then
+      SourceLines.LoadFromFile(FileName)
+    else
+    begin
+      Result := ResultLines; // Return an empty TStringList if file doesn't exist
+      SourceLines.Free;
+      Exit;
+    end;
+
+    CurrentSection := '';
+    InDeletedSection := False;
+
+    for i := 0 to SourceLines.Count - 1 do
+    begin
+      Line := Trim(SourceLines[i]);
+
+      if Line = '' then
+      begin
+        if not InDeletedSection then
+          ResultLines.Add(Line);
+        Continue;
+      end;
+
+      if (Length(Line) > 2) and (Line[1] = '[') and (Line[Length(Line)] = ']') then
+      begin
+        CurrentSection := Copy(Line, 2, Length(Line) - 2);
+        InDeletedSection := False;
+        for j := Low(SectionsToDelete) to High(SectionsToDelete) do
+          if SameText(CurrentSection, SectionsToDelete[j]) then
+          begin
+            InDeletedSection := True;
+            Break;
+          end;
+
+        if not InDeletedSection then
+          ResultLines.Add(Line);
+        Continue;
+      end;
+
+      if not InDeletedSection then
+        ResultLines.Add(Line);
+    end;
+
+    Result := ResultLines;
+  except
+    on E: Exception do
+    begin
+      ResultLines.Free;
+      SourceLines.Free;
+      raise;
+    end;
+  end;
+  SourceLines.Free;
+end;
+// ---------------------------------------------------------------------------
 { **
  * Function to find text in file from drive
  * }
@@ -2328,26 +2551,47 @@ begin
   sl4 := TStringList.Create;// delete sections from sl
   try
    ListView.Items.BeginUpdate;
-    sl.LoadFromFile(fileName);
 
-    //delete sections names
+    // Load INI without 'Toolbar' section (avoid reassigning sl directly)
+    sl.Assign(LoadIniWithoutSections(filename,['Toolbar']));
+
+    // Delete section names from sl
     Config.ReadSections(sl4);
-    for h := 0 to sl4.Count -1 do
-    sl.Delete(FindString(sl,'['+sl4[h]+']'));
+    for h := sl4.Count - 1 downto 0 do
+    begin
+      i := sl.IndexOf('[' + sl4[h] + ']');
+      if i <> -1 then
+        sl.Delete(i);
+    end;
 
-    for i := sl.Count-1 downto 0 do
-      if Pos(String(UpperCase(searchText)), String(UpperCase(sl[i])))<>0 then
-       begin
-        StrToList(sl[i],'=',sl2);
-        StrToList(sl[i],'|',sl3);
+    for i := sl.Count - 1 downto 0 do
+    begin
+      if Pos(WideUpperCase(SearchText), WideUpperCase(sl[i])) <> 0 then
+      begin
+        // Assuming StrToList splits a string into a TStringList by a delimiter
+        StrToList(sl[i], '=', sl2);
+        StrToList(sl[i], '|', sl3);
+
         ListItem := ListView.Items.Add;
-        ListItem.Caption := sl2[0];
-        ListItem.SubItems := sl3;
-        ListItem.SubItems[0] := StringReplace(ListItem.SubItems[0],
-                          ListItem.Caption+'=','',[rfReplaceAll, rfIgnoreCase]);
-        AddIconsToList(PChar(ListItem.SubItems.Strings[2]), sImageList, CurrentIconSize);
-        ListItem.ImageIndex := sImageList.Count-1;
+        if sl2.Count > 0 then
+          ListItem.Caption := sl2[0]
+        else
+          ListItem.Caption := ''; // Fallback if no '=' found
+
+        ListItem.SubItems.Assign(sl3);
+        if (sl3.Count > 0) and (ListItem.Caption <> '') then
+          ListItem.SubItems[0] := StringReplace(ListItem.SubItems[0],
+            ListItem.Caption + '=', '', [rfReplaceAll, rfIgnoreCase])
+        else if sl3.Count > 0 then
+          ListItem.SubItems[0] := sl3[0]; // Use raw value if no caption
+
+        if sl3.Count > 2 then
+        begin
+          AddIconsToList(PChar(sl3[2]), sImageList, CurrentIconSize);
+          ListItem.ImageIndex := sImageList.Count - 1;
+        end;
        end;
+    end;
 
   finally
     ListView.Items.EndUpdate;
@@ -2357,6 +2601,7 @@ begin
     sl4.Free;
   end;
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to get special folders from system
  * }
@@ -2401,6 +2646,7 @@ begin
   if Result <> '' then
     Result := IncludeTrailingPathDelimiter(Result);
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to get System apps from System to ListView
  * }
@@ -2539,6 +2785,35 @@ case AIndex of
  end;
 end;
 end;
+//------------------------------------------------------------------------------
+{ **
+ * Function to add Personal folders from System to ToolBar
+ * }
+procedure GetPersonalFolders(ToolBar: TToolBar; Config: TMemIniFile; LangName: String;
+  ImageList: TImageList; Form: TForm; OnToolBarClick, OnMenuClick: TNotifyEvent);
+begin
+ Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG7,LangName),
+ GetSpecialFolderLocation(-1, FOLDERID_Desktop)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Desktop)+'|'+'|');
+ Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG8,LangName),
+ GetSpecialFolderLocation(-1, FOLDERID_Documents)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Documents)+'|'+'|');
+ Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG9,LangName),
+ GetSpecialFolderLocation(-1, FOLDERID_Downloads)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Downloads)+'|'+'|');
+ Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG10,LangName),
+ GetSpecialFolderLocation(-1, FOLDERID_Music)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Music)+'|'+'|');
+ Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG11,LangName),
+ GetSpecialFolderLocation(-1, FOLDERID_Pictures)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Pictures)+'|'+'|');
+ Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG12,LangName),
+ GetSpecialFolderLocation(-1, FOLDERID_SavedGames)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_SavedGames)+'|'+'|');
+ Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG13,LangName),
+ GetSpecialFolderLocation(-1, FOLDERID_Videos)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Videos)+'|'+'|');
+ Config.UpdateFile;
+
+ //Load ToolBar buttons
+ LoadToolButtons(ToolBar, Config, ImageList, OnToolBarClick);
+//Add popup menu to ToolButton
+ AddItemToButtonPopup(ToolBar, Config, Form, OnMenuClick);
+end;
+//------------------------------------------------------------------------------
 { **
  * Function to get notepad location
  * }
@@ -2638,6 +2913,7 @@ begin
    FreeAndNil(Bitmap);
   end;
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to get icon from file
  * }
@@ -2661,6 +2937,7 @@ begin
     FreeLibrary(Handle);
   end;
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to get icon from file
  * }
@@ -2682,6 +2959,7 @@ begin // Get the index of the imagelist
   // extract the icon handle
   aIcon.Handle := ImageList_GetIcon( aImgList, aIndex, ILD_NORMAL );
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to add icons when find from ListView to ImageList
  * }
@@ -2707,6 +2985,7 @@ begin
    hicon.Free;
   end;
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to get icon index from file
  * }
@@ -2717,6 +2996,7 @@ begin
   SHGetFileInfo(PWideChar(AFile), Attrs, SFI, SizeOf(TSHFileInfo),SHGFI_SYSICONINDEX);
   Result := SFI.iIcon;
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to load PNG from resource and put to ImageList
  * }
@@ -2737,6 +3017,7 @@ bmp := TBitmap.Create;
   bmp.Free;
  end;
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to load PNG image from resource
  * }
@@ -2757,6 +3038,7 @@ begin
     Strm.Free;
   end;
 end;
+// ---------------------------------------------------------------------------
 { **
  * Function to load icons from system and imageres.dll and put to ImageList
  * }

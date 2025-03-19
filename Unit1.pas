@@ -89,11 +89,9 @@ type
     procedure LogImgClick(Sender: TObject);
     procedure TitleBarPanel1CustomButtons0Click(Sender: TObject);
     procedure Main_CHKBOX5Click(Sender: TObject);
-    procedure TimerImgClick(Sender: TObject);
     procedure PTabChange(Sender: TObject);
     procedure Main_BTN2Click(Sender: TObject);
     procedure Main_BTN3Click(Sender: TObject);
-    procedure FavImgClick(Sender: TObject);
     procedure FavTrayClick(Sender: TObject);
     procedure TimerTrayIconClick(Sender: TObject);
     procedure Main_BTN9Click(Sender: TObject);
@@ -1025,16 +1023,6 @@ if FileExists(AFile) then
 RunApplication(AFile, '', PChar(ExtractFilePath(AFile)))
 else
 ShowMessage(_(GLOBAL_TEXT_MSG1, FConfig.ReadString('General','Language',EN_US)));
-end;
-
-procedure TMainForm.TimerImgClick(Sender: TObject);
-begin
-ShutdownForm.PopupMenu1.Popup(Mouse.CursorPos.X, Mouse.CursorPos.Y);
-end;
-
-procedure TMainForm.FavImgClick(Sender: TObject);
-begin
-LNK_Form.GeneralMenu.Popup(Mouse.CursorPos.X,Mouse.CursorPos.Y);
 end;
 
 procedure TMainForm.TitleBarPanel1CustomButtons0Click(Sender: TObject);

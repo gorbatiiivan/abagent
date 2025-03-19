@@ -38,7 +38,6 @@ type
     LNK_BTN2: TButton;
     N11: TMenuItem;
     LNK_LST_MENU_N7: TMenuItem;
-    ToolBar1: TToolBar;
     Bevel2: TBevel;
     LNK_GEN_MENU_N6: TMenuItem;
     N13: TMenuItem;
@@ -67,6 +66,10 @@ type
     LNK_LST_MENU_N3_N2: TMenuItem;
     TrayPopupMenu: TPopupMenu;
     TrayImageList: TImageList;
+    ToolBar1: TToolBar;
+    ImageList3: TImageList;
+    LNK_LST_MENU_N16: TMenuItem;
+    LNK_LST_MENU_N17: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -108,6 +111,8 @@ type
     procedure LNK_LST_MENU_N3_N2Click(Sender: TObject);
     procedure LNK_LST_MENU_N3_N1Click(Sender: TObject);
     procedure TrayPopupMenuPopup(Sender: TObject);
+    procedure LNK_LST_MENU_N16Click(Sender: TObject);
+    procedure LNK_LST_MENU_N17Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -128,6 +133,7 @@ type
     procedure Translate(aLanguageID: String);
     procedure OpenFileDir(DialogTitle: String; isFileName: Boolean);
     procedure TrayMenuItemClick(Sender: TObject);
+    procedure ToolBarMenuClick(Sender: TObject);
   protected
     procedure WndProc(var Msg: TMessage); message WM_ACTIVATE;
     procedure CreateParams(var Params: TCreateParams); override;
@@ -173,23 +179,6 @@ with lnk_Form do
   end;
 end;
 end;
-
-procedure GetPersonalFolders(ToolBar: TToolBar; Config: TMemIniFile; OnClick: TNotifyEvent);
-var
- I: Integer;
-begin
-  //Delete all buttons
-  for I := ToolBar.ButtonCount - 1 downto 0 do
-  ToolBar.Buttons[I].Free;
-  //Create buttons
-  AddButtonToToolbar(OnClick, ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG7,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Desktop),4,0);
-  AddButtonToToolbar(OnClick, ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG8,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Documents),5,1);
-  AddButtonToToolbar(OnClick, ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG9,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Downloads),6,2);
-  AddButtonToToolbar(OnClick, ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG10,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Music),7,3);
-  AddButtonToToolbar(OnClick, ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG11,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Pictures),8,4);
-  AddButtonToToolbar(OnClick, ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG12,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_SavedGames),9,5);
-  AddButtonToToolbar(OnClick, ToolBar,_(LNK_UTILS_GLOBAL_TEXT_MSG13,Config.ReadString('General','Language',EN_US)),GetSpecialFolderLocation(-1, FOLDERID_Videos),10,6);
-end;
 //------------------------------------------------------------------------------
 
 procedure TLNK_Form.Translate(aLanguageID: String);
@@ -225,13 +214,13 @@ begin
   Icon1.Caption := _(LNK_CPTN_MENUITEM_LST_ICON, aLanguageID);
   Tile1.Caption := _(LNK_CPTN_MENUITEM_LST_TILE, aLanguageID);
   LNK_LST_MENU_N15.Caption := _(LNK_CPTN_MENUITEM_LST_N15, aLanguageID);
+  LNK_LST_MENU_N16.Caption := _(LNK_CPTN_MENUITEM_LST_N16_1, aLanguageID);
+  LNK_LST_MENU_N17.Caption := _(LNK_CPTN_MENUITEM_LST_N17, aLanguageID);
   LNK_SPD_BTN1.Hint := _(GLOBAL_HINT_IMG_TimerImg, aLanguageID);
   LNK_BTN1.Hint := _(LNK_HINT_BTN_BTN1, aLanguageID);
   LNK_BTN2.Hint := _(LNK_HINT_BTN_BTN2, aLanguageID);
   LNK_BTN3.Hint := _(LNK_HINT_SPDBTN_BTN2, aLanguageID);
   LNK_SPD_BTN3.Hint := _(GLOBAL_HINT_CAPT_BTN1, aLanguageID)+' (Esc)';
-  //Create buttons
-  GetPersonalFolders(ToolBar1, MainForm.FConfig, ToolBarOnClick);
 end;
 
 //Window procedure.............................................................
@@ -446,16 +435,16 @@ GetFLists;
 ReadDirectory(Tabs.Tabs, FLists);
 //Read from config file
 RegIni(False);
-//if not exists tabs to create systems tabs
-if Tabs.Tabs.Count = 0 then
- begin
-  LNK_LST_MENU_N11Click(Sender);
-  LNK_LST_MENU_N12Click(Sender);
- end;
 TabsChange(Sender);
 DragAcceptFiles(LNK_Form.Handle,true);
-GetPersonalFolders(ToolBar1, MainForm.FConfig, ToolBarOnClick);
+//Load ToolBar buttons
+LoadToolButtons(ToolBar1, FLists, ImageList3, ToolBarOnClick);
+//Add popup menu to ToolButton
+AddItemToButtonPopup(ToolBar1, MainForm.FConfig, LNK_Form, ToolBarMenuClick);
 AddIconsToImgList(ImageList1);
+//Load Tray menu
+LoadMenuFromINI(MainForm.FConfig, FLists, TrayPopupMenu, TrayImageList, TrayMenuItemClick,
+ DriveOnClick, ControlPanelOnClick, LNK_BTN2Click, LNK_BTN3Click);
 Translate(MainForm.FConfig.ReadString('General','Language',EN_US));
 end;
 
@@ -534,14 +523,14 @@ end;
 
 procedure TLNK_Form.TabsChange(Sender: TObject);
 begin
-if Tabs.Tabs.Count <> -1 then
+if Tabs.Tabs.Count <> 0 then
  begin
   ChangeIcons(CurrentIconSize);
   ListPath;
   Caption := Tabs.Tabs[Tabs.TabIndex];
   MainForm.FavTray.Hint := Tabs.Tabs[Tabs.TabIndex];
   FindEdit.Text := '';
- end;
+ end else List.Items.Clear;
 end;
 
 procedure TLNK_Form.LNK_BTN1Click(Sender: TObject);
@@ -597,7 +586,15 @@ end;
 
 procedure TLNK_Form.FindEditChange(Sender: TObject);
 begin
-if FindEdit.Text = '' then TabsChange(Self) else
+if Tabs.Tabs.Count <> 0 then
+if FindEdit.Text = '' then
+ begin
+  ChangeIcons(CurrentIconSize);
+  ListPath;
+  Caption := Tabs.Tabs[Tabs.TabIndex];
+  MainForm.FavTray.Hint := Tabs.Tabs[Tabs.TabIndex];
+  FindEdit.Text := '';
+ end else
  begin
   FindTextFromTXT(ExtractFilePath(Application.ExeName) + CurrentUserName + '.ablst',
                   FindEdit.Text, List, FLists, ImageList2, CurrentIconStyle);
@@ -671,11 +668,13 @@ end;
 
 procedure TLNK_Form.LNK_LST_MENU_N3_N1Click(Sender: TObject);
 begin
+if Tabs.Tabs.Count <> 0 then
 OpenFileDir(GLOBAL_TEXT_DIAG1, True);
 end;
 
 procedure TLNK_Form.LNK_LST_MENU_N3_N2Click(Sender: TObject);
 begin
+if Tabs.Tabs.Count <> 0 then
 OpenFileDir(GLOBAL_TEXT_DIAG2, False);
 end;
 
@@ -747,6 +746,18 @@ end;
 end;
 
 procedure TLNK_Form.deleteitemclick(Sender: TObject);
+
+procedure ChangeToNextTab(TabControl: TTabControl);
+begin
+  if TabControl.Tabs.Count > 0 then
+  begin
+    if TabControl.TabIndex < TabControl.Tabs.Count - 1 then
+      TabControl.TabIndex := TabControl.TabIndex + 1
+    else
+      TabControl.TabIndex := 0;
+  end;
+end;
+
 var
  ACaption: String;
 begin
@@ -761,12 +772,18 @@ if LNK_Form.Caption = ACaption then
  begin
   if Tabs.Tabs.Count = 0 then
    begin
-    LNK_LST_MENU_N11Click(Sender);
-    LNK_LST_MENU_N12Click(Sender);
+    List.Items.Clear;
+    Caption := '';
+    MainForm.FavTray.Hint := '';
+    FindEdit.Text := '';
    end else
    begin
-    Tabs.TabIndex := 0;
-    TabsChange(Sender);
+    ChangeToNextTab(Tabs);
+    ChangeIcons(CurrentIconSize);
+    ListPath;
+    Caption := Tabs.Tabs[Tabs.TabIndex];
+    MainForm.FavTray.Hint := Tabs.Tabs[Tabs.TabIndex];
+    FindEdit.Text := '';
    end;
  end;
 end;
@@ -841,17 +858,42 @@ end;
 
 procedure TLNK_Form.PopupMenuPopup(Sender: TObject);
 begin
- if List.Selected <> nil then LNK_LST_MENU_N4.Enabled := True else LNK_LST_MENU_N4.Enabled := False;
- if List.Selected <> nil then LNK_LST_MENU_N6.Enabled := True else LNK_LST_MENU_N6.Enabled := False;
- if Caption = '' then LNK_LST_MENU_N3.Enabled := False else LNK_LST_MENU_N3.Enabled := True;
- if Caption = '' then LNK_LST_MENU_N9.Enabled := False else LNK_LST_MENU_N9.Enabled := True;
- if List.Selected <> nil then LNK_LST_MENU_N1.Enabled := True else LNK_LST_MENU_N1.Enabled := False;
- if List.Selected <> nil then LNK_LST_MENU_N2.Enabled := True else LNK_LST_MENU_N2.Enabled := False;
- if List.Selected <> nil then LNK_LST_MENU_N7.Enabled := True else LNK_LST_MENU_N7.Enabled := False;
- if List.Selected <> nil then LNK_LST_MENU_N5.Enabled := True else LNK_LST_MENU_N5.Enabled := False;
- if List.Selected <> nil then LNK_LST_MENU_N15.Enabled := True else LNK_LST_MENU_N15.Enabled := False;
- if List.Selected <> nil then AddMenuItem(LNK_LST_MENU_N5, Tabs, copyitemclick);
- if List.Selected <> nil then AddMenuItem(LNK_LST_MENU_N6, Tabs, moveitemclick);
+ if Tabs.Tabs.Count = 0 then
+  begin
+   LNK_LST_MENU_N3.Enabled := False;
+   LNK_LST_MENU_N9.Enabled := False;
+  end else
+  begin
+   LNK_LST_MENU_N3.Enabled := True;
+   LNK_LST_MENU_N9.Enabled := True;
+  end;
+ if List.Selected <> nil then
+  begin
+   LNK_LST_MENU_N4.Enabled := True;
+   LNK_LST_MENU_N6.Enabled := True;
+   LNK_LST_MENU_N1.Enabled := True;
+   LNK_LST_MENU_N2.Enabled := True;
+   LNK_LST_MENU_N7.Enabled := True;
+   LNK_LST_MENU_N5.Enabled := True;
+   LNK_LST_MENU_N15.Enabled := True;
+   LNK_LST_MENU_N16.Enabled := True;
+   if FLists.ValueExists('Toolbar', List.Selected.Caption) then
+   LNK_LST_MENU_N16.Caption := _(LNK_CPTN_MENUITEM_LST_N16_2, MainForm.FConfig.ReadString('General','Language',EN_US))
+   else
+   LNK_LST_MENU_N16.Caption := _(LNK_CPTN_MENUITEM_LST_N16_1, MainForm.FConfig.ReadString('General','Language',EN_US));
+   AddMenuItem(LNK_LST_MENU_N5, Tabs, copyitemclick);
+   AddMenuItem(LNK_LST_MENU_N6, Tabs, moveitemclick);
+  end else
+  begin
+   LNK_LST_MENU_N4.Enabled := False;
+   LNK_LST_MENU_N6.Enabled := False;
+   LNK_LST_MENU_N1.Enabled := False;
+   LNK_LST_MENU_N2.Enabled := False;
+   LNK_LST_MENU_N7.Enabled := False;
+   LNK_LST_MENU_N5.Enabled := False;
+   LNK_LST_MENU_N15.Enabled := False;
+   LNK_LST_MENU_N16.Enabled := False;
+  end;
  AddMenuItem(LNK_LST_MENU_N9, Tabs, deleteitemclick);
 end;
 
@@ -885,10 +927,25 @@ begin
 end;
 
 procedure TLNK_Form.ToolBarOnClick(Sender: TObject);
+var
+ TempList: TStringList;
+ i: Integer;
+ WorkingDir : String;
 begin
- RunApplication(TToolButton(Sender).Caption,'',
-                ExtractFilePath(TToolButton(Sender).Caption), SW_MAXIMIZE);
- if (LNK_GEN_MENU_N3.Checked) then Hide;
+ TempList := TStringList.Create;
+ try
+  StrToList(TToolButton(Sender).Caption,'|',TempList);
+  if TempList[3] <> '' then
+  WorkingDir := TempList[3] else
+  WorkingDir := ExtractFilePath(TempList[0]);
+
+  if TempList.Count <> -1 then
+  RunApplication(TempList[0],TempList[1], WorkingDir);
+
+  if (LNK_GEN_MENU_N3.Checked) then Hide;
+ finally
+  TempList.Free;
+ end;
 end;
 
 procedure TLNK_Form.LNK_BTN1DropDownClick(Sender: TObject);
@@ -997,6 +1054,43 @@ with MainForm do
  end;
 end;
 
+procedure TLNK_Form.LNK_LST_MENU_N16Click(Sender: TObject);
+var
+ sCaption: String;
+begin
+sCaption := FLists.ReadString(Tabs.Tabs[Tabs.TabIndex],List.Selected.Caption,'');
+if not FLists.ValueExists('Toolbar', List.Selected.Caption) then
+AddToolButton(Toolbar1,List.Selected.Caption,sCaption,FLists,ImageList3,ToolBarOnClick)
+else
+DeleteToolButton(ToolBar1,List.Selected.Caption,FLists, ImageList3, ToolBarOnClick);
+
+//Add popup menu to ToolButton
+AddItemToButtonPopup(ToolBar1, MainForm.FConfig, LNK_Form, ToolBarMenuClick);
+end;
+
+procedure TLNK_Form.LNK_LST_MENU_N17Click(Sender: TObject);
+var
+ lang: String;
+begin
+ lang := MainForm.FConfig.ReadString('General','Language',EN_US);
+ GetPersonalFolders(ToolBar1, FLists, lang, ImageList3, LNK_Form, ToolBarOnClick,
+   ToolBarMenuClick);
+end;
+
+procedure TLNK_Form.ToolBarMenuClick(Sender: TObject);
+var
+Button: TToolButton;
+begin
+if (Sender is TMenuItem) and (TPopupMenu(TMenuItem(Sender).GetParentMenu).PopupComponent is TToolButton) then
+  begin
+    Button := TToolButton(TPopupMenu(TMenuItem(Sender).GetParentMenu).PopupComponent);
+    DeleteToolButton(ToolBar1,Button.Hint,FLists, ImageList3, ToolBarOnClick);
+  end;
+
+//Add popup menu to ToolButton
+AddItemToButtonPopup(ToolBar1, MainForm.FConfig, LNK_Form, ToolBarMenuClick);
+end;
+
 procedure TLNK_Form.LNK_GEN_MENU_N1Click(Sender: TObject);
 var
  Input: TInput;
@@ -1064,6 +1158,8 @@ else
     List.Items[I].SubItems[2]+'|'+List.Items[I].SubItems[3]+'|');
    end;
   FLists.UpdateFile;
+  //Change to this tab
+  TabsChange(Sender);
  end;
 end;
 
@@ -1089,12 +1185,14 @@ else
     List.Items[I].SubItems[2]+'|'+List.Items[I].SubItems[3]+'|');
    end;
   FLists.UpdateFile;
+  //Change to this tab
+  TabsChange(Sender);
  end;
 end;
 
 procedure TLNK_Form.TrayPopupMenuPopup(Sender: TObject);
 begin
-LoadMenuFromINI(MainForm.FConfig,TrayPopupMenu, TrayImageList, TrayMenuItemClick,
+LoadMenuFromINI(MainForm.FConfig, FLists, TrayPopupMenu, TrayImageList, TrayMenuItemClick,
  DriveOnClick, ControlPanelOnClick, LNK_BTN2Click, LNK_BTN3Click);
 end;
 

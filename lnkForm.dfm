@@ -22,9 +22,9 @@ object LNK_Form: TLNK_Form
   object Tabs: TTabControl
     AlignWithMargins = True
     Left = 3
-    Top = 87
+    Top = 77
     Width = 694
-    Height = 371
+    Height = 381
     Align = alClient
     BiDiMode = bdLeftToRight
     ParentBiDiMode = False
@@ -34,7 +34,7 @@ object LNK_Form: TLNK_Form
       Left = 4
       Top = 6
       Width = 686
-      Height = 361
+      Height = 371
       Align = alClient
       BorderStyle = bsNone
       Columns = <
@@ -63,14 +63,14 @@ object LNK_Form: TLNK_Form
     Left = 0
     Top = 0
     Width = 700
-    Height = 84
+    Height = 36
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
     OnMouseDown = PanelMouseDown
     object LNK_SPD_BTN3: TSpeedButton
       Left = 673
-      Top = 6
+      Top = 0
       Width = 20
       Height = 20
       Hint = 'Hide (Esc)'
@@ -86,21 +86,21 @@ object LNK_Form: TLNK_Form
     end
     object Bevel1: TBevel
       Left = 42
-      Top = 8
+      Top = 2
       Width = 9
       Height = 28
       Shape = bsLeftLine
     end
     object Bevel2: TBevel
       Left = 230
-      Top = 8
+      Top = 2
       Width = 9
       Height = 28
       Shape = bsLeftLine
     end
     object LNK_SPD_BTN1: TSpeedButton
       Left = 4
-      Top = 6
+      Top = 0
       Width = 34
       Height = 32
       Hint = 'Timer'
@@ -111,7 +111,7 @@ object LNK_Form: TLNK_Form
     end
     object LNK_BTN1: TButton
       Left = 50
-      Top = 6
+      Top = 0
       Width = 54
       Height = 32
       Hint = 'My Computer'
@@ -125,7 +125,7 @@ object LNK_Form: TLNK_Form
     object LNK_BTN2: TButton
       Tag = 1
       Left = 110
-      Top = 6
+      Top = 0
       Width = 54
       Height = 32
       Hint = 'Settings'
@@ -136,39 +136,39 @@ object LNK_Form: TLNK_Form
       OnClick = LNK_BTN2Click
       OnDropDownClick = LNK_BTN2DropDownClick
     end
-    object ToolBar1: TToolBar
-      Left = 0
-      Top = 44
-      Width = 272
-      Height = 43
-      Align = alNone
-      ButtonHeight = 38
-      ButtonWidth = 39
-      Caption = 'ToolBar1'
-      Images = ImageList1
-      TabOrder = 2
-    end
     object FindEdit: TEdit
       Left = 238
-      Top = 11
+      Top = 5
       Width = 135
       Height = 21
-      TabOrder = 3
+      TabOrder = 2
       OnChange = FindEditChange
     end
     object LNK_BTN3: TButton
       Left = 170
-      Top = 6
+      Top = 0
       Width = 54
       Height = 32
       Hint = 'My Computer'
       ImageIndex = 2
       Images = ImageList1
       Style = bsSplitButton
-      TabOrder = 4
+      TabOrder = 3
       OnClick = LNK_BTN3Click
       OnDropDownClick = LNK_BTN3DropDownClick
     end
+  end
+  object ToolBar1: TToolBar
+    Left = 0
+    Top = 36
+    Width = 700
+    Height = 38
+    AutoSize = True
+    ButtonHeight = 38
+    ButtonWidth = 39
+    Caption = 'ToolBar1'
+    Images = ImageList3
+    TabOrder = 2
   end
   object PopupMenu: TPopupMenu
     OnPopup = PopupMenuPopup
@@ -226,6 +226,11 @@ object LNK_Form: TLNK_Form
       ShortCut = 16464
       OnClick = LNK_LST_MENU_N7Click
     end
+    object LNK_LST_MENU_N16: TMenuItem
+      Caption = 'Add to toolbar'
+      ShortCut = 16468
+      OnClick = LNK_LST_MENU_N16Click
+    end
     object N11: TMenuItem
       Caption = '-'
     end
@@ -249,6 +254,10 @@ object LNK_Form: TLNK_Form
       object LNK_LST_MENU_N12: TMenuItem
         Caption = 'Folders'
         OnClick = LNK_LST_MENU_N12Click
+      end
+      object LNK_LST_MENU_N17: TMenuItem
+        Caption = 'Add personal folders'
+        OnClick = LNK_LST_MENU_N17Click
       end
     end
     object N9: TMenuItem
@@ -309,8 +318,8 @@ object LNK_Form: TLNK_Form
   end
   object GeneralMenu: TPopupMenu
     OnPopup = GeneralMenuPopup
-    Left = 48
-    Top = 160
+    Left = 112
+    Top = 104
     object LNK_GEN_MENU_N1: TMenuItem
       Caption = 'Show'
       Default = True
@@ -356,19 +365,27 @@ object LNK_Form: TLNK_Form
     DrawingStyle = dsTransparent
     Height = 32
     Width = 32
-    Left = 51
-    Top = 278
+    Left = 107
+    Top = 222
   end
   object TrayPopupMenu: TPopupMenu
     Images = TrayImageList
     OnPopup = TrayPopupMenuPopup
-    Left = 43
-    Top = 343
+    Left = 179
+    Top = 103
   end
   object TrayImageList: TImageList
     ColorDepth = cd32Bit
     DrawingStyle = dsTransparent
-    Left = 83
-    Top = 343
+    Left = 235
+    Top = 223
+  end
+  object ImageList3: TImageList
+    ColorDepth = cd32Bit
+    DrawingStyle = dsTransparent
+    Height = 32
+    Width = 32
+    Left = 171
+    Top = 222
   end
 end

@@ -58,8 +58,9 @@ begin
                      ' '+LowerCase(_(LNK_CPTN_MENUITEM_LST_N3_N2, aLanguageID));
   HELPFORM_LSTVIEW1.Items.Item[10].Caption := _(LNK_CPTN_MENUITEM_LST_N4, aLanguageID);
   HELPFORM_LSTVIEW1.Items.Item[11].Caption := _(LNK_CPTN_MENUITEM_LST_N7, aLanguageID);
-  HELPFORM_LSTVIEW1.Items.Item[12].Caption := _(LNK_CPTN_MENUITEM_LST_N8, aLanguageID);
-  HELPFORM_LSTVIEW1.Items.Item[13].Caption := _(LNK_CPTN_MENUITEM_LST_N15, aLanguageID);
+  HELPFORM_LSTVIEW1.Items.Item[12].Caption := _(LNK_CPTN_MENUITEM_LST_N16_1, aLanguageID);
+  HELPFORM_LSTVIEW1.Items.Item[13].Caption := _(LNK_CPTN_MENUITEM_LST_N8, aLanguageID);
+  HELPFORM_LSTVIEW1.Items.Item[14].Caption := _(LNK_CPTN_MENUITEM_LST_N15, aLanguageID);
 end;
 
 procedure THelpForm.FormCreate(Sender: TObject);
