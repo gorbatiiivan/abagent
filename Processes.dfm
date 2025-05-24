@@ -86,6 +86,11 @@ object ProcessesForm: TProcessesForm
           item
             AutoSize = True
             Caption = 'Hidding processes'
+          end
+          item
+            Alignment = taRightJustify
+            Caption = 'PID'
+            Width = 100
           end>
         ColumnClick = False
         ReadOnly = True

@@ -5,7 +5,7 @@ interface
 uses MMDevApi, Windows, Classes, Registry, SysUtils, ActiveX, TlHelp32, ShlObj,
      MMSystem, WinInet, ShellApi, Messages, Variants, Generics.Collections,
      ComCtrls, WinSvc, IniFiles, Forms, ComObj, StdCtrls, Types, IOUtils,
-     Controls, PngImage, Graphics, Menus, CommCtrl;
+     Controls, PngImage, Graphics, Menus, CommCtrl, ExtCtrls, AudioProcessController;
 
 // ---------------------------------------------------------------------------
 // GetWinHandleFromProcId
@@ -155,22 +155,18 @@ function CheckRunAtStartupByScheduledTask(const TaskName: string): Boolean;
 // ---------------------------------------------------------------------------
 function GetProcessID_(ProcessExeFilename: String): DWORD;
 function TerminateProcessById(ProcessID: DWORD): Boolean;
-function CloseWindowsForProcess(ProcessExeFilename: String): Integer;
-function HideWindowsForProcess(ListView: TListView; ProcessExeFilename: String): Integer;
 function MinimizeWindowsForProcess(ProcessExeFilename: String): Integer;
-function RestoreWindowsForProcess(ProcessExeFilename: String): Integer;
-function ShowWindowInTaskbar(hWndOwner: HWnd): Integer;
-function ShowAllHiddenWindowsInTaskbar(ListView: TListView; ProcessExeFilename: String): Integer;
-function HideWindowFromTaskbar(hWndOwner: HWnd): Integer;
 function EnumWindowsProcMatchPID(WHdl: HWND; EData: PEnumData): bool; stdcall;
 function GetWinHandleFromProcId(ProcId: DWORD): HWND;
 function IsProcessRunning(const AFileName: string): Boolean;
+function IsUWPProcess(const ExeName: string): Boolean;
 // ---------------------------------------------------------------------------
 
 // SOUND CONTROL FUNCTIONS
 // ---------------------------------------------------------------------------
 function SetMasterMute(MuteValue: Boolean): Integer;
-procedure MuteForProcess(Config: TMemIniFile; ProcessName: String; Mute: Boolean);
+procedure MuteForProcess(Config: TMemIniFile; Section, ProcessName: String;
+                       Mute: Boolean; AudioController: TAudioProcessController);
 // ---------------------------------------------------------------------------
 
 // HISTORY CLEANING FUNCTIONS
@@ -202,6 +198,7 @@ procedure DeleteItemByName(ListView: TListView; const ItemName: string);
 function ReadDirectory(List : TStrings; Config: TMemIniFile): Integer;
 procedure DeleteAt(cbActive: TTabControl;idx: Integer);
 procedure AddMenuItem(Menu: TMenuItem; Tabs: TTabControl; OnClick: TNotifyEvent);
+procedure ChangeToNextTab(TabControl: TTabControl);
 procedure AddButtonToToolbar(OnClick: TNotifyEvent; var bar: TToolBar; hint: string;
   caption: string; imageindex: Integer; addafteridx: integer = -1);
 procedure ADDControlPanelList(ParentMenu: TMenuItem; Config: TMemIniFile; OnClick: TNotifyEvent);
@@ -216,6 +213,7 @@ procedure DeleteToolButton(ToolBar: TToolBar; Hint: string; Config: TMemIniFile;
   ImageList: TImageList; OnButtonClick: TNotifyEvent);
 procedure AddItemToButtonPopup(ToolBar: TToolBar; Config: TMemIniFile; Form: TForm;
    OnButtonClick: TNotifyEvent);
+procedure FlashWindow(FormHandle: HWND);
 // ---------------------------------------------------------------------------
 
 // DRIVE FUNCTIONS
@@ -238,6 +236,7 @@ function FindStringInStringList(sList: TStringList; const SearchStr: string;
    CaseSensitive: Boolean = False): Integer;
 procedure ProcessToList(MyList: TStrings);
 procedure RemoveDuplicateItems(ListBox: TListBox);
+function StringListToArray(StringList: TStringList): TArray<string>;
 // ---------------------------------------------------------------------------
 
 // FILENAME FUNCTIONS
@@ -280,6 +279,7 @@ function GetIconIndex(const AFile: string; Attrs: DWORD): integer;
 procedure LoadPngFromRes(PngName: String; ImageList: TImageList);
 function LoadImageResource(const ResName: string): TPngImage;
 procedure AddIconsToImgList(ImageList: TImageList);
+procedure DrawIconToPaintBox(PaintBox: TPaintBox; Icon: TIcon; X, Y: Integer);
 // ---------------------------------------------------------------------------
 
 implementation
@@ -638,73 +638,6 @@ begin
 end;
 // ---------------------------------------------------------------------------
 { **
- * Function for closing the windows of a process
- * @param ProcessExeFilename The filename of the executable which created the process
- * @return Success (0) or error code (1)
- * }
-function CloseWindowsForProcess(ProcessExeFilename: String): Integer;
-var
-  I, ProcessID1, ProcessID2: Integer;
-begin
-  try
-    WindowsHandleList := TList<Cardinal>.Create();
-    // Finding out the PID of the selected task!
-    ProcessID1 := GetProcessID_(ProcessExeFilename);
-    // Storing the handles of all active windows in an array!
-    EnumWindows(@GetWindowsHandleList, 0);
-    for I := 0 to WindowsHandleList.Count - 1 do begin
-    // Detecting the PID of the windows using their handles...
-      GetWindowThreadProcessID(WindowsHandleList[I], @ProcessID2);
-      // ... and then is compared with the PID of all tasks to find out whick task created that window!
-      if (ProcessID1 = ProcessID2) then begin
-        // Closing the window of the selected task!
-        SendMessage(WindowsHandleList[I], WM_SYSCOMMAND, SC_CLOSE, 0);
-      end;
-    end;
-    WindowsHandleList.Free();
-    Result := 0;
-  except
-    Result := 1;
-  end;
-end;
-// ---------------------------------------------------------------------------
-{ **
- * Function for hiding the windows of a process
- * @param ProcessExeFilename The filename of the executable which created the process
- * @return Success (0) or error code (1)
- * }
-function HideWindowsForProcess(ListView: TListView; ProcessExeFilename: String): Integer;
-var
-  I, ProcessID1, ProcessID2: Integer;
-  L: integer;
-  Item: TListItem;
-begin
-  try
-    WindowsHandleList := TList<Cardinal>.Create();
-  // Finding out the PID of the selected task!
-    ProcessID1 := GetProcessID_(ProcessExeFilename);
-  // Storing the handles of all active windows in an array!
-    EnumWindows(@GetWindowsHandleList, 0);
-    for I := 0 to WindowsHandleList.Count - 1 do begin
-    // Detecting the PID of the windows using their handles...
-      GetWindowThreadProcessID(WindowsHandleList[I], @ProcessID2);
-    // ... and then is compared with the PID of all tasks to find out whick task created that window!
-      if (ProcessID1 = ProcessID2) then begin
-      // Hiding the window of the selected task!
-        SendMessage(WindowsHandleList[I], WM_SYSCOMMAND, SC_MINIMIZE, 0);
-        HideWindowFromTaskbar(WindowsHandleList[I]);
-      // Saving the handles of the windows that need to be redisplayed!
-        AddSubItemsToItemByName(ListView, ProcessExeFilename,[IntToStr(WindowsHandleList[I])]);
-      end;
-    end;
-    WindowsHandleList.Free();
-    Result := 0;
-  except
-    Result := 1;
-  end;
-end;
-// ---------------------------------------------------------------------------
-{ **
  * Function for minimizing the windows of a process
  * @param ProcessExeFilename The filename of the executable which created the process
  * @return Success (0) or error code (1)
@@ -729,106 +662,6 @@ begin
       end;
     end;
     WindowsHandleList.Free();
-    Result := 0;
-  except
-    Result := 1;
-  end;
-end;
-// ---------------------------------------------------------------------------
-{ **
- * Function for restore the windows of a process
- * @param ProcessExeFilename The filename of the executable which created the process
- * @return Success (0) or error code (1)
- * }
-function RestoreWindowsForProcess(ProcessExeFilename: String): Integer;
-var
-  I, ProcessID1, ProcessID2: Integer;
-begin
-  try
-    WindowsHandleList := TList<Cardinal>.Create();
-  // Finding out the PID of the selected task!
-    ProcessID1 := GetProcessID_(ProcessExeFilename);
-  // Storing the handles of all active windows in an array!
-    EnumWindows(@GetWindowsHandleList, 0);
-    for I := 0 to WindowsHandleList.Count - 1 do begin
-    // Detecting the PID of the windows using their handles...
-      GetWindowThreadProcessID(WindowsHandleList[I], @ProcessID2);
-    // ... and then is compared with the PID of all tasks to find out whick task created that window!
-      if (ProcessID1 = ProcessID2) then begin
-      // Minimizing to taskbar!
-        SendMessage(WindowsHandleList[I], WM_SYSCOMMAND, SC_RESTORE, 0);
-      end;
-    end;
-    WindowsHandleList.Free();
-    Result := 0;
-  except
-    Result := 1;
-  end;
-end;
-// ---------------------------------------------------------------------------
-{ **
- * Function for showing windows in taskbar
- * @param hWndOwner Handler of the window
- * @return Success (0) or error code (1)
- * }
-function ShowWindowInTaskbar(hWndOwner: HWnd): Integer;
-var
-  hParent: tHandle;
-begin
-  try
-    hParent := GetWindow(hWndOwner, GW_OWNER);
-    if (hParent <> 0) then begin
-      hWndOwner := hParent;
-    end;
-    ShowWindow(hWndOwner, SW_SHOW);
-    Result := 1;
-  except
-    Result := 0;
-  end;
-end;
-// ---------------------------------------------------------------------------
-{ **
- * Function for showing all hidden windows in taskbar
- * @return Success (0) or error code (1)
- * }
-function ShowAllHiddenWindowsInTaskbar(ListView: TListView; ProcessExeFilename: String): Integer;
-var
-  I: Integer;
-  SubItems: TStringList;
-begin
-  try
-    SubItems := GetSubItemsFromItemName(ListView, ProcessExeFilename);
-     try
-      if SubItems.Count > 0 then
-       begin
-        for i := 0 to SubItems.Count - 1 do
-        ShowWindowInTaskbar(StrToInt(SubItems[i]));
-       end;
-     finally
-      SubItems.Free;
-     end;
-     DeleteItemByName(ListView,ProcessExeFilename);
-    Result := 1;
-  except
-    Result := 0;
-  end;
-end;
-// ---------------------------------------------------------------------------
-{ **
- * Function for hiding window from taskbar
- * @param hWndOwner Handler of the window
- * @return Success (0) or error code (1)
- * }
-function HideWindowFromTaskbar(hWndOwner: HWnd): Integer;
-var
-  hParent: tHandle;
-begin
-  try
-    hParent := GetWindow(hWndOwner, GW_OWNER);
-    if (hParent <> 0) then begin
-      hWndOwner := hParent;
-    end;
-    ShowWindow(hWndOwner, SW_HIDE);
     Result := 0;
   except
     Result := 1;
@@ -887,6 +720,47 @@ begin
     until not Process32Next(Snapshot, ProcessEntry);
   end;
   CloseHandle(Snapshot);
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function for check if is UWP apps
+ * }
+function GetPackageFullName(hProcess: THandle; var packageFullNameLength: ULONG;
+  packageFullName: PWideChar): Longint; stdcall; external 'kernel32.dll';
+
+function IsUWPProcess(const ExeName: string): Boolean;
+const
+  PROCESS_QUERY_LIMITED_INFORMATION = $1000;
+var
+  hSnapshot: THandle;
+  pe: TProcessEntry32;
+  hProcess: THandle;
+  buffer: array[0..1023] of Char;
+  len: ULONG;
+begin
+  Result := False;
+  hSnapshot := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  if hSnapshot = INVALID_HANDLE_VALUE then Exit;
+
+  pe.dwSize := SizeOf(pe);
+  if Process32First(hSnapshot, pe) then
+  begin
+    repeat
+      if SameText(pe.szExeFile, ExeName) then
+      begin
+        hProcess := OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pe.th32ProcessID);
+        if hProcess <> 0 then
+        begin
+          len := Length(buffer);
+          if GetPackageFullName(hProcess, len, buffer) = ERROR_SUCCESS then
+            Result := True;
+          CloseHandle(hProcess);
+        end;
+        Break;
+      end;
+    until not Process32Next(hSnapshot, pe);
+  end;
+  CloseHandle(hSnapshot);
 end;
 // ---------------------------------------------------------------------------
 
@@ -995,24 +869,33 @@ end;
  * Procedure to mute by process name or mute all system
  * @param MuteValue Activate or deactivate mute
  * }
-procedure MuteForProcess(Config: TMemIniFile; ProcessName: String; Mute: Boolean);
+procedure MuteForProcess(Config: TMemIniFile; Section, ProcessName: String; Mute: Boolean; AudioController: TAudioProcessController);
 begin
-if Config.ReadBool('General', 'Mute', False) then
-//If is one global key to mute all sound from system
-if Config.ReadBool('General','EnableGlobalHotKey',False) = True then
-SetMasterMute(Mute) else
-if Mute = True then
-begin
- if FileExists(ExtractFilePath(ParamStr(0))+'svcl.exe') then
-  RunApplication(ExtractFilePath(ParamStr(0))+'svcl.exe', '/Mute "'+ProcessName+'"','',SW_HIDE)
- else
-  SetMasterMute(True);
-end else
+ if Config.ReadBool('General','EnableGlobalHotKey',False) = True then
  begin
-  if FileExists(ExtractFilePath(ParamStr(0))+'svcl.exe') then
-   RunApplication(ExtractFilePath(ParamStr(0))+'svcl.exe', '/Unmute "'+ProcessName+'"','',SW_HIDE)
-  else
-   SetMasterMute(False);
+  if Config.ReadBool('General', 'Mute', False) then
+   SetMasterMute(Mute)
+ end else
+ if Mute = True then
+ begin
+  if Config.ReadBool('General', 'Mute', False) then SetMasterMute(True) else
+   if Config.ReadBool(Section, 'Mute', False) then
+   begin
+   if FileExists(ExtractFilePath(ParamStr(0))+'svcl.exe') then
+     RunApplication(ExtractFilePath(ParamStr(0))+'svcl.exe', '/Mute "'+ProcessName+'"','',SW_HIDE)
+   else
+     AudioController.MuteProcess(ProcessName, True)
+   end;
+ end else
+ begin
+   if Config.ReadBool('General', 'Mute', False) then SetMasterMute(False) else
+   if Config.ReadBool(Section, 'Mute', False) then
+   begin
+    if FileExists(ExtractFilePath(ParamStr(0))+'svcl.exe') then
+    RunApplication(ExtractFilePath(ParamStr(0))+'svcl.exe', '/Unmute "'+ProcessName+'"','',SW_HIDE)
+   else
+     AudioController.MuteProcess(ProcessName, False)
+   end;
  end;
 end;
 // ---------------------------------------------------------------------------
@@ -1558,6 +1441,20 @@ for I := 0 to tabs.Tabs.Count-1 do
 end;
 // ---------------------------------------------------------------------------
 { **
+ * Function to change to next tab
+ * }
+procedure ChangeToNextTab(TabControl: TTabControl);
+begin
+  if TabControl.Tabs.Count > 0 then
+  begin
+    if TabControl.TabIndex < TabControl.Tabs.Count - 1 then
+      TabControl.TabIndex := TabControl.TabIndex + 1
+    else
+      TabControl.TabIndex := 0;
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
  * Function to add custom button to ToolBar
  * }
 procedure AddButtonToToolbar(OnClick: TNotifyEvent; var bar: TToolBar; hint: string;
@@ -1648,10 +1545,10 @@ OnClick, OnDrivesClick, OnControlClick, OnNewControlClick, OnRecycleClick: TNoti
  var
   SHFileInfo: TSHFileInfo;
  begin
-  //Let's make sure ImageList1 is initialized
+
   if ImageList.Count = 0 then
     ImageList.Handle := ImageList_Create(16, 16, ILC_COLOR32 or ILC_MASK, 0, 10);
-  //Getting a system icon
+
   if SHGetFileInfo(PChar(FileName), 0, SHFileInfo, SizeOf(SHFileInfo),
     SHGFI_ICON or SHGFI_SMALLICON or SHGFI_SHELLICONSIZE or SHGFI_SYSICONINDEX
                               or SHGFI_TYPENAME or SHGFI_DISPLAYNAME) <> 0 then
@@ -1663,90 +1560,51 @@ OnClick, OnDrivesClick, OnControlClick, OnNewControlClick, OnRecycleClick: TNoti
     Result := -1;
  end;
 
+ function CreateMenuItem(AOwner: TComponent; const ACaption, AHint: string;
+                      AImageIndex: Integer; AOnClick: TNotifyEvent): TMenuItem;
+ begin
+  Result := TMenuItem.Create(AOwner);
+  Result.Caption := ACaption;
+  Result.Hint := AHint;
+  Result.ImageIndex := AImageIndex;
+  Result.OnClick := AOnClick;
+ end;
+
  procedure AddMenuSeparator(AMenu: TPopupMenu);
- var
-  Separator: TMenuItem;
  begin
-  if AMenu = nil then Exit;
-  Separator := TMenuItem.Create(AMenu);
-  Separator.Caption := '-';
-  AMenu.Items.Add(Separator);
- end;
-
- function FindMenuItem(Menu: TMenuItem; const Caption: string): TMenuItem;
- var
-  i: Integer;
- begin
-  Result := nil; // Default return value if not found
-  // Check the current menu item
-  if SameText(Menu.Caption, Caption) then
-  begin
-    Result := Menu;
-    Exit;
-  end;
-  // Recursively search in submenus
-  for i := 0 to Menu.Count - 1 do
-  begin
-    Result := FindMenuItem(Menu.Items[i], Caption);
-    if Result <> nil then
-      Exit; // Stop searching when found
-  end;
- end;
-
- procedure ADDNewControlToList(ParentMenu: TMenuItem; Config: TMemIniFile; OnClick: TNotifyEvent);
- var
-  MenuItem : TMenuItem;
- begin
-  MenuItem := TMenuItem.Create(ParentMenu.Owner);
-  MenuItem.Caption := _(LNK_HINT_BTN_BTN2, Config.ReadString('General','Language',EN_US));
-  MenuItem.OnClick := OnClick;
-  ParentMenu.Add(MenuItem);
+  AMenu.Items.Add(CreateMenuItem(AMenu, '-', '', -1, nil));
  end;
 
 var
-  Sections, Items: TStringList;
+  Sections, Items, Parts: TStringList;
   i, j, IconIndex: Integer;
   MenuItem, SubMenuItem: TMenuItem;
-  ItemName, ItemCommand, Section: string;
-  StringList: TStringList;
+  ItemName, ItemCommand, Section, Lang: string;
   hicon: TIcon;
 begin
   if not (Assigned(PopupMenu) and Assigned(ImageList) and Assigned(Config)) then Exit;
 
+  Lang := Config.ReadString('General', 'Language', EN_US);
   Sections := TStringList.Create;
   Items := TStringList.Create;
-  StringList := TStringList.Create;
+  Parts := TStringList.Create;
   hicon:= TIcon.Create;
   try
     //Add drive list
-    ADDListDrives(PopupMenu, OnDrivesClick,
-    _(LNK_UTILS_GLOBAL_TEXT_MSG1,Config.ReadString('General','Language',EN_US)));
+    ADDListDrives(PopupMenu, OnDrivesClick, _(LNK_UTILS_GLOBAL_TEXT_MSG1,Lang));
     AddMenuSeparator(PopupMenu);
 
     //Add ControlPanel list
-    MenuItem := TMenuItem.Create(PopupMenu);
-    try
-    MenuItem.Caption := _(LNK_HINT_BTN_BTN2, Config.ReadString('General','Language',EN_US));
-    PopupMenu.Items.Add(MenuItem);
-    ADDNewControlToList(FindMenuItem(PopupMenu.Items,_(LNK_HINT_BTN_BTN2, Config.ReadString('General','Language',EN_US))), Config, OnNewControlClick);
+    SubMenuItem := CreateMenuItem(PopupMenu, _(LNK_HINT_BTN_BTN2, Lang), '', -1, nil);
+    PopupMenu.Items.Add(SubMenuItem);
+    SubMenuItem.Add(CreateMenuItem(PopupMenu, _(LNK_HINT_BTN_BTN2, Lang), '', -1, OnNewControlClick));
     AddMenuSeparator(PopupMenu);
-    ADDControlPanelList(FindMenuItem(PopupMenu.Items,_(LNK_HINT_BTN_BTN2, Config.ReadString('General','Language',EN_US))), Config, OnControlClick);
+    ADDControlPanelList(SubMenuItem, Config, OnControlClick);
     AddMenuSeparator(PopupMenu);
-    except
-      MenuItem.Free;
-      raise;
-    end;
+
     //Add RecycleBin
-    MenuItem := TMenuItem.Create(PopupMenu);
-    try
-    MenuItem.Caption := _(LNK_HINT_SPDBTN_BTN2,Config.ReadString('General','Language',EN_US));
-    MenuItem.OnClick := OnRecycleClick;
-    PopupMenu.Items.Add(MenuItem);
+    PopupMenu.Items.Add(CreateMenuItem(PopupMenu, _(LNK_HINT_SPDBTN_BTN2, Lang), '', -1, OnRecycleClick));
     AddMenuSeparator(PopupMenu);
-    except
-      MenuItem.Free;
-      raise;
-    end;
 
     // Load sections from INI
     ListConfig.ReadSections(Sections);
@@ -1756,6 +1614,7 @@ begin
       SubMenuItem := TMenuItem.Create(PopupMenu);
       try
       SubMenuItem.Caption := Section;
+      SubMenuItem := CreateMenuItem(PopupMenu, Section, '', -1, nil);
       PopupMenu.Items.Add(SubMenuItem);
 
       ListConfig.ReadSectionValues(Section, Items);
@@ -1767,27 +1626,20 @@ begin
         ItemCommand := Items.ValueFromIndex[j];
 
         //Need to extract Icon Location
-        StrToList(ItemCommand,'|',StringList);
+        Parts.Clear;
+        StrToList(ItemCommand,'|',Parts);
 
         //GetSystemIcons
-        if SameText(ExtractFileExt(StringList[2]), '.ico') and FileExists(StringList[2]) then
+        if (Parts.Count > 2) and SameText(ExtractFileExt(Parts[2]), '.ico') and FileExists(Parts[2]) then
         begin
-           hicon.LoadFromFile(StringList[2]);
-         IconIndex := ImageList_AddIcon(ImageList.Handle, hicon.Handle);
-        end else
-        IconIndex := GetSystemIcon(StringList[2]);
+          hIcon.LoadFromFile(Parts[2]);
+          IconIndex := ImageList_AddIcon(ImageList.Handle, hIcon.Handle);
+        end
+        else
+          IconIndex := GetSystemIcon(Parts[2]);
 
-        MenuItem := TMenuItem.Create(PopupMenu);
-        try
-        MenuItem.Caption := ItemName;
-        MenuItem.Hint := ItemCommand;
-        MenuItem.OnClick := OnClick;
-        MenuItem.ImageIndex := IconIndex;
+        MenuItem := CreateMenuItem(PopupMenu, ItemName, ItemCommand, IconIndex, OnClick);
         SubMenuItem.Add(MenuItem);
-        except
-            MenuItem.Free;
-            raise;
-        end;
       end;
     except
         SubMenuItem.Free;
@@ -1797,7 +1649,7 @@ begin
   finally
     Sections.Free;
     Items.Free;
-    StringList.Free;
+    Parts.Free;
     hicon.Free;
   end;
 end;
@@ -1936,6 +1788,32 @@ begin
   begin
     ToolBar.Buttons[i].PopupMenu := Popup;
   end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to show flash form
+ * }
+procedure FlashWindow(FormHandle: HWND);
+var
+  Info: FLASHWINFO;
+begin
+  // Flash the window
+  Info.cbSize := SizeOf(FLASHWINFO);
+  Info.hwnd := FormHandle;
+  Info.dwFlags := FLASHW_ALL or FLASHW_TIMERNOFG;
+  Info.uCount := 3;
+  Info.dwTimeout := 0;
+  FlashWindowEx(Info);
+
+  // Delay slightly before forcing bring to front
+  Sleep(200); // optional, gives flash time to be seen
+
+  // Bring to front aggressively
+  SetWindowPos(FormHandle, HWND_TOPMOST, 0, 0, 0, 0,
+    SWP_NOMOVE or SWP_NOSIZE or SWP_SHOWWINDOW);
+  Sleep(100); // allow Z-order update
+  SetWindowPos(FormHandle, HWND_NOTOPMOST, 0, 0, 0, 0,
+    SWP_NOMOVE or SWP_NOSIZE or SWP_SHOWWINDOW);
 end;
 // ---------------------------------------------------------------------------
 
@@ -2206,6 +2084,14 @@ begin
   end;
 end;
 // ---------------------------------------------------------------------------
+{ **
+ * Function to convert string to Array
+ * }
+function StringListToArray(StringList: TStringList): TArray<string>;
+begin
+  Result := StringList.ToStringArray;
+end;
+// ---------------------------------------------------------------------------
 
 // FILENAME FUNCTIONS
 // ---------------------------------------------------------------------------
@@ -2222,7 +2108,7 @@ begin
   FillChar(_SEInfo, SizeOf(_SEInfo), 0);
   _SEInfo.cbSize := SizeOf(TShellExecuteInfo);
   _SEInfo.fMask := SEE_MASK_NOCLOSEPROCESS;
-  // _SEInfo.Wnd := Application.Handle;
+  _SEInfo.Wnd := 0;
   _SEInfo.lpFile := PChar(AExecutableFile);
   _SEInfo.lpDirectory := PChar(AWorkingDir);
   _SEInfo.lpParameters := PChar(AParameters);
@@ -2792,20 +2678,20 @@ end;
 procedure GetPersonalFolders(ToolBar: TToolBar; Config: TMemIniFile; LangName: String;
   ImageList: TImageList; Form: TForm; OnToolBarClick, OnMenuClick: TNotifyEvent);
 begin
- Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG7,LangName),
- GetSpecialFolderLocation(-1, FOLDERID_Desktop)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Desktop)+'|'+'|');
- Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG8,LangName),
- GetSpecialFolderLocation(-1, FOLDERID_Documents)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Documents)+'|'+'|');
- Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG9,LangName),
- GetSpecialFolderLocation(-1, FOLDERID_Downloads)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Downloads)+'|'+'|');
- Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG10,LangName),
- GetSpecialFolderLocation(-1, FOLDERID_Music)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Music)+'|'+'|');
- Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG11,LangName),
- GetSpecialFolderLocation(-1, FOLDERID_Pictures)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Pictures)+'|'+'|');
- Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG12,LangName),
- GetSpecialFolderLocation(-1, FOLDERID_SavedGames)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_SavedGames)+'|'+'|');
  Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG13,LangName),
  GetSpecialFolderLocation(-1, FOLDERID_Videos)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Videos)+'|'+'|');
+ Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG12,LangName),
+ GetSpecialFolderLocation(-1, FOLDERID_SavedGames)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_SavedGames)+'|'+'|');
+ Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG11,LangName),
+ GetSpecialFolderLocation(-1, FOLDERID_Pictures)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Pictures)+'|'+'|');
+ Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG10,LangName),
+ GetSpecialFolderLocation(-1, FOLDERID_Music)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Music)+'|'+'|');
+ Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG9,LangName),
+ GetSpecialFolderLocation(-1, FOLDERID_Downloads)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Downloads)+'|'+'|');
+ Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG8,LangName),
+ GetSpecialFolderLocation(-1, FOLDERID_Documents)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Documents)+'|'+'|');
+ Config.WriteString('Toolbar',_(LNK_UTILS_GLOBAL_TEXT_MSG7,LangName),
+ GetSpecialFolderLocation(-1, FOLDERID_Desktop)+'|'+'|'+GetSpecialFolderLocation(-1, FOLDERID_Desktop)+'|'+'|');
  Config.UpdateFile;
 
  //Load ToolBar buttons
@@ -3077,6 +2963,24 @@ begin
  finally
   Icon.Free;
 end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to Draw icon to PaintBox
+ * }
+procedure DrawIconToPaintBox(PaintBox: TPaintBox; Icon: TIcon; X, Y: Integer);
+begin
+  if Assigned(PaintBox) and Assigned(Icon) and not Icon.Empty then
+  begin
+    // Ensure PaintBox canvas is ready
+    PaintBox.Canvas.Lock;
+    try
+      // Draw the icon at specified coordinates
+      PaintBox.Canvas.Draw(X, Y, Icon);
+    finally
+      PaintBox.Canvas.Unlock;
+    end;
+  end;
 end;
 // ---------------------------------------------------------------------------
 end.

@@ -1,6 +1,7 @@
 object MainForm: TMainForm
   Left = 0
   Top = 0
+  BiDiMode = bdLeftToRight
   BorderIcons = [biSystemMenu, biMinimize, biMaximize, biHelp]
   BorderStyle = bsDialog
   Caption = 'AB Agent'
@@ -31,12 +32,15 @@ object MainForm: TMainForm
   Font.Style = []
   GlassFrame.Enabled = True
   GlassFrame.Top = 31
+  KeyPreview = True
+  ParentBiDiMode = False
   Position = poDesktopCenter
   ShowHint = True
   StyleElements = [seFont, seClient]
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
   TextHeight = 13
   object Main_LBL1: TLabel
     Left = 8
@@ -60,13 +64,13 @@ object MainForm: TMainForm
     Left = 8
     Top = 392
     Width = 437
-    Height = 73
+    Height = 90
     Caption = 'Task Managers'
     TabOrder = 7
     object Main_CHKBOX5: TCheckBox
       Left = 15
       Top = 17
-      Width = 419
+      Width = 412
       Height = 17
       Caption = 
         'Terminate all running processes when starting application from t' +
@@ -76,20 +80,29 @@ object MainForm: TMainForm
     end
     object Edit3: TEdit
       Left = 15
-      Top = 40
+      Top = 58
       Width = 370
       Height = 21
-      TabOrder = 1
+      TabOrder = 2
     end
     object Main_BTN7: TButton
       Left = 391
-      Top = 38
+      Top = 56
       Width = 28
       Height = 25
       Hint = 'Select from all running apps'
       Caption = '>>'
-      TabOrder = 2
+      TabOrder = 3
       OnClick = Main_BTN7Click
+    end
+    object Main_CHKBOX11: TCheckBox
+      Left = 15
+      Top = 35
+      Width = 403
+      Height = 17
+      Caption = 'Terminate abagent'
+      TabOrder = 1
+      OnClick = Main_CHKBOX11Click
     end
   end
   object Main_GrpBox1: TGroupBox
@@ -129,15 +142,15 @@ object MainForm: TMainForm
   end
   object Main_GrpBox5: TGroupBox
     Left = 8
-    Top = 471
+    Top = 486
     Width = 437
-    Height = 92
+    Height = 76
     Caption = 'Clear data (need Admin Privileges)'
     TabOrder = 9
     object Main_CHKBOX7: TCheckBox
       Left = 16
-      Top = 32
-      Width = 251
+      Top = 24
+      Width = 224
       Height = 17
       Hint = 'It only works if the checkbox "Task Managers" is checked'
       Caption = 'When starting Task Managers'
@@ -146,14 +159,14 @@ object MainForm: TMainForm
     end
     object Main_GrpBox6: TGroupBox
       Left = 273
-      Top = 16
+      Top = 14
       Width = 154
-      Height = 64
+      Height = 52
       Caption = 'HotKey'
       TabOrder = 2
       object Main_BTN9: TButton
         Left = 8
-        Top = 22
+        Top = 18
         Width = 137
         Height = 25
         Hint = 'Click to change HotKey'
@@ -163,7 +176,7 @@ object MainForm: TMainForm
     end
     object Main_CHKBOX8: TCheckBox
       Left = 16
-      Top = 55
+      Top = 47
       Width = 251
       Height = 17
       Caption = 'When hide from Boss HotKey'
@@ -197,19 +210,6 @@ object MainForm: TMainForm
       TabOrder = 0
       OnClick = Main_CHKBOX6Click
     end
-    object Main_RADGrp2: TRadioGroup
-      Left = 16
-      Top = 41
-      Width = 121
-      Height = 57
-      Caption = 'Process state'
-      ItemIndex = 0
-      Items.Strings = (
-        'Hide process'
-        'Kill process')
-      TabOrder = 1
-      OnClick = Main_RADGrp2Click
-    end
     object Main_BTN8: TButton
       Left = 8
       Top = 106
@@ -218,6 +218,29 @@ object MainForm: TMainForm
       Hint = 'Click to change HotKey'
       TabOrder = 2
       OnClick = Main_BTN8Click
+    end
+    object Main_GrpBox7: TGroupBox
+      Left = 8
+      Top = 40
+      Width = 137
+      Height = 60
+      Caption = 'Show process'
+      TabOrder = 1
+      object BossComboBox: TComboBox
+        Left = 11
+        Top = 25
+        Width = 118
+        Height = 21
+        Style = csDropDownList
+        ItemIndex = 0
+        TabOrder = 0
+        Text = 'Hide processes'
+        OnChange = BossComboBoxChange
+        Items.Strings = (
+          'Hide processes'
+          'Terminate processes'
+          'Terminate abagent')
+      end
     end
   end
   object Main_CHKBOX2: TCheckBox
@@ -385,71 +408,82 @@ object MainForm: TMainForm
     end
     object GroupBox8: TGroupBox
       Left = 15
-      Top = 100
+      Top = 124
       Width = 565
-      Height = 141
+      Height = 117
       TabOrder = 4
       object Main_LBL3: TLabel
         Left = 14
-        Top = 39
+        Top = 15
         Width = 71
         Height = 13
         Caption = 'File Location :'
       end
       object Main_LBL4: TLabel
-        Left = 16
-        Top = 88
+        Left = 14
+        Top = 64
         Width = 65
         Height = 13
         Caption = 'Working dir:'
       end
       object Main_LBL6: TLabel
-        Left = 287
-        Top = 88
+        Left = 285
+        Top = 64
         Width = 62
         Height = 13
         Caption = 'Parameters :'
       end
-      object Main_CHKBOX4: TCheckBox
-        Left = 14
-        Top = 16
-        Width = 289
-        Height = 17
-        Caption = 'Do not open'
-        TabOrder = 0
-        OnClick = Main_CHKBOX4Click
-      end
       object Edit2: TEdit
-        Left = 14
-        Top = 58
+        Left = 12
+        Top = 34
         Width = 459
         Height = 21
-        TabOrder = 1
+        TabOrder = 0
       end
       object Main_BTN6: TButton
-        Left = 479
-        Top = 56
+        Left = 477
+        Top = 32
         Width = 70
         Height = 25
         Hint = 'Select executable file'
         Caption = '>>'
-        TabOrder = 2
+        TabOrder = 1
         OnClick = Main_BTN6Click
       end
       object Edit4: TEdit
-        Left = 14
-        Top = 104
+        Left = 12
+        Top = 80
+        Width = 267
+        Height = 21
+        TabOrder = 2
+      end
+      object Edit5: TEdit
+        Left = 285
+        Top = 80
         Width = 267
         Height = 21
         TabOrder = 3
       end
-      object Edit5: TEdit
-        Left = 287
-        Top = 104
-        Width = 267
-        Height = 21
-        TabOrder = 4
-      end
+    end
+    object Main_CHKBOX10: TCheckBox
+      Left = 16
+      Top = 101
+      Width = 251
+      Height = 17
+      Caption = 'Mute'
+      TabOrder = 5
+      OnClick = Main_CHKBOX10Click
+    end
+    object Main_CHKBOX4: TCheckBox
+      Left = 420
+      Top = 101
+      Width = 160
+      Height = 17
+      BiDiMode = bdRightToLeft
+      Caption = 'Do not open'
+      ParentBiDiMode = False
+      TabOrder = 6
+      OnClick = Main_CHKBOX4Click
     end
   end
   object Main_CHKBOX3: TCheckBox
@@ -519,9 +553,9 @@ object MainForm: TMainForm
       000000000000000000000000000000000000000000000000000000000000FFFF
       0000E3C70000E0070000E0070000E0070000E0070000E0070000C00300008001
       00008001000080010000F81F0000FC3F0000FC3F0000FE7F0000FFFF0000}
-    PopupMenu = LNK_Form.TrayPopupMenu
     OnClick = FavTrayClick
     OnDblClick = FavTrayDblClick
+    OnMouseMove = FavTrayMouseMove
     Left = 208
     Top = 32
   end
@@ -583,6 +617,7 @@ object MainForm: TMainForm
     Top = 32
     object Main_N1: TMenuItem
       Caption = 'Help'
+      ShortCut = 112
       OnClick = Main_N1Click
     end
     object Main_N3: TMenuItem

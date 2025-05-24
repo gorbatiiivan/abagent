@@ -31,7 +31,7 @@ const
    GLOBAL_HINT_BTN_BTN4 = 'GLOBAL_HINT_BTN_BTN4';
    GLOBAL_CPTN_GRPBOX_GrpBox2 = 'GLOBAL_CPTN_GRPBOX_GrpBox2';
    GLOBAL_HINT_BTN_BTN5 = 'GLOBAL_HINT_BTN_BTN5';
-   GLOBAL_CPTN_RADGRP_RADGrp1 = 'GLOBAL_CPTN_RADGRP_RADGrp1';
+   GLOBAL_CPTN_GRPBOX_GrpBox7 = 'GLOBAL_CPTN_GRPBOX_GrpBox7';
    GLOBAL_TEXT_RADGRP_RADGrp1 = 'GLOBAL_TEXT_RADGRP_RADGrp1';
    GLOBAL_CPTN_CHKBOX_CHKBOX4 = 'GLOBAL_CPTN_CHKBOX_CHKBOX4';
    GLOBAL_CPTN_LBL_LBL3 = 'GLOBAL_CPTN_LBL_LBL3';
@@ -43,13 +43,16 @@ const
    GLOBAL_CPTN_CHKBOX_CHKBOX5 = 'GLOBAL_CPTN_CHKBOX_CHKBOX5';
    GLOBAL_CPTN_GRPBOX_GrpBox4 = 'GLOBAL_CPTN_GRPBOX_GrpBox4';
    GLOBAL_CPTN_CHKBOX_CHKBOX6 = 'GLOBAL_CPTN_CHKBOX_CHKBOX6';
-   GLOBAL_TEXT_RADGRP_RADGrp2 = 'GLOBAL_TEXT_RADGRP_RADGrp2';
+   GLOBAL_TEXT_GRPBOX_GrpBox7 = 'GLOBAL_TEXT_GRPBOX_GrpBox7';
    GLOBAL_CPTN_GRPBOX_GrpBox5 = 'GLOBAL_CPTN_GRPBOX_GrpBox5';
    GLOBAL_HINT_GRPBOX_GrpBox5 = 'GLOBAL_HINT_GRPBOX_GrpBox5';
    GLOBAL_CPTN_CHKBOX_CHKBOX7 = 'GLOBAL_CPTN_CHKBOX_CHKBOX7';
    GLOBAL_HINT_CHKBOX_CHKBOX7 = 'GLOBAL_HINT_CHKBOX_CHKBOX7';
    GLOBAL_CPTN_CHKBOX_CHKBOX8 = 'GLOBAL_CPTN_CHKBOX_CHKBOX8';
    GLOBAL_CPTN_CHKBOX_CHKBOX9 = 'GLOBAL_CPTN_CHKBOX_CHKBOX9';
+   GLOBAL_CPTN_CHKBOX_CHKBOX10 = 'GLOBAL_CPTN_CHKBOX_CHKBOX10';
+   GLOBAL_CPTN_CHKBOX_CHKBOX11 = 'GLOBAL_CPTN_CHKBOX_CHKBOX11';
+   GLOBAL_HINT_CHKBOX_CHKBOX11 = 'GLOBAL_HINT_CHKBOX_CHKBOX11';
    GLOBAL_TEXT_MSG1 = 'GLOBAL_TEXT_MSG1';
    GLOBAL_TEXT_MSG2 = 'GLOBAL_TEXT_MSG2';
    GLOBAL_CPTN_BTN_BTN10 = 'GLOBAL_CPTN_BTN_BTN10';
@@ -65,12 +68,17 @@ const
    //---------------------------------------------------------------------------
    HELP_CPTN_PAGECTRL_TAB1 = 'HELP_CPTN_PAGECTRL_TAB1';
    HELP_CPTN_PAGECTRL_TAB2 = 'HELP_CPTN_PAGECTRL_TAB2';
+   HELP_CPTN_PAGECTRL_TAB3 = 'HELP_CPTN_PAGECTRL_TAB3';
+   HELPFORM_CPTN_LBL_2 = 'HELPFORM_CPTN_LBL_2';
+   HELPFORM_CPTN_LBL_3 = 'HELPFORM_CPTN_LBL_3';
+   HELPFORM_CPTN_LBL_4 = 'HELPFORM_CPTN_LBL_4';
    HELPFORM_TEXT_MEMO1 = 'HELPFORM_MEMO1';
    HELPFORM_TEXT_LSTVIEW_COL1 = 'HELPFORM_TEXT_LSTVIEW_COL1';
    HELPFORM_TEXT_LSTVIEW_HEAD1 = 'HELPFORM_TEXT_LSTVIEW_HEAD1';
    HELPFORM_TEXT_LSTVIEW_ITEM1 = 'HELPFORM_TEXT_LSTVIEW_ITEM1';
    HELPFORM_TEXT_LSTVIEW_ITEM2 = 'HELPFORM_TEXT_LSTVIEW_ITEM2';
    HELPFORM_TEXT_LSTVIEW_ITEM6 = 'HELPFORM_TEXT_LSTVIEW_ITEM6';
+   HELP_GLOBAL_TEXT_SNAKE1 = 'HELP_GLOBAL_TEXT_SNAKE1';
    // FavoritesForm
    //---------------------------------------------------------------------------
    LNK_CPTN_MENUITEM_GEN_N1 = 'LNK_CPTN_MENUITEM_GEN_N1';
@@ -78,6 +86,8 @@ const
    LNK_CPTN_MENUITEM_GEN_N3 = 'LNK_CPTN_MENUITEM_GEN_N3';
    LNK_CPTN_MENUITEM_GEN_N4 = 'LNK_CPTN_MENUITEM_GEN_N4';
    LNK_CPTN_MENUITEM_GEN_N5 = 'LNK_CPTN_MENUITEM_GEN_N5';
+   LNK_CPTN_MENUITEM_GEN_N7 = 'LNK_CPTN_MENUITEM_GEN_N7';
+   LNK_CPTN_MENUITEM_GEN_N7_N1 = 'LNK_CPTN_MENUITEM_GEN_N7_N1';
    LNK_CPTN_MENUITEM_LST_N1 = 'LNK_CPTN_MENUITEM_LST_N1';
    LNK_CPTN_MENUITEM_LST_N2 = 'LNK_CPTN_MENUITEM_LST_N2';
    LNK_CPTN_MENUITEM_LST_N3 = 'LNK_CPTN_MENUITEM_LST_N3';
@@ -200,7 +210,7 @@ if aLanguageID = EN_US then
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX2 then
      Result := 'Enable the log file';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX3 then
-     Result := 'Mute sound when hiding processes';
+     Result := 'Mute global sound when hiding processes';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox1 then
      Result := 'Hide process using the mouse';
   if StringID  = GLOBAL_CPTN_COMBOBOX_PosBox1 then
@@ -221,7 +231,7 @@ if aLanguageID = EN_US then
      Result := 'HotKey';
   if StringID  = GLOBAL_HINT_BTN_BTN5 then
      Result := 'Click to change hotkey';
-  if StringID  = GLOBAL_CPTN_RADGRP_RADGrp1 then
+  if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox7 then
      Result := 'Process state';
   if StringID  = GLOBAL_TEXT_RADGRP_RADGrp1 then
      Result := 'Normal;Minimized';
@@ -240,13 +250,13 @@ if aLanguageID = EN_US then
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox3 then
      Result := 'Task Managers';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX5 then
-     Result := 'Terminate all running processes when launching an application from the list';
+     Result := 'Terminate running processes when launching an application from the list';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox4 then
      Result := 'Boss hotkey';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX6 then
      Result := 'Enabled';
-  if StringID  = GLOBAL_TEXT_RADGRP_RADGrp2 then
-     Result := 'Hide process;Kill process';
+  if StringID  = GLOBAL_TEXT_GRPBOX_GrpBox7 then
+     Result := 'Hide process;Kill process;Kill abagent';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox5 then
      Result := 'Clear data (need Admin Privileges)';
   if StringID  = GLOBAL_HINT_GRPBOX_GrpBox5 then
@@ -256,11 +266,17 @@ if aLanguageID = EN_US then
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX7 then
      Result := 'When starting Task Managers';
   if StringID  = GLOBAL_HINT_CHKBOX_CHKBOX7 then
-     Result := 'It only works if the checkbox "Task Managers" is checked.';
+     Result := 'It only works if the checkbox "Task Managers" is checked and when running processes.';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX8 then
      Result := 'When the boss hotkey is pressed';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX9 then
      Result := 'One Hot-Key';
+  if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX10 then
+     Result := 'Mute the selected process';
+  if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX11 then
+     Result := 'Terminate abagent';
+  if StringID  = GLOBAL_HINT_CHKBOX_CHKBOX11 then
+     Result := 'Works only when running processes';
   if StringID  = GLOBAL_TEXT_MSG1 then
      Result := 'The log file does not exist.';
   if StringID  = GLOBAL_TEXT_MSG2 then
@@ -287,9 +303,18 @@ if aLanguageID = EN_US then
      Result := 'About';
   if StringID  = HELP_CPTN_PAGECTRL_TAB2 then
      Result := 'Keyboard shortcuts';
+  if StringID  = HELP_CPTN_PAGECTRL_TAB3 then
+     Result := 'Information';
+  if StringID  = HELPFORM_CPTN_LBL_2 then
+     Result := 'Release date: ';
+  if StringID  = HELPFORM_CPTN_LBL_3 then
+     Result := 'Anti Boss Agent is a portable open source application for Windows that can easily hide any window in the background with hotkey.';
+  if StringID  = HELPFORM_CPTN_LBL_4 then
+     Result := 'To control the snake, press WASD or the arrow keys.'+#10+
+               'Press the Pause key to pause or resume the game.'+#10+
+               'Space to restart the game after it ends.';
   if StringID  = HELPFORM_TEXT_MEMO1 then
-     Result := 'Anti Boss Agent is a portable open source application for Windows that can easily hide any window in the background with hotkey.;;'+
-               'Features:;'+
+     Result := 'Features:;'+
                '* Run your selected process from file and hide with the same hotkey.;'+
                '* Hide all processes using your mouse.;'+
                '* Automatically terminate all running processes when Task Managers starts.;'+
@@ -316,6 +341,8 @@ if aLanguageID = EN_US then
      Result := 'Clear history';
   if StringID  = HELPFORM_TEXT_LSTVIEW_ITEM6 then
      Result := 'Change tabs';
+  if StringID  = HELP_GLOBAL_TEXT_SNAKE1 then
+     Result := 'Score: ';
   // FavoritesForm
   //----------------------------------------------------------------------------
   if StringID  = LNK_CPTN_MENUITEM_GEN_N1 then
@@ -323,11 +350,15 @@ if aLanguageID = EN_US then
   if StringID  = LNK_CPTN_MENUITEM_GEN_N2 then
      Result := 'Do not hide automatically';
   if StringID  = LNK_CPTN_MENUITEM_GEN_N3 then
-     Result := 'Hide after app open';
+     Result := 'Hide after opening file/location';
   if StringID  = LNK_CPTN_MENUITEM_GEN_N4 then
      Result := 'Prevent moving off screen';
   if StringID  = LNK_CPTN_MENUITEM_GEN_N5 then
      Result := 'Show tray icon';
+  if StringID  = LNK_CPTN_MENUITEM_GEN_N7 then
+     Result := 'Show form with mouse in tray';
+  if StringID  = LNK_CPTN_MENUITEM_GEN_N7_N1 then
+     Result := 'When moving the mouse';
   if StringID  = LNK_CPTN_MENUITEM_LST_N1 then
      Result := 'Open';
   if StringID  = LNK_CPTN_MENUITEM_LST_N2 then
@@ -447,7 +478,7 @@ if aLanguageID = EN_US then
   if StringID  = PROC_CPTN_BTN_BTN2_1 then
      Result := 'Kill process';
   if StringID  = PROC_CPTN_COL1_LSTVIEW1 then
-     Result := 'Hidden processes';
+     Result := 'Name';
   // LNK_Properties
   //----------------------------------------------------------------------------
   if StringID  = LNKPROP_CPTN_LBLEDIT5 then
@@ -524,7 +555,7 @@ if aLanguageID = RU_RU then
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX2 then
      Result := 'Включить файл журнала';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX3 then
-     Result := 'Отключить звук при скрытии процессов';
+     Result := 'Отключить глобальный звук при скрытии процессов';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox1 then
      Result := 'Скрыть процесс с помощью мыши';
   if StringID  = GLOBAL_CPTN_COMBOBOX_PosBox1 then
@@ -545,7 +576,7 @@ if aLanguageID = RU_RU then
      Result := 'Горячая клавиша';
   if StringID  = GLOBAL_HINT_BTN_BTN5 then
      Result := 'Нажмите, чтобы изменить горячую клавишу';
-  if StringID  = GLOBAL_CPTN_RADGRP_RADGrp1 then
+  if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox7 then
      Result := 'Состояние процесса';
   if StringID  = GLOBAL_TEXT_RADGRP_RADGrp1 then
      Result := 'Нормальный;Свернут';
@@ -564,13 +595,13 @@ if aLanguageID = RU_RU then
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox3 then
      Result := 'Диспетчеры задач';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX5 then
-     Result := 'Завершить все работающие процессы при запуске приложения из списка';
+     Result := 'Завершить работающие процессы при запуске приложения из списка';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox4 then
      Result := 'Горячая клавиша босса';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX6 then
      Result := 'Включено';
-  if StringID  = GLOBAL_TEXT_RADGRP_RADGrp2 then
-     Result := 'Скрыть процесс;Убить процесс';
+  if StringID  = GLOBAL_TEXT_GRPBOX_GrpBox7 then
+     Result := 'Скрыть процесс;Убить процесс;Убить abagent';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox5 then
      Result := 'Очистить данные (требуются права администратора)';
   if StringID  = GLOBAL_HINT_GRPBOX_GrpBox5 then
@@ -580,11 +611,17 @@ if aLanguageID = RU_RU then
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX7 then
      Result := 'При запуске диспетчеров задач';
   if StringID  = GLOBAL_HINT_CHKBOX_CHKBOX7 then
-     Result := 'Работает только если стоит галочка у "Диспетчеры задач".';
+     Result := 'Работает только если стоит галочка у "Диспетчеры задач" и при запущенных процессах.';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX8 then
-     Result := 'Когда нажимается горячая клавиша босса';
+     Result := 'При нажатие клавишу босса';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX9 then
      Result := 'Одна горячая клавиша';
+  if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX10 then
+     Result := 'Отключить звук для выбранного процесса';
+  if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX11 then
+     Result := 'Завершить abagent';
+  if StringID  = GLOBAL_HINT_CHKBOX_CHKBOX11 then
+     Result := 'Работает только при запущенных процессах';
   if StringID  = GLOBAL_TEXT_MSG1 then
      Result := 'Файл журнала не существует.';
   if StringID  = GLOBAL_TEXT_MSG2 then
@@ -611,11 +648,20 @@ if aLanguageID = RU_RU then
      Result := 'О программе';
   if StringID  = HELP_CPTN_PAGECTRL_TAB2 then
      Result := 'Сочетание клавиш';
+  if StringID  = HELP_CPTN_PAGECTRL_TAB3 then
+     Result := 'Информация';
+  if StringID  = HELPFORM_CPTN_LBL_2 then
+     Result := 'Дата выпуска: ';
+  if StringID  = HELPFORM_CPTN_LBL_3 then
+     Result := 'Anti Boss Agent — это портативное приложение с открытым исходным кодом для Windows, которое может легко скрыть любое окно в фоновом режиме с помощью горячей клавиши.';
+  if StringID  = HELPFORM_CPTN_LBL_4 then
+     Result := 'Для управления змеей нажмите WASD или клавиши со стрелками.'+#10+
+               'Нажмите клавишу Pause, чтобы приостановить или возобновить игру.'+#10+
+               'Пробел для перезапуска игры после ее окончания.';
   if StringID  = HELPFORM_TEXT_MEMO1 then
-     Result := 'Anti Boss Agent — это портативное приложение с открытым исходным кодом для Windows, которое может легко скрыть любое окно в фоновом режиме с помощью горячей клавиши.;;'+
-               'Особенности:;'+
-               '* Запустите выбранный процесс из файла и скройте его с помощью той же горячей клавиши..;'+
-               '* Скройте все процессы с помощью вашей мыши.;'+
+     Result := 'Особенности:;'+
+               '* Запустить выбранный процесс из файла и скрыть его с помощью той же горячей клавиши..;'+
+               '* Скрыть все процессы с помощью мыши.;'+
                '* Автоматическое завершение всех запущенных процессов при запуске диспетчера задач.;'+
                '* Очистите историю всех запущенных процессов, из реестра, специальных папок и статистику использования сети.;'+
                '* Установите таймер для выключения, перезагрузки и т. д. вашего ПК.;'+
@@ -640,6 +686,8 @@ if aLanguageID = RU_RU then
      Result := 'Очистить историю';
   if StringID  = HELPFORM_TEXT_LSTVIEW_ITEM6 then
      Result := 'Изменить вкладки';
+  if StringID  = HELP_GLOBAL_TEXT_SNAKE1 then
+     Result := 'Счет: ';
   // FavoritesForm
   //----------------------------------------------------------------------------
   if StringID  = LNK_CPTN_MENUITEM_GEN_N1 then
@@ -647,11 +695,15 @@ if aLanguageID = RU_RU then
   if StringID  = LNK_CPTN_MENUITEM_GEN_N2 then
      Result := 'Не скрывать автоматически';
   if StringID  = LNK_CPTN_MENUITEM_GEN_N3 then
-     Result := 'Скрыть после открития приложения';
+     Result := 'Скрыть после открытия файла/местоположения';
   if StringID  = LNK_CPTN_MENUITEM_GEN_N4 then
      Result := 'Запретить перемещение за пределы экрана';
   if StringID  = LNK_CPTN_MENUITEM_GEN_N5 then
      Result := 'Показать значок в трее';
+  if StringID  = LNK_CPTN_MENUITEM_GEN_N7 then
+     Result := 'Показать форму мышкой в трее';
+  if StringID  = LNK_CPTN_MENUITEM_GEN_N7_N1 then
+     Result := 'При движении мышки';
   if StringID  = LNK_CPTN_MENUITEM_LST_N1 then
      Result := 'Открыть';
   if StringID  = LNK_CPTN_MENUITEM_LST_N2 then
@@ -771,7 +823,7 @@ if aLanguageID = RU_RU then
   if StringID  = PROC_CPTN_BTN_BTN2_1 then
      Result := 'Убить процесс';
   if StringID  = PROC_CPTN_COL1_LSTVIEW1 then
-     Result := 'Скрытые процессы';
+     Result := 'Имя';
   // LNK_Properties
   //----------------------------------------------------------------------------
   if StringID  = LNKPROP_CPTN_LBLEDIT5 then
@@ -848,7 +900,7 @@ if aLanguageID = RO_RO then
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX2 then
      Result := 'Activati fișierul log';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX3 then
-     Result := 'Dezactivați sunetul când ascundeți procesele';
+     Result := 'Dezactivați sunetul global când ascundeți procesele';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox1 then
      Result := 'Ascundeți procesul folosind mouse-ul';
   if StringID  = GLOBAL_CPTN_COMBOBOX_PosBox1 then
@@ -869,7 +921,7 @@ if aLanguageID = RO_RO then
      Result := 'Tasta rapidă';
   if StringID  = GLOBAL_HINT_BTN_BTN5 then
      Result := 'Faceți clic pentru a schimba tasta rapidă';
-  if StringID  = GLOBAL_CPTN_RADGRP_RADGrp1 then
+  if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox7 then
      Result := 'Starea procesului';
   if StringID  = GLOBAL_TEXT_RADGRP_RADGrp1 then
      Result := 'Normal;Minimizat';
@@ -888,13 +940,13 @@ if aLanguageID = RO_RO then
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox3 then
      Result := 'Manageri de activități';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX5 then
-     Result := 'Opriți toate procesele care rulează la pornirea unei aplicații din listă';
+     Result := 'Opriți procesele care rulează la pornirea unei aplicații din listă';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox4 then
      Result := 'Tasta rapidă a șefului';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX6 then
      Result := 'Activat';
-  if StringID  = GLOBAL_TEXT_RADGRP_RADGrp2 then
-     Result := 'Ascundeți procesul;Ucideți procesul';
+  if StringID  = GLOBAL_TEXT_GRPBOX_GrpBox7 then
+     Result := 'Ascundeți procesul;Ucideți procesul;Ucideți abagent';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox5 then
      Result := 'Ștergeți datele (sunt necesare drepturi de administrator)';
   if StringID  = GLOBAL_HINT_GRPBOX_GrpBox5 then
@@ -904,11 +956,17 @@ if aLanguageID = RO_RO then
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX7 then
      Result := 'La pornirea managerilor de activități';
   if StringID  = GLOBAL_HINT_CHKBOX_CHKBOX7 then
-     Result := 'Funcționează doar dacă este bifat „Manager de activități”.';
+     Result := 'Funcționează doar dacă este bifat „Manager de activități” și când procesele rulează.';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX8 then
      Result := 'Când este apăsată tasta rapidă a șefului';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX9 then
      Result := 'O tastă rapidă';
+  if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX10 then
+     Result := 'Dezactivați sunetul procesului selectat';
+  if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX11 then
+     Result := 'Opriți abagent';
+  if StringID  = GLOBAL_HINT_CHKBOX_CHKBOX11 then
+     Result := 'Funcționează numai când procesele rulează';
   if StringID  = GLOBAL_TEXT_MSG1 then
      Result := 'Fișierul jurnal nu există.';
   if StringID  = GLOBAL_TEXT_MSG2 then
@@ -935,11 +993,18 @@ if aLanguageID = RO_RO then
      Result := 'Despre program';
   if StringID  = HELP_CPTN_PAGECTRL_TAB2 then
      Result := 'Comenzile rapide de la tastatură';
+  if StringID  = HELP_CPTN_PAGECTRL_TAB3 then
+     Result := 'Informație';
+  if StringID  = HELPFORM_CPTN_LBL_2 then
+     Result := 'Data lansării: ';
+  if StringID  = HELPFORM_CPTN_LBL_3 then
+     Result := 'Anti Boss Agent — este o aplicație portabilă open source pentru Windows care poate ascunde cu ușurință orice fereastră în fundal folosind o tastă rapidă.';
+  if StringID  = HELPFORM_CPTN_LBL_4 then
+     Result := 'Pentru a controla șarpele, apăsați WASD sau tastele săgeți.'+#10+
+               'Apăsați tasta Pauză pentru a întrerupe sau a relua jocul.'+#10+
+               'Spațiu pentru a reporni jocul după ce acesta se termină.';
   if StringID  = HELPFORM_TEXT_MEMO1 then
-     Result := '';
-  if StringID  = HELPFORM_TEXT_MEMO1 then
-     Result := 'Anti Boss Agent — este o aplicație portabilă open source pentru Windows care poate ascunde cu ușurință orice fereastră în fundal folosind o tastă rapidă.;;'+
-               'Caracteristici:;'+
+     Result := 'Caracteristici:;'+
                '* Lansați procesul selectat din fișier și ascundeți-l folosind aceeași tastă rapidă.;'+
                '* Ascundeți toate procesele folosind mouse-ul dvs.;'+
                '* Încheierea automată a tuturor proceselor care rulează la pornirea managerilor de activități.;'+
@@ -966,6 +1031,8 @@ if aLanguageID = RO_RO then
      Result := 'Ștergeți istoricul';
   if StringID  = HELPFORM_TEXT_LSTVIEW_ITEM6 then
      Result := 'Schimbați filele';
+  if StringID  = HELP_GLOBAL_TEXT_SNAKE1 then
+     Result := 'Punctaj: ';
   // FavoritesForm
   //----------------------------------------------------------------------------
   if StringID  = LNK_CPTN_MENUITEM_GEN_N1 then
@@ -973,11 +1040,15 @@ if aLanguageID = RO_RO then
   if StringID  = LNK_CPTN_MENUITEM_GEN_N2 then
      Result := 'Nu ascunde automat';
   if StringID  = LNK_CPTN_MENUITEM_GEN_N3 then
-     Result := 'Ascundeți după deschiderea aplicației';
+     Result := 'Ascundeți după deschiderea fișierului/locației';
   if StringID  = LNK_CPTN_MENUITEM_GEN_N4 then
      Result := 'Preveniți deplasarea în afara ecranului';
   if StringID  = LNK_CPTN_MENUITEM_GEN_N5 then
      Result := 'Afișați pictograma tavă';
+  if StringID  = LNK_CPTN_MENUITEM_GEN_N7 then
+     Result := 'Arată forma cu mouse-ul în tavă';
+  if StringID  = LNK_CPTN_MENUITEM_GEN_N7_N1 then
+     Result := 'La mutarea mouse-ului';
   if StringID  = LNK_CPTN_MENUITEM_LST_N1 then
      Result := 'Deschide';
   if StringID  = LNK_CPTN_MENUITEM_LST_N2 then
@@ -1097,7 +1168,7 @@ if aLanguageID = RO_RO then
   if StringID  = PROC_CPTN_BTN_BTN2_1 then
      Result := 'Ucideți procesul';
   if StringID  = PROC_CPTN_COL1_LSTVIEW1 then
-     Result := 'Procesele ascunse';
+     Result := 'Nume';
   // LNK_Properties
   //----------------------------------------------------------------------------
   if StringID  = LNKPROP_CPTN_LBLEDIT5 then

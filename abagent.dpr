@@ -15,14 +15,19 @@ uses
   Processes in 'Processes.pas' {ProcessesForm},
   Help in 'Help.pas' {HelpForm},
   MMDevApi in 'MMDevApi.pas',
+  MultiMMDeviceAPI in 'MultiMMDeviceAPI.pas',
   SystemUtils in 'SystemUtils.pas',
   HotKeyManager in 'HotKeyManager.pas',
-  Translation in 'Translation.pas';
+  Translation in 'Translation.pas',
+  ABSnake in 'ABSnake.pas',
+  WindowManagerUnit in 'WindowManagerUnit.pas',
+  AudioProcessController in 'AudioProcessController.pas';
 
 {$R *.res}
 {$SETPEFLAGS IMAGE_FILE_RELOCS_STRIPPED} //Удаление из exe таблицы релокаций.
 {$SETPEFLAGS IMAGE_FILE_LINE_NUMS_STRIPPED} //Удаление из exe информации о номерах строк
 {$SETPEFLAGS IMAGE_FILE_LOCAL_SYMS_STRIPPED} //Удаление local symbols
+{$SETPEFLAGS IMAGE_FILE_LINE_NUMS_STRIPPED} // Удаление из exe информации о номерах строк
 
 var
   ExtendedStyle: Longint;

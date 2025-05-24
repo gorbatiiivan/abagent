@@ -7,11 +7,13 @@ object HelpForm: THelpForm
   ClientHeight = 441
   ClientWidth = 635
   Color = clBtnFace
+  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Segoe UI'
   Font.Style = []
+  OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
   TextHeight = 13
@@ -20,23 +22,63 @@ object HelpForm: THelpForm
     Top = 0
     Width = 635
     Height = 441
-    ActivePage = TabSheet2
+    ActivePage = TabSheet1
     Align = alClient
     TabOrder = 0
+    TabStop = False
     object TabSheet1: TTabSheet
       Caption = 'About'
-      object HELPFORM_MEMO1: TMemo
-        Left = 0
-        Top = 0
-        Width = 627
-        Height = 413
-        Align = alClient
-        BevelInner = bvNone
-        BevelOuter = bvNone
-        BorderStyle = bsNone
-        ReadOnly = True
-        ScrollBars = ssVertical
-        TabOrder = 0
+      object Label1: TLabel
+        Left = 368
+        Top = 38
+        Width = 241
+        Height = 50
+        AutoSize = False
+        Caption = 'ABAgent'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -32
+        Font.Name = 'Segoe UI'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object Label2: TLabel
+        Left = 368
+        Top = 94
+        Width = 241
+        Height = 25
+        AutoSize = False
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -19
+        Font.Name = 'Segoe UI'
+        Font.Style = []
+        ParentFont = False
+      end
+      object Label3: TLabel
+        Left = 368
+        Top = 134
+        Width = 241
+        Height = 204
+        AutoSize = False
+        WordWrap = True
+      end
+      object PaintBox1: TPaintBox
+        Left = 57
+        Top = 78
+        Width = 260
+        Height = 260
+        OnClick = PaintBox1Click
+        OnPaint = PaintBox1Paint
+      end
+      object Label4: TLabel
+        Left = 57
+        Top = 342
+        Width = 260
+        Height = 51
+        AutoSize = False
+        Visible = False
+        WordWrap = True
       end
     end
     object TabSheet2: TTabSheet
@@ -127,6 +169,23 @@ object HelpForm: THelpForm
         RowSelect = True
         TabOrder = 0
         ViewStyle = vsReport
+      end
+    end
+    object TabSheet3: TTabSheet
+      Caption = 'Information'
+      ImageIndex = 2
+      object HELPFORM_MEMO1: TMemo
+        Left = 0
+        Top = 0
+        Width = 627
+        Height = 413
+        Align = alClient
+        BevelInner = bvNone
+        BevelOuter = bvNone
+        BorderStyle = bsNone
+        ReadOnly = True
+        ScrollBars = ssVertical
+        TabOrder = 0
       end
     end
   end

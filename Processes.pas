@@ -26,6 +26,7 @@ type
     { Private declarations }
   public
     { Public declarations }
+    RefreshButtonAction: Integer;
     procedure Translate(aLanguageID: String);
   end;
 
@@ -54,11 +55,31 @@ PageControl1.Pages[1].TabVisible := False;
 end;
 
 procedure TProcessesForm.Proc_BTN1Click(Sender: TObject);
+var
+ I: Integer;
+ AppName: String;
 begin
-ProcessToList(ListBox1.Items);
-RemoveDuplicateItems(ListBox1);
-ListBox1.Sorted := True;
-ListBox1.Items.Delete(FindString(ListBox1.Items,ExtractFileName(ParamStr(0))));
+case RefreshButtonAction of
+0:
+ begin
+  ProcessToList(ListBox1.Items);
+  RemoveDuplicateItems(ListBox1);
+  ListBox1.Sorted := True;
+  ListBox1.Items.Delete(FindString(ListBox1.Items,ExtractFileName(ParamStr(0))));
+ end;
+1:
+ begin
+  ProcessListView.Clear;
+  with MainForm do
+  for I := 0 to PTab.Tabs.Count-1 do
+  begin
+  AppName := Decode(FConfig.ReadString(IntToStr(I),'Name',''),'N90fL6FF9SXx+S');
+  if IsProcessRunning(AppName) then
+  AddSubItemsToItemByName(ProcessListView,AppName,IntToStr(GetProcessID_(AppName)))
+  else DeleteItemByName(ProcessListView,AppName);
+  end;
+ end;
+end;
 end;
 
 procedure TProcessesForm.ListBox1DblClick(Sender: TObject);

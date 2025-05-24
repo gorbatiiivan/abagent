@@ -172,7 +172,7 @@ object ShutdownForm: TShutdownForm
       Left = 106
       Top = 68
       Width = 21
-      Height = 24
+      Height = 21
       Margins.Left = 5
       Margins.Top = 5
       Margins.Right = 5
@@ -276,7 +276,7 @@ object ShutdownForm: TShutdownForm
     Left = 116
     Top = 108
     Width = 21
-    Height = 24
+    Height = 21
     Margins.Left = 5
     Margins.Top = 5
     Margins.Right = 5
@@ -300,10 +300,10 @@ object ShutdownForm: TShutdownForm
     OnKeyPress = Edit1KeyPress
   end
   object UpDown3: TUpDown
-    Left = 191
+    Left = 189
     Top = 108
     Width = 21
-    Height = 24
+    Height = 21
     Margins.Left = 5
     Margins.Top = 5
     Margins.Right = 5

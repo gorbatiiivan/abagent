@@ -165,9 +165,13 @@
             <Form>HelpForm</Form>
         </DCCReference>
         <DCCReference Include="MMDevApi.pas"/>
+        <DCCReference Include="MultiMMDeviceAPI.pas"/>
         <DCCReference Include="SystemUtils.pas"/>
         <DCCReference Include="HotKeyManager.pas"/>
         <DCCReference Include="Translation.pas"/>
+        <DCCReference Include="ABSnake.pas"/>
+        <DCCReference Include="WindowManagerUnit.pas"/>
+        <DCCReference Include="AudioProcessController.pas"/>
         <RcItem Include="images\log\log24.png">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>log24</ResourceId>

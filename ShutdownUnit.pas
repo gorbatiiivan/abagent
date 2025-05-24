@@ -371,6 +371,8 @@ procedure TShutdownForm.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 if Key = ORD(VK_ESCAPE) then Hide;
+
+if Key = ORD(VK_F1) then MainForm.Main_N1Click(Self);
 end;
 
 procedure TShutdownForm.Button1Click(Sender: TObject);

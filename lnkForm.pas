@@ -70,6 +70,9 @@ type
     ImageList3: TImageList;
     LNK_LST_MENU_N16: TMenuItem;
     LNK_LST_MENU_N17: TMenuItem;
+    LNK_GEN_MENU_N7: TMenuItem;
+    LNK_GEN_MENU_N7_1: TMenuItem;
+    N5: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
@@ -113,10 +116,15 @@ type
     procedure TrayPopupMenuPopup(Sender: TObject);
     procedure LNK_LST_MENU_N16Click(Sender: TObject);
     procedure LNK_LST_MENU_N17Click(Sender: TObject);
+    procedure LNK_GEN_MENU_N7_1Click(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure FormHide(Sender: TObject);
   private
     { Private declarations }
   public
     InsertItem: TListItem;
+    FFormOpen: Boolean;
+    ON_DragOnDrop: Boolean;
     FLists: TMemIniFile;
     FPopup: TPopupMenu;
     function GetFLists: TMemIniFile;
@@ -145,7 +153,6 @@ var
   LNK_Form: TLNK_Form;
   AClose: Boolean = False;
   PosLocked: Boolean = True;
-  ON_DragOnDrop: Boolean = False;
   CurrentTab: Integer;//Ctrl+Tab
   CurrentIconSize: Cardinal = 0;
   CurrentIconStyle: Integer = 0;
@@ -174,7 +181,7 @@ with lnk_Form do
      InsertItem.SubItems.Add(Parameters);
      InsertItem.SubItems.Add(IconLocation);
      InsertItem.SubItems.Add(WorkingDir);
-     AddIconsToList(IconLocation, ImageList2, CurrentIconStyle);
+     AddIconsToList(IconLocation, ImageList2, CurrentIconSize);
      InsertItem.ImageIndex := ImageList2.Count-1;
   end;
 end;
@@ -191,6 +198,8 @@ begin
   LNK_GEN_MENU_N4.Caption := _(LNK_CPTN_MENUITEM_GEN_N4, aLanguageID);
   LNK_GEN_MENU_N5.Caption := _(LNK_CPTN_MENUITEM_GEN_N5, aLanguageID);
   LNK_GEN_MENU_N6.Caption := _(GLOBAL_CPTN_MENUITEM_Main_N2, aLanguageID);
+  LNK_GEN_MENU_N7.Caption := _(LNK_CPTN_MENUITEM_GEN_N7, aLanguageID);
+  LNK_GEN_MENU_N7_1.Caption := _(LNK_CPTN_MENUITEM_GEN_N7_N1, aLanguageID);
   LNK_LST_MENU_N1.Caption := _(LNK_CPTN_MENUITEM_LST_N1, aLanguageID);
   LNK_LST_MENU_N2.Caption := _(LNK_CPTN_MENUITEM_LST_N2, aLanguageID);
   LNK_LST_MENU_N3.Caption := _(LNK_CPTN_MENUITEM_LST_N3, aLanguageID);
@@ -226,12 +235,17 @@ end;
 //Window procedure.............................................................
 procedure TLNK_Form.WndProc(var Msg: TMessage);
 begin
-  inherited;
-  if Msg.WParam = WA_INACTIVE then
-  if ON_DragOnDrop = False then
-   begin
-    Hide;
-   end;
+inherited;
+  if Msg.Msg = WM_ACTIVATE then
+  begin
+    if Msg.WParam = WA_INACTIVE then
+    begin
+      if not FFormOpen and not ON_DragOnDrop then
+      begin
+        Hide;
+      end;
+    end;
+  end;
 end;
 
 procedure TLNK_Form.CreateParams(var Params: TCreateParams);
@@ -394,13 +408,18 @@ if Write = true then
   Width := MainForm.FConfig.ReadInteger('General','LNKForm_Width',Width);
   Height := MainForm.FConfig.ReadInteger('General','LNKForm_Height',Height);
   Caption := MainForm.FConfig.ReadString('General','LNKForm_Section','');
-  if Caption <> '' then
-  Tabs.TabIndex := FindString(Tabs.Tabs,Caption);
+  //Read sections
+  ReadDirectory(Tabs.Tabs, FLists);
+  if Caption <> '' then Tabs.TabIndex := FindString(Tabs.Tabs,Caption);
   LNK_GEN_MENU_N4.Checked := MainForm.FConfig.ReadBool('General','LNKForm_OffScreenPos',True);
   PosLocked := MainForm.FConfig.ReadBool('General','LNKForm_OffScreenPos',True);
   LNK_GEN_MENU_N2.Checked := MainForm.FConfig.ReadBool('General','LNKForm_DragOnDrop',False);
   ON_DragOnDrop := MainForm.FConfig.ReadBool('General','LNKForm_DragOnDrop',False);
   LNK_GEN_MENU_N3.Checked := MainForm.FConfig.ReadBool('General','LNKForm_HideWhenRun',False);
+  LNK_GEN_MENU_N7_1.Checked := MainForm.FConfig.ReadBool('General','LNK_Form_MouseTrayEvent', False);
+  //Delete tray popupmenu when is checked mouse move event
+  if not MainForm.FConfig.ReadBool('General','LNK_Form_MouseTrayEvent', False) then
+    MainForm.FavTray.PopupMenu := TrayPopupMenu;
   ChangeIcons(MainForm.FConfig.ReadInteger('General','LNKForm_IconSize',0));
   CurrentIconSize := MainForm.FConfig.ReadInteger('General','LNKForm_IconSize',0);
   CurrentIconStyle := MainForm.FConfig.ReadInteger('General','LNKForm_IconStyle',0);
@@ -427,20 +446,15 @@ FPopup := TPopupMenu.Create(Self);
 LNK_BTN1.DropDownMenu := FPopup;
 LNK_BTN2.DropDownMenu := FPopup;
 LNK_BTN3.DropDownMenu := FPopup;
+FFormOpen := False;
+ON_DragOnDrop := False;
 FPopup.OwnerDraw := True;
 List.ShowColumnHeaders := False;
 InsertItem := List.Items.Add;
+//Get config file
 GetFLists;
-//Read sections
-ReadDirectory(Tabs.Tabs, FLists);
-//Read from config file
 RegIni(False);
-TabsChange(Sender);
 DragAcceptFiles(LNK_Form.Handle,true);
-//Load ToolBar buttons
-LoadToolButtons(ToolBar1, FLists, ImageList3, ToolBarOnClick);
-//Add popup menu to ToolButton
-AddItemToButtonPopup(ToolBar1, MainForm.FConfig, LNK_Form, ToolBarMenuClick);
 AddIconsToImgList(ImageList1);
 //Load Tray menu
 LoadMenuFromINI(MainForm.FConfig, FLists, TrayPopupMenu, TrayImageList, TrayMenuItemClick,
@@ -455,15 +469,37 @@ FLists.Free;
 FPopup.Free;
 end;
 
+procedure TLNK_Form.FormHide(Sender: TObject);
+begin
+RegIni(True);
+end;
+
 procedure TLNK_Form.FormResize(Sender: TObject);
 begin
 LNK_SPD_BTN3.Left := LNK_Form.Width - LNK_SPD_BTN3.Width - 20;
+end;
+
+procedure TLNK_Form.FormShow(Sender: TObject);
+begin
+//Load items
+TabsChange(LNK_Form);
+//Check RecycleBin
+if not IsRecycleBinEmpty then
+LNK_BTN3.ImageIndex := 2 else LNK_BTN3.ImageIndex := 3;
+//Load ToolBar buttons
+LoadToolButtons(ToolBar1, FLists, ImageList3, ToolBarOnClick);
+//Add popup menu to ToolButton
+AddItemToButtonPopup(ToolBar1, MainForm.FConfig, LNK_Form, ToolBarMenuClick);
+//GetActive ListView
+ActiveControl := List;
 end;
 
 procedure TLNK_Form.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 if Key = ORD(VK_ESCAPE) then Hide;
+
+if Key = ORD(VK_F1) then MainForm.Main_N1Click(Self);
 
 //Ctrl+Tab to change tabs
 if (ssCtrl in Shift) and (Ord(Key) = VK_TAB) then
@@ -589,15 +625,15 @@ begin
 if Tabs.Tabs.Count <> 0 then
 if FindEdit.Text = '' then
  begin
-  ChangeIcons(CurrentIconSize);
   ListPath;
+  ChangeIcons(CurrentIconSize);
   Caption := Tabs.Tabs[Tabs.TabIndex];
   MainForm.FavTray.Hint := Tabs.Tabs[Tabs.TabIndex];
   FindEdit.Text := '';
  end else
  begin
   FindTextFromTXT(ExtractFilePath(Application.ExeName) + CurrentUserName + '.ablst',
-                  FindEdit.Text, List, FLists, ImageList2, CurrentIconStyle);
+                  FindEdit.Text, List, FLists, ImageList2, CurrentIconSize);
   List.SortType := stText;
   ChangeIcons(CurrentIconSize);
   Caption := Tabs.Tabs[Tabs.TabIndex];
@@ -611,6 +647,7 @@ procedure TLNK_Form.LNK_LST_MENU_N15Click(Sender: TObject);
 var
   Index: WORD;
 begin
+FFormOpen := True;
 with Properties do
   begin
    ActiveControl := LNKPROP_EDIT1;
@@ -633,6 +670,7 @@ with Properties do
      AddItem(Tabs.Tabs[Tabs.TabIndex],LNKPROP_EDIT1.Text,LNKPROP_EDIT2.Text,LNKPROP_EDIT3.Text,LNKPROP_EDIT5.Text,LNKPROP_EDIT4.Text);
     end;
   end;
+FFormOpen := False;
 end;
 
 procedure TLNK_Form.OpenFileDir(DialogTitle: String; isFileName: Boolean);
@@ -668,30 +706,37 @@ end;
 
 procedure TLNK_Form.LNK_LST_MENU_N3_N1Click(Sender: TObject);
 begin
+FFormOpen := True;
 if Tabs.Tabs.Count <> 0 then
 OpenFileDir(GLOBAL_TEXT_DIAG1, True);
+FFormOpen := False;
 end;
 
 procedure TLNK_Form.LNK_LST_MENU_N3_N2Click(Sender: TObject);
 begin
+FFormOpen := True;
 if Tabs.Tabs.Count <> 0 then
 OpenFileDir(GLOBAL_TEXT_DIAG2, False);
+FFormOpen := False;
 end;
 
 procedure TLNK_Form.LNK_LST_MENU_N4Click(Sender: TObject);
 begin
+FFormOpen := True;
 if (MessageBox(LNK_Form.Handle,PChar(_(LNK_GLOBAL_TEXT_MSG2,MainForm.FConfig.ReadString('General','Language',EN_US))+List.Selected.Caption+' ?'), PChar(ExtractFileName(ChangeFileExt(ParamStr(0),''))), MB_OKCANCEL) = IDOK) then
  begin
   FLists.DeleteKey(Tabs.Tabs[Tabs.TabIndex],List.Selected.Caption);
   FLists.UpdateFile;
   List.DeleteSelected;
  end;
+FFormOpen := False;
 end;
 
 procedure TLNK_Form.LNK_LST_MENU_N8Click(Sender: TObject);
 var
  NewTabStr,Transl1,Transl2: String;
 begin
+FFormOpen := True;
 Transl1 := _(LNK_GLOBAL_TEXT_MSG3,MainForm.FConfig.ReadString('General','Language',EN_US));
 Transl2 := _(LNK_GLOBAL_TEXT_MSG4,MainForm.FConfig.ReadString('General','Language',EN_US));
 if InputQuery(Transl1, Transl2, NewTabStr) then
@@ -711,6 +756,7 @@ ShowMessage(_(LNK_GLOBAL_TEXT_MSG5,MainForm.FConfig.ReadString('General','Langua
     TabsChange(Sender)
    end;
  end;
+FFormOpen := False;
 end;
 
 procedure TLNK_Form.copyitemclick(Sender: TObject);
@@ -746,21 +792,10 @@ end;
 end;
 
 procedure TLNK_Form.deleteitemclick(Sender: TObject);
-
-procedure ChangeToNextTab(TabControl: TTabControl);
-begin
-  if TabControl.Tabs.Count > 0 then
-  begin
-    if TabControl.TabIndex < TabControl.Tabs.Count - 1 then
-      TabControl.TabIndex := TabControl.TabIndex + 1
-    else
-      TabControl.TabIndex := 0;
-  end;
-end;
-
 var
  ACaption: String;
 begin
+FFormOpen := True;
 ACaption := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
 if (MessageBox(LNK_Form.Handle,PChar(_(LNK_GLOBAL_TEXT_MSG6,MainForm.FConfig.ReadString('General','Language',EN_US))+ACaption+' ?'),
     PChar(ExtractFileName(ChangeFileExt(ParamStr(0),''))), MB_OKCANCEL) = IDOK) then
@@ -787,6 +822,7 @@ if LNK_Form.Caption = ACaption then
    end;
  end;
 end;
+FFormOpen := False;
 end;
 
 procedure TLNK_Form.LNK_GEN_MENU_N4Click(Sender: TObject);
@@ -853,6 +889,21 @@ begin
     ChangeIcons(CurrentIconSize);
     MainForm.FConfig.WriteInteger('General','LNKForm_IconStyle',CurrentIconStyle);
     MainForm.FConfig.UpdateFile;
+  end;
+end;
+
+procedure TLNK_Form.LNK_GEN_MENU_N7_1Click(Sender: TObject);
+begin
+ with Sender as TMenuItem do
+  begin
+   Checked := not Checked;
+   //Delete tray popupmenu when is checked mouse move event
+   if Checked = False then
+   MainForm.FavTray.PopupMenu := TrayPopupMenu
+   else MainForm.FavTray.PopupMenu := nil;
+   //Save configuration to ini
+   MainForm.FConfig.WriteBool('General','LNK_Form_MouseTrayEvent', Checked);
+   MainForm.FConfig.UpdateFile;
   end;
 end;
 
@@ -1112,19 +1163,6 @@ LNK_Form.ActiveControl := LNK_Form.List;
 //Check if RecycleBin is empty or is full
 if not IsRecycleBinEmpty then
 LNK_BTN3.ImageIndex := 2 else LNK_BTN3.ImageIndex := 3;
-end;
-
-procedure OpenFileLocation(sFile: String);
-var
-   FileName : TFileName;
-begin
-  FileName := sFile;
-
-  ShellExecute(Application.Handle, 'OPEN',
-    pchar('explorer.exe'),
-    pchar('/select, "' + FileName + '"'),
-    nil,
-    SW_NORMAL);
 end;
 
 procedure TLNK_Form.LNK_LST_MENU_N2Click(Sender: TObject);

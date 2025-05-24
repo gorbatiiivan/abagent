@@ -16,8 +16,10 @@ object LNK_Form: TLNK_Form
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnHide = FormHide
   OnKeyDown = FormKeyDown
   OnResize = FormResize
+  OnShow = FormShow
   TextHeight = 13
   object Tabs: TTabControl
     AlignWithMargins = True
@@ -340,6 +342,13 @@ object LNK_Form: TLNK_Form
       Caption = 'Prevent moving off screen'
       OnClick = LNK_GEN_MENU_N4Click
     end
+    object N5: TMenuItem
+      Caption = '-'
+    end
+    object LNK_GEN_MENU_N6: TMenuItem
+      Caption = 'Set HotKey'
+      OnClick = LNK_GEN_MENU_N6Click
+    end
     object N18: TMenuItem
       Caption = '-'
     end
@@ -347,9 +356,12 @@ object LNK_Form: TLNK_Form
       Caption = 'Show tray icon'
       OnClick = LNK_GEN_MENU_N5Click
     end
-    object LNK_GEN_MENU_N6: TMenuItem
-      Caption = 'Set HotKey'
-      OnClick = LNK_GEN_MENU_N6Click
+    object LNK_GEN_MENU_N7: TMenuItem
+      Caption = 'Show form with mouse'
+      object LNK_GEN_MENU_N7_1: TMenuItem
+        Caption = 'When moving the mouse'
+        OnClick = LNK_GEN_MENU_N7_1Click
+      end
     end
   end
   object ImageList1: TImageList
