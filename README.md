@@ -1,10 +1,9 @@
 # abagent
 Anti Boss Agent is a portable open source application for Windows that can easily hide any window in the background with hotkey.
-(Please, I need help to improve the application, I will always be glad to any help.)
 
 
 
-![01](https://github.com/user-attachments/assets/0fc94347-27a8-439b-94a8-a31e52b62fce)
+![001](https://github.com/user-attachments/assets/0bd2e629-3229-4a8b-ac9a-2154926f0da9)
 
 
 
@@ -45,4 +44,5 @@ Run with parameters
 -    Logoff '--LOGOFF'.
 -    Standby '--STANDBY''.
 
-*To enabled "mute by process" need to download svcl.exe from "https://www.nirsoft.net/utils/sound_volume_command_line.html", download SoundVolumeCommandLine (64-bit) and put svcl.exe in the directory to abagent.exe, when svcl.exe is not in the directory mute working for all).
+*If in same directory exists svcl.exe to option "Mute by process" it works with svcl.exe but is not necessarily (or is not working standart option).
+*Download svcl.exe from "https://www.nirsoft.net/utils/sound_volume_command_line.html".
