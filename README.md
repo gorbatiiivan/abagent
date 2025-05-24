@@ -45,4 +45,5 @@ Run with parameters
 -    Standby '--STANDBY''.
 
 *If in same directory exists svcl.exe to option "Mute by process" it works with svcl.exe but is not necessarily (or is not working standart option).
+
 *Download svcl.exe from "https://www.nirsoft.net/utils/sound_volume_command_line.html".
