@@ -10,6 +10,7 @@ Anti Boss Agent is a portable open source application for Windows that can easil
 
 
 
+
 Features:
 * Run your selected process from file and hide with the same hotkey.
 * Hide all processes using your mouse.
@@ -24,11 +25,13 @@ Timer
 ![02](https://github.com/user-attachments/assets/67b92346-e7e8-442a-a964-4f33171eb69f)
 
 
+
 ------------------------------------------------------------------------------------------------------
 
 Favorites
 
 ![02](https://github.com/user-attachments/assets/301784c8-d82e-4f46-8728-0c09542b8c20)
+
 
 
 
