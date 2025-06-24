@@ -392,7 +392,6 @@ begin
     Timer1.Enabled := false;
     MainForm.TimerImg.Hint := _(Timer_GLOBAL_TEXT_MSG1, MainForm.FConfig.ReadString('General','Language',EN_US));
     MainForm.TimerTrayIcon.Hint := _(Timer_GLOBAL_TEXT_MSG1, MainForm.FConfig.ReadString('General','Language',EN_US));
-    LNK_Form.LNK_SPD_BTN1.Hint := _(Timer_GLOBAL_TEXT_MSG1, MainForm.FConfig.ReadString('General','Language',EN_US));
   end
     else
   begin
@@ -451,7 +450,6 @@ begin
     _(Timer_GLOBAL_TEXT_MSG4, MainForm.FConfig.ReadString('General','Language',EN_US));
     MainForm.TimerImg.Hint := label4.caption;
     MainForm.TimerTrayIcon.Hint := label4.caption;
-    LNK_Form.LNK_SPD_BTN1.Hint := label4.Caption;
     buffer := shutdown_tick - GetTickCount();
     if (buffer <= 0) then
       method := getmethod;
@@ -463,7 +461,6 @@ begin
 
     MainForm.TimerImg.Hint := label4.caption;
     MainForm.TimerTrayIcon.Hint := label4.caption;
-    LNK_Form.LNK_SPD_BTN1.Hint := label4.Caption;
     GetLocalTime(lt);
     if (lt.wHour = Word(UpDown2.Position)) and (lt.wMinute = Word(UpDown3.Position)) then
       method := getmethod;
@@ -489,7 +486,6 @@ begin
           MainForm.TimerImg.Hint := _(Timer_GLOBAL_TEXT_MSG5, MainForm.FConfig.ReadString('General','Language',EN_US))
           +inttostr(last_err)+_(Timer_GLOBAL_TEXT_MSG6, MainForm.FConfig.ReadString('General','Language',EN_US));
           MainForm.TimerTrayIcon.Hint := MainForm.TimerImg.Hint;
-          LNK_Form.LNK_SPD_BTN1.Hint := MainForm.TimerImg.Hint;
          end else
           Exit; //From original code:Application.Destroy;
        end;
@@ -594,7 +590,6 @@ if not ShutdownForm.Showing then
    if not ShutdownForm.Timer1.Enabled then
       MainForm.TimerImg.Hint := _(Timer_GLOBAL_TEXT_MSG1, MainForm.FConfig.ReadString('General','Language',EN_US));
       MainForm.TimerTrayIcon.Hint := _(Timer_GLOBAL_TEXT_MSG1, MainForm.FConfig.ReadString('General','Language',EN_US));
-      LNK_Form.LNK_SPD_BTN1.Hint := _(Timer_GLOBAL_TEXT_MSG1, MainForm.FConfig.ReadString('General','Language',EN_US));
    ShutdownForm.Close;
   end;
 end;

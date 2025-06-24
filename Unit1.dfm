@@ -66,7 +66,7 @@ object MainForm: TMainForm
     Width = 437
     Height = 90
     Caption = 'Task Managers'
-    TabOrder = 7
+    TabOrder = 6
     object Main_CHKBOX5: TCheckBox
       Left = 15
       Top = 17
@@ -111,7 +111,7 @@ object MainForm: TMainForm
     Width = 203
     Height = 52
     Caption = 'Hide process using the mouse'
-    TabOrder = 3
+    TabOrder = 2
     object MousePosBox: TComboBox
       Left = 16
       Top = 21
@@ -146,7 +146,7 @@ object MainForm: TMainForm
     Width = 437
     Height = 76
     Caption = 'Clear data (need Admin Privileges)'
-    TabOrder = 9
+    TabOrder = 8
     object Main_CHKBOX7: TCheckBox
       Left = 16
       Top = 24
@@ -200,7 +200,7 @@ object MainForm: TMainForm
     Width = 153
     Height = 140
     Caption = 'Boss HotKey'
-    TabOrder = 8
+    TabOrder = 7
     object Main_CHKBOX6: TCheckBox
       Left = 16
       Top = 17
@@ -243,22 +243,13 @@ object MainForm: TMainForm
       end
     end
   end
-  object Main_CHKBOX2: TCheckBox
-    Left = 8
-    Top = 60
-    Width = 387
-    Height = 17
-    Caption = 'Enabled log file'
-    TabOrder = 1
-    OnClick = Main_CHKBOX2Click
-  end
   object Main_BTN10: TButton
     Left = 451
     Top = 538
     Width = 153
     Height = 25
     Caption = 'Save'
-    TabOrder = 11
+    TabOrder = 10
     OnClick = Main_BTN10Click
   end
   object TitleBarPanel1: TTitleBarPanel
@@ -286,6 +277,7 @@ object MainForm: TMainForm
       Cursor = crHandPoint
       Hint = 'Read log file'
       Center = True
+      PopupMenu = LogForm.PopupMenu
       Transparent = True
       OnClick = LogImgClick
     end
@@ -330,7 +322,7 @@ object MainForm: TMainForm
     Width = 596
     Height = 258
     Style = tsButtons
-    TabOrder = 6
+    TabOrder = 5
     OnChange = PTabChange
     object Main_LBL2: TLabel
       Left = 15
@@ -488,11 +480,11 @@ object MainForm: TMainForm
   end
   object Main_CHKBOX3: TCheckBox
     Left = 8
-    Top = 83
+    Top = 59
     Width = 387
     Height = 17
     Caption = 'Mute when hide'
-    TabOrder = 2
+    TabOrder = 1
     OnClick = Main_CHKBOX3Click
   end
   object Main_BTN2: TButton
@@ -502,7 +494,7 @@ object MainForm: TMainForm
     Height = 21
     Hint = 'New tab'
     Caption = '+'
-    TabOrder = 4
+    TabOrder = 3
     OnClick = Main_BTN2Click
   end
   object Main_BTN3: TButton
@@ -512,7 +504,7 @@ object MainForm: TMainForm
     Height = 21
     Hint = 'Remove tab'
     Caption = 'X'
-    TabOrder = 5
+    TabOrder = 4
     OnClick = Main_BTN3Click
   end
   object FavTray: TTrayIcon

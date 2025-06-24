@@ -18,7 +18,7 @@ procedure DrawSnakeSegmentWithBorder(CellSize, x, y: Integer; bodyColor, borderC
 procedure Initialize;
 procedure GenerateFood;
 procedure CheckAll;
-procedure PaintSnake(ResultStr: String);
+procedure PaintSnake(ResultStr, PauseStr: String);
 procedure CreateSnake(Form: TForm; PaintBox: TPaintBox);
 procedure DestroySnake;
 type
@@ -149,11 +149,15 @@ for i := 1 to dlzka do
   end;
 end;
 
-procedure PaintSnake(ResultStr: String);
+procedure PaintSnake(ResultStr, PauseStr: String);
 var
   i: Integer;
   s: string;
   TextSize: TSize;
+  gradientStep: Integer;
+  startColor, endColor: TColor;
+  currentColor: TColor;
+  r1, g1, b1, r2, g2, b2: Byte;
 begin
   with CurrentPaintBox do
   begin
@@ -180,14 +184,54 @@ begin
   // Draw Food
   DrawSnakeSegmentWithBorder(CellSize, Food.x * CellSize, Food.y * CellSize, clRed, clMaroon);
 
-  // Draw Snake
+  // Gradient colors for snake body
+  startColor := clLime;       // Start color (bright green)
+  endColor := clGreen;        // End color (dark green)
+
+  // Extract RGB components
+  r1 := GetRValue(startColor);
+  g1 := GetGValue(startColor);
+  b1 := GetBValue(startColor);
+  r2 := GetRValue(endColor);
+  g2 := GetGValue(endColor);
+  b2 := GetBValue(endColor);
+
+  // Draw Snake with gradient
   for i := 1 to dlzka do
-  DrawSnakeSegmentWithBorder(CellSize,
-    had[i].x * CellSize,
-    had[i].y * CellSize,
-    clLime,           // Основной цвет тела
-    clGreen           // Цвет рамки (обводки)
-  );
+  begin
+    if i = 1 then
+    begin
+      // Draw black head
+      DrawSnakeSegmentWithBorder(CellSize,
+        had[i].x * CellSize,
+        had[i].y * CellSize,
+        clLime,           // Head color (black)
+        clGreen            // Border color (black)
+      );
+    end
+    else
+    begin
+      // Calculate gradient color for this segment
+      if dlzka > 2 then
+      begin
+        gradientStep := Round(255 * (i / dlzka));
+        currentColor := RGB(
+          r1 + (r2 - r1) * gradientStep div 255,
+          g1 + (g2 - g1) * gradientStep div 255,
+          b1 + (b2 - b1) * gradientStep div 255
+        );
+      end
+      else
+        currentColor := startColor;
+
+      DrawSnakeSegmentWithBorder(CellSize,
+        had[i].x * CellSize,
+        had[i].y * CellSize,
+        currentColor,           // Body color (gradient)
+        clGreen                // Border color (dark green)
+      );
+    end;
+  end;
 
   // Draw Pause
   if IsPaused then
@@ -195,7 +239,7 @@ begin
     CurrentPaintBox.Canvas.Brush.Style := bsClear;
     CurrentPaintBox.Canvas.Font.Color := clBlack;
     CurrentPaintBox.Canvas.Font.Size := 20;
-    s := 'Пауза';
+    s := PauseStr;
     TextSize := CurrentPaintBox.Canvas.TextExtent(s);
     CurrentPaintBox.Canvas.TextOut(
       (CurrentPaintBox.Width - TextSize.cx) div 2,

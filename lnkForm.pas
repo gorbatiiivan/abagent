@@ -34,7 +34,6 @@ type
     N18: TMenuItem;
     LNK_GEN_MENU_N5: TMenuItem;
     ImageList1: TImageList;
-    Bevel1: TBevel;
     LNK_BTN2: TButton;
     N11: TMenuItem;
     LNK_LST_MENU_N7: TMenuItem;
@@ -44,7 +43,6 @@ type
     LNK_GEN_MENU_N1: TMenuItem;
     LNK_LST_MENU_N2: TMenuItem;
     N20: TMenuItem;
-    LNK_SPD_BTN1: TSpeedButton;
     LNK_LST_MENU_N10: TMenuItem;
     N25: TMenuItem;
     LNK_LST_MENU_N11: TMenuItem;
@@ -100,7 +98,6 @@ type
     procedure LNK_GEN_MENU_N6Click(Sender: TObject);
     procedure LNK_GEN_MENU_N1Click(Sender: TObject);
     procedure LNK_LST_MENU_N2Click(Sender: TObject);
-    procedure LNK_SPD_BTN1Click(Sender: TObject);
     procedure LNK_LST_MENU_N11Click(Sender: TObject);
     procedure LNK_LST_MENU_N12Click(Sender: TObject);
     procedure LNK_GEN_MENU_N4Click(Sender: TObject);
@@ -225,7 +222,6 @@ begin
   LNK_LST_MENU_N15.Caption := _(LNK_CPTN_MENUITEM_LST_N15, aLanguageID);
   LNK_LST_MENU_N16.Caption := _(LNK_CPTN_MENUITEM_LST_N16_1, aLanguageID);
   LNK_LST_MENU_N17.Caption := _(LNK_CPTN_MENUITEM_LST_N17, aLanguageID);
-  LNK_SPD_BTN1.Hint := _(GLOBAL_HINT_IMG_TimerImg, aLanguageID);
   LNK_BTN1.Hint := _(LNK_HINT_BTN_BTN1, aLanguageID);
   LNK_BTN2.Hint := _(LNK_HINT_BTN_BTN2, aLanguageID);
   LNK_BTN3.Hint := _(LNK_HINT_SPDBTN_BTN2, aLanguageID);
@@ -437,7 +433,7 @@ begin
 if AClose = false then
  begin
   Action := caNone;
- end else Action := caFree;
+ end else Action := caHide;
 end;
 
 procedure TLNK_Form.FormCreate(Sender: TObject);
@@ -598,17 +594,6 @@ end;
 procedure TLNK_Form.LNK_SPD_BTN3Click(Sender: TObject);
 begin
 Hide;
-end;
-
-procedure TLNK_Form.LNK_SPD_BTN1Click(Sender: TObject);
-begin
-if not ShutdownForm.Showing then
- begin
-  //ShutdownForm.ParentWindow := MainForm.Handle;
-  ShutdownForm.Position := poDesktopCenter;
-  ShutdownForm.Show;
-  SetForegroundWindow(ShutdownForm.Handle);
- end else ShutdownForm.Close;
 end;
 
 procedure TLNK_Form.PanelMouseDown(Sender: TObject; Button: TMouseButton;
@@ -908,6 +893,11 @@ begin
 end;
 
 procedure TLNK_Form.PopupMenuPopup(Sender: TObject);
+var
+ ifSearching: Boolean; //If searching items then true
+begin
+if FindEdit.Text = '' then ifSearching := False else ifSearching := True;
+if not ifSearching then
 begin
  if Tabs.Tabs.Count = 0 then
   begin
@@ -925,7 +915,11 @@ begin
    LNK_LST_MENU_N1.Enabled := True;
    LNK_LST_MENU_N2.Enabled := True;
    LNK_LST_MENU_N7.Enabled := True;
+   LNK_LST_MENU_N8.Enabled := True;
    LNK_LST_MENU_N5.Enabled := True;
+   LNK_LST_MENU_N10.Enabled := True;
+   LNK_LST_MENU_N13.Enabled := True;
+   LNK_LST_MENU_N14.Enabled := True;
    LNK_LST_MENU_N15.Enabled := True;
    LNK_LST_MENU_N16.Enabled := True;
    if FLists.ValueExists('Toolbar', List.Selected.Caption) then
@@ -941,11 +935,24 @@ begin
    LNK_LST_MENU_N1.Enabled := False;
    LNK_LST_MENU_N2.Enabled := False;
    LNK_LST_MENU_N7.Enabled := False;
+   LNK_LST_MENU_N8.Enabled := True;
    LNK_LST_MENU_N5.Enabled := False;
+   LNK_LST_MENU_N10.Enabled := True;
+   LNK_LST_MENU_N13.Enabled := True;
+   LNK_LST_MENU_N14.Enabled := True;
    LNK_LST_MENU_N15.Enabled := False;
    LNK_LST_MENU_N16.Enabled := False;
   end;
  AddMenuItem(LNK_LST_MENU_N9, Tabs, deleteitemclick);
+end else
+begin
+ DisableAllPopupMenuItems(PopupMenu);
+ if List.Selected <> nil then
+ begin
+  LNK_LST_MENU_N1.Enabled := True;
+  LNK_LST_MENU_N2.Enabled := True;
+ end;
+end;
 end;
 
 procedure TLNK_Form.DriveOnClick(Sender: TObject);
@@ -1064,7 +1071,11 @@ var
  PName,PLocation,PWorkinDir,PParameter,NewFilePath, WorkingDirPath: String;
 begin
 if not FileExists(List.Selected.SubItems[0]) then
-ShowMessage(_(LNK_GLOBAL_TEXT_MSG7,MainForm.FConfig.ReadString('General','Language',EN_US))) else
+begin
+ FFormOpen := True;
+ ShowMessage(_(LNK_GLOBAL_TEXT_MSG7,MainForm.FConfig.ReadString('General','Language',EN_US)));
+ FFormOpen := False;
+end else
 with MainForm do
  begin
   if ExtractFileExt(List.Selected.SubItems[0]) = '.lnk' then
@@ -1181,8 +1192,11 @@ var
 begin
 TranslApps := _(LNK_GLOBAL_TEXT_MSG9,MainForm.FConfig.ReadString('General','Language',EN_US));
 if FLists.SectionExists(TranslApps) then
-ShowMessage(_(LNK_GLOBAL_TEXT_MSG8,MainForm.FConfig.ReadString('General','Language',EN_US)))
-else
+begin
+FFormOpen := True;
+ShowMessage(_(LNK_GLOBAL_TEXT_MSG8,MainForm.FConfig.ReadString('General','Language',EN_US)));
+FFormOpen := False;
+end else
  begin
   Tabs.Tabs.Add(TranslApps);
   Tabs.TabIndex := FindString(Tabs.Tabs,TranslApps);
@@ -1208,8 +1222,11 @@ var
 begin
 TranslDirs := _(LNK_GLOBAL_TEXT_MSG10,MainForm.FConfig.ReadString('General','Language',EN_US));
 if FLists.SectionExists(TranslDirs) then
-ShowMessage(_(LNK_GLOBAL_TEXT_MSG8,MainForm.FConfig.ReadString('General','Language',EN_US)))
-else
+begin
+FFormOpen := True;
+ShowMessage(_(LNK_GLOBAL_TEXT_MSG8,MainForm.FConfig.ReadString('General','Language',EN_US)));
+FFormOpen := False;
+end else
  begin
   Tabs.Tabs.Add(TranslDirs);
   Tabs.TabIndex := FindString(Tabs.Tabs,TranslDirs);

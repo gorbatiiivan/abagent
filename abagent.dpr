@@ -21,13 +21,11 @@ uses
   Translation in 'Translation.pas',
   ABSnake in 'ABSnake.pas',
   WindowManagerUnit in 'WindowManagerUnit.pas',
-  AudioProcessController in 'AudioProcessController.pas';
+  AudioProcessController in 'AudioProcessController.pas',
+  Log in 'Log.pas' {LogForm};
 
 {$R *.res}
 {$SETPEFLAGS IMAGE_FILE_RELOCS_STRIPPED} //Удаление из exe таблицы релокаций.
-{$SETPEFLAGS IMAGE_FILE_LINE_NUMS_STRIPPED} //Удаление из exe информации о номерах строк
-{$SETPEFLAGS IMAGE_FILE_LOCAL_SYMS_STRIPPED} //Удаление local symbols
-{$SETPEFLAGS IMAGE_FILE_LINE_NUMS_STRIPPED} // Удаление из exe информации о номерах строк
 
 var
   ExtendedStyle: Longint;
@@ -47,6 +45,7 @@ if Win32MajorVersion >= 6 then
   Application.CreateForm(THotKeyForm, HotKeyForm);
   Application.CreateForm(THelpForm, HelpForm);
   Application.CreateForm(TProcessesForm, ProcessesForm);
+  Application.CreateForm(TLogForm, LogForm);
   Application.Run;
  end else Exit;
 end.

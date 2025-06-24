@@ -172,6 +172,10 @@
         <DCCReference Include="ABSnake.pas"/>
         <DCCReference Include="WindowManagerUnit.pas"/>
         <DCCReference Include="AudioProcessController.pas"/>
+        <DCCReference Include="Log.pas">
+            <Form>LogForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <RcItem Include="images\log\log24.png">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>log24</ResourceId>
@@ -179,10 +183,6 @@
         <RcItem Include="images\star\star24.png">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>star24</ResourceId>
-        </RcItem>
-        <RcItem Include="images\time\time32.png">
-            <ResourceType>RCDATA</ResourceType>
-            <ResourceId>time32</ResourceId>
         </RcItem>
         <RcItem Include="images\time\time24.png">
             <ResourceType>RCDATA</ResourceType>
@@ -276,12 +276,6 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="images\time\time24.png" Configuration="Release" Class="ProjectFile">
-                    <Platform Name="Win64">
-                        <RemoteDir>.\</RemoteDir>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="images\time\time32.png" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

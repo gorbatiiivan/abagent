@@ -19,7 +19,6 @@ const
    GLOBAL_HINT_IMG_TimerImg = 'GLOBAL_HINT_IMG_TimerImg';
    GLOBAL_HINT_IMG_FavImg = 'GLOBAL_HINT_IMG_FavImg';
    GLOBAL_CPTN_CHKBOX_CHKBOX1 = 'GLOBAL_CPTN_CHKBOX_CHKBOX1';
-   GLOBAL_CPTN_CHKBOX_CHKBOX2 = 'GLOBAL_CPTN_CHKBOX_CHKBOX2';
    GLOBAL_CPTN_CHKBOX_CHKBOX3 = 'GLOBAL_CPTN_CHKBOX_CHKBOX3';
    GLOBAL_CPTN_GRPBOX_GrpBox1 = 'GLOBAL_CPTN_GRPBOX_GrpBox1';
    GLOBAL_CPTN_COMBOBOX_PosBox1 = 'GLOBAL_CPTN_COMBOBOX_PosBox1';
@@ -53,11 +52,23 @@ const
    GLOBAL_CPTN_CHKBOX_CHKBOX10 = 'GLOBAL_CPTN_CHKBOX_CHKBOX10';
    GLOBAL_CPTN_CHKBOX_CHKBOX11 = 'GLOBAL_CPTN_CHKBOX_CHKBOX11';
    GLOBAL_HINT_CHKBOX_CHKBOX11 = 'GLOBAL_HINT_CHKBOX_CHKBOX11';
-   GLOBAL_TEXT_MSG1 = 'GLOBAL_TEXT_MSG1';
    GLOBAL_TEXT_MSG2 = 'GLOBAL_TEXT_MSG2';
    GLOBAL_CPTN_BTN_BTN10 = 'GLOBAL_CPTN_BTN_BTN10';
    GLOBAL_TEXT_DIAG1 = 'GLOBAL_TEXT_DIAG1';
    GLOBAL_TEXT_DIAG2 = 'GLOBAL_TEXT_DIAG2';
+   // LogForm
+   //---------------------------------------------------------------------------
+   LOGFORM_GLOBAL_TEXT_MSG1 = 'LOGFORM_GLOBAL_TEXT_MSG1';
+   LOGFORM_GLOBAL_TEXT_MSG2 = 'LOGFORM_GLOBAL_TEXT_MSG2';
+   LOGFORM_GLOBAL_TEXT_MSG3 = 'LOGFORM_GLOBAL_TEXT_MSG3';
+   LOGFORM_GLOBAL_TEXT_MSG4 = 'LOGFORM_GLOBAL_TEXT_MSG4';
+   LOGFORM_GLOBAL_TEXT_MSG5 = 'LOGFORM_GLOBAL_TEXT_MSG5';
+   LOGFORM_GLOBAL_TEXT_MSG6 = 'LOGFORM_GLOBAL_TEXT_MSG6';
+   LOGFORM_GLOBAL_TEXT_MSG7 = 'LOGFORM_GLOBAL_TEXT_MSG7';
+   LOGFORM_GLOBAL_TEXT_MSG8 = 'LOGFORM_GLOBAL_TEXT_MSG8';
+   LOGFORM_GLOBAL_TEXT_MSG9 = 'LOGFORM_GLOBAL_TEXT_MSG9';
+   LOGFORM_GLOBAL_TEXT_MSG10 = 'LOGFORM_GLOBAL_TEXT_MSG10';
+   LOGFORM_CPTN_MENUITEM_N3 = 'LOGFORM_CPTN_MENUITEM_N3';
    // HotKeyChanger
    //---------------------------------------------------------------------------
    HOTKEYCHANGER_CPTN = 'HOTKEYCHANGER_CPTN';
@@ -69,9 +80,12 @@ const
    HELP_CPTN_PAGECTRL_TAB1 = 'HELP_CPTN_PAGECTRL_TAB1';
    HELP_CPTN_PAGECTRL_TAB2 = 'HELP_CPTN_PAGECTRL_TAB2';
    HELP_CPTN_PAGECTRL_TAB3 = 'HELP_CPTN_PAGECTRL_TAB3';
+   HELP_CPTN_PAGECTRL_TAB4 = 'HELP_CPTN_PAGECTRL_TAB4';
    HELPFORM_CPTN_LBL_2 = 'HELPFORM_CPTN_LBL_2';
    HELPFORM_CPTN_LBL_3 = 'HELPFORM_CPTN_LBL_3';
    HELPFORM_CPTN_LBL_4 = 'HELPFORM_CPTN_LBL_4';
+   HELPFORM_CPTN_LBL_5 = 'HELPFORM_CPTN_LBL_5';
+   HELPFORM_CPTN_LBL_6 = 'HELPFORM_CPTN_LBL_6';
    HELPFORM_TEXT_MEMO1 = 'HELPFORM_MEMO1';
    HELPFORM_TEXT_LSTVIEW_COL1 = 'HELPFORM_TEXT_LSTVIEW_COL1';
    HELPFORM_TEXT_LSTVIEW_HEAD1 = 'HELPFORM_TEXT_LSTVIEW_HEAD1';
@@ -79,6 +93,7 @@ const
    HELPFORM_TEXT_LSTVIEW_ITEM2 = 'HELPFORM_TEXT_LSTVIEW_ITEM2';
    HELPFORM_TEXT_LSTVIEW_ITEM6 = 'HELPFORM_TEXT_LSTVIEW_ITEM6';
    HELP_GLOBAL_TEXT_SNAKE1 = 'HELP_GLOBAL_TEXT_SNAKE1';
+   HELP_GLOBAL_TEXT_SNAKE2 = 'HELP_GLOBAL_TEXT_SNAKE2';
    // FavoritesForm
    //---------------------------------------------------------------------------
    LNK_CPTN_MENUITEM_GEN_N1 = 'LNK_CPTN_MENUITEM_GEN_N1';
@@ -200,19 +215,17 @@ if aLanguageID = EN_US then
   if StringID  = GLOBAL_HINT_IMG_MainImg then
      Result := 'Main menu';
   if StringID  = GLOBAL_HINT_IMG_LogImg then
-     Result := 'Read the log file';
+     Result := 'Event log';
   if StringID  = GLOBAL_HINT_IMG_TimerImg then
      Result := 'Timer';
   if StringID  = GLOBAL_HINT_IMG_FavImg then
      Result := 'Favorites';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX1 then
      Result := 'Start when I log on (with Admin privileges)';
-  if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX2 then
-     Result := 'Enable the log file';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX3 then
      Result := 'Mute global sound when hiding processes';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox1 then
-     Result := 'Hide process using the mouse';
+     Result := 'Hide processes using the mouse';
   if StringID  = GLOBAL_CPTN_COMBOBOX_PosBox1 then
      Result := 'none;left;right;top;bottom';
   if StringID  = GLOBAL_ACTION_BTN_BTN1 then
@@ -277,8 +290,6 @@ if aLanguageID = EN_US then
      Result := 'Terminate abagent';
   if StringID  = GLOBAL_HINT_CHKBOX_CHKBOX11 then
      Result := 'Works only when running processes';
-  if StringID  = GLOBAL_TEXT_MSG1 then
-     Result := 'The log file does not exist.';
   if StringID  = GLOBAL_TEXT_MSG2 then
      Result := 'Are you sure you want to delete the selected tab?';
   if StringID  = GLOBAL_CPTN_BTN_BTN10 then
@@ -287,6 +298,30 @@ if aLanguageID = EN_US then
      Result := 'Select executable file';
   if StringID  = GLOBAL_TEXT_DIAG2 then
      Result := 'Select folder';
+  // LogForm
+  //----------------------------------------------------------------------------
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG1 then
+     Result := 'The log file does not exist.';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG2 then
+     Result := 'Loading...';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG3 then
+     Result := 'Loading of log events completed';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG4 then
+     Result := 'System startup';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG5 then
+     Result := 'System shutdown';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG6 then
+     Result := 'Unexpected shutdown';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG7 then
+     Result := 'Abnormal reboot';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG8 then
+     Result := 'Entering sleep';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG9 then
+     Result := 'Resuming from sleep';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG10 then
+     Result := 'Successful boot';
+  if StringID  = LOGFORM_CPTN_MENUITEM_N3 then
+     Result := 'Show events from file';
   // HotKeyChanger
   //----------------------------------------------------------------------------
   if StringID  = HOTKEYCHANGER_CPTN then
@@ -305,6 +340,8 @@ if aLanguageID = EN_US then
      Result := 'Keyboard shortcuts';
   if StringID  = HELP_CPTN_PAGECTRL_TAB3 then
      Result := 'Information';
+  if StringID  = HELP_CPTN_PAGECTRL_TAB4 then
+     Result := 'License';
   if StringID  = HELPFORM_CPTN_LBL_2 then
      Result := 'Release date: ';
   if StringID  = HELPFORM_CPTN_LBL_3 then
@@ -313,6 +350,11 @@ if aLanguageID = EN_US then
      Result := 'To control the snake, press WASD or the arrow keys.'+#10+
                'Press the Pause key to pause or resume the game.'+#10+
                'Space to restart the game after it ends.';
+  if StringID  = HELPFORM_CPTN_LBL_5 then
+     Result := 'ABAgent on the SourceForge.net';
+  if StringID  = HELPFORM_CPTN_LBL_6 then
+     Result := 'Copyright © 2024-2025 G. Ivan'+#10+#10+
+               'This application is distributed without any warranties.';
   if StringID  = HELPFORM_TEXT_MEMO1 then
      Result := 'Features:;'+
                '* Run your selected process from file and hide with the same hotkey.;'+
@@ -343,6 +385,8 @@ if aLanguageID = EN_US then
      Result := 'Change tabs';
   if StringID  = HELP_GLOBAL_TEXT_SNAKE1 then
      Result := 'Score: ';
+  if StringID  = HELP_GLOBAL_TEXT_SNAKE2 then
+     Result := 'Pause';
   // FavoritesForm
   //----------------------------------------------------------------------------
   if StringID  = LNK_CPTN_MENUITEM_GEN_N1 then
@@ -545,19 +589,17 @@ if aLanguageID = RU_RU then
   if StringID  = GLOBAL_HINT_IMG_MainImg then
      Result := 'Главное меню';
   if StringID  = GLOBAL_HINT_IMG_LogImg then
-     Result := 'Прочитать файл журнала';
+     Result := 'Журнал событий';
   if StringID  = GLOBAL_HINT_IMG_TimerImg then
      Result := 'Таймер';
   if StringID  = GLOBAL_HINT_IMG_FavImg then
      Result := 'Избранное';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX1 then
      Result := 'Запускать при входе в систему (с правами администратора)';
-  if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX2 then
-     Result := 'Включить файл журнала';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX3 then
      Result := 'Отключить глобальный звук при скрытии процессов';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox1 then
-     Result := 'Скрыть процесс с помощью мыши';
+     Result := 'Скрыть процессы с помощью мыши';
   if StringID  = GLOBAL_CPTN_COMBOBOX_PosBox1 then
      Result := 'нет;левый;право;сверху;cнизу';
   if StringID  = GLOBAL_ACTION_BTN_BTN1 then
@@ -622,8 +664,6 @@ if aLanguageID = RU_RU then
      Result := 'Завершить abagent';
   if StringID  = GLOBAL_HINT_CHKBOX_CHKBOX11 then
      Result := 'Работает только при запущенных процессах';
-  if StringID  = GLOBAL_TEXT_MSG1 then
-     Result := 'Файл журнала не существует.';
   if StringID  = GLOBAL_TEXT_MSG2 then
      Result := 'Вы уверены, что хотите удалить выбранную вкладку?';
   if StringID  = GLOBAL_CPTN_BTN_BTN10 then
@@ -632,6 +672,30 @@ if aLanguageID = RU_RU then
      Result := 'Выберите исполняемый файл';
   if StringID  = GLOBAL_TEXT_DIAG2 then
      Result := 'Выберите папку';
+  // LogForm
+  //----------------------------------------------------------------------------
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG1 then
+     Result := 'Файл журнала не существует.';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG2 then
+     Result := 'Загрузка...';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG3 then
+     Result := 'Загрузка журнала событий завершена';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG4 then
+     Result := 'Запуск системы';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG5 then
+     Result := 'Выключение системы';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG6 then
+     Result := 'Неожиданное выключение';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG7 then
+     Result := 'Ненормальный перезапуск';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG8 then
+     Result := 'Переход в режим сна';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG9 then
+     Result := 'Выход из режима сна';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG10 then
+     Result := 'Успешный запуск';
+  if StringID  = LOGFORM_CPTN_MENUITEM_N3 then
+     Result := 'Показать события из файла';
   // HotKeyChanger
   //----------------------------------------------------------------------------
   if StringID  = HOTKEYCHANGER_CPTN then
@@ -650,6 +714,8 @@ if aLanguageID = RU_RU then
      Result := 'Сочетание клавиш';
   if StringID  = HELP_CPTN_PAGECTRL_TAB3 then
      Result := 'Информация';
+  if StringID  = HELP_CPTN_PAGECTRL_TAB4 then
+     Result := 'Лицензия';
   if StringID  = HELPFORM_CPTN_LBL_2 then
      Result := 'Дата выпуска: ';
   if StringID  = HELPFORM_CPTN_LBL_3 then
@@ -658,6 +724,11 @@ if aLanguageID = RU_RU then
      Result := 'Для управления змеей нажмите WASD или клавиши со стрелками.'+#10+
                'Нажмите клавишу Pause, чтобы приостановить или возобновить игру.'+#10+
                'Пробел для перезапуска игры после ее окончания.';
+  if StringID  = HELPFORM_CPTN_LBL_5 then
+     Result := 'ABAgent на SourceForge.net';
+  if StringID  = HELPFORM_CPTN_LBL_6 then
+     Result := 'Авторские права © 2024-2025 G. Ivan'+#10+#10+
+               'Это приложение распространяется без каких-либо гарантий.';
   if StringID  = HELPFORM_TEXT_MEMO1 then
      Result := 'Особенности:;'+
                '* Запустить выбранный процесс из файла и скрыть его с помощью той же горячей клавиши..;'+
@@ -688,6 +759,8 @@ if aLanguageID = RU_RU then
      Result := 'Изменить вкладки';
   if StringID  = HELP_GLOBAL_TEXT_SNAKE1 then
      Result := 'Счет: ';
+  if StringID  = HELP_GLOBAL_TEXT_SNAKE2 then
+     Result := 'Пауза';
   // FavoritesForm
   //----------------------------------------------------------------------------
   if StringID  = LNK_CPTN_MENUITEM_GEN_N1 then
@@ -890,19 +963,17 @@ if aLanguageID = RO_RO then
   if StringID  = GLOBAL_HINT_IMG_MainImg then
      Result := 'Meniul principal';
   if StringID  = GLOBAL_HINT_IMG_LogImg then
-     Result := 'Citiți fișierul jurnal';
+     Result := 'Jurnalul evenimentelor';
   if StringID  = GLOBAL_HINT_IMG_TimerImg then
      Result := 'Cronometru';
   if StringID  = GLOBAL_HINT_IMG_FavImg then
      Result := 'Preferate';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX1 then
      Result := 'Rulați la autentificare (cu drepturi de administrator)';
-  if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX2 then
-     Result := 'Activati fișierul log';
   if StringID  = GLOBAL_CPTN_CHKBOX_CHKBOX3 then
      Result := 'Dezactivați sunetul global când ascundeți procesele';
   if StringID  = GLOBAL_CPTN_GRPBOX_GrpBox1 then
-     Result := 'Ascundeți procesul folosind mouse-ul';
+     Result := 'Ascundeți procesele cu mouse-ul';
   if StringID  = GLOBAL_CPTN_COMBOBOX_PosBox1 then
      Result := 'nu;stânga;dreapta;sus;jos';
   if StringID  = GLOBAL_ACTION_BTN_BTN1 then
@@ -967,8 +1038,6 @@ if aLanguageID = RO_RO then
      Result := 'Opriți abagent';
   if StringID  = GLOBAL_HINT_CHKBOX_CHKBOX11 then
      Result := 'Funcționează numai când procesele rulează';
-  if StringID  = GLOBAL_TEXT_MSG1 then
-     Result := 'Fișierul jurnal nu există.';
   if StringID  = GLOBAL_TEXT_MSG2 then
      Result := 'Sigur doriți să ștergeți fila selectată?';
   if StringID  = GLOBAL_CPTN_BTN_BTN10 then
@@ -977,6 +1046,30 @@ if aLanguageID = RO_RO then
      Result := 'Selectați un fișier executabil';
   if StringID  = GLOBAL_TEXT_DIAG2 then
      Result := 'Selectați folderul';
+  // LogForm
+  //----------------------------------------------------------------------------
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG1 then
+     Result := 'Fișierul jurnal nu există.';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG2 then
+     Result := 'Se încarcă...';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG3 then
+     Result := 'Încărcarea jurnalului de evenimente s-a încheiat';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG4 then
+     Result := 'Pornirea sistemului';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG5 then
+     Result := 'Închiderea sistemului';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG6 then
+     Result := 'Oprire neașteptată';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG7 then
+     Result := 'Repornire anormală';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG8 then
+     Result := 'Intrarea în somn';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG9 then
+     Result := 'Reluarea din somn';
+  if StringID  = LOGFORM_GLOBAL_TEXT_MSG10 then
+     Result := 'Pornire reușită';
+  if StringID  = LOGFORM_CPTN_MENUITEM_N3 then
+     Result := 'Afișează evenimentele din fișier';
   // HotKeyChanger
   //----------------------------------------------------------------------------
   if StringID  = HOTKEYCHANGER_CPTN then
@@ -995,6 +1088,8 @@ if aLanguageID = RO_RO then
      Result := 'Comenzile rapide de la tastatură';
   if StringID  = HELP_CPTN_PAGECTRL_TAB3 then
      Result := 'Informație';
+  if StringID  = HELP_CPTN_PAGECTRL_TAB4 then
+     Result := 'Licenţă';
   if StringID  = HELPFORM_CPTN_LBL_2 then
      Result := 'Data lansării: ';
   if StringID  = HELPFORM_CPTN_LBL_3 then
@@ -1003,6 +1098,11 @@ if aLanguageID = RO_RO then
      Result := 'Pentru a controla șarpele, apăsați WASD sau tastele săgeți.'+#10+
                'Apăsați tasta Pauză pentru a întrerupe sau a relua jocul.'+#10+
                'Spațiu pentru a reporni jocul după ce acesta se termină.';
+  if StringID  = HELPFORM_CPTN_LBL_5 then
+     Result := 'ABAgent pe SourceForge.net';
+  if StringID  = HELPFORM_CPTN_LBL_6 then
+     Result := 'Copyright © 2024-2025 G. Ivan'+#10+#10+
+               'Această aplicație este distribuită fără nicio garanție.';
   if StringID  = HELPFORM_TEXT_MEMO1 then
      Result := 'Caracteristici:;'+
                '* Lansați procesul selectat din fișier și ascundeți-l folosind aceeași tastă rapidă.;'+
@@ -1033,6 +1133,8 @@ if aLanguageID = RO_RO then
      Result := 'Schimbați filele';
   if StringID  = HELP_GLOBAL_TEXT_SNAKE1 then
      Result := 'Punctaj: ';
+  if StringID  = HELP_GLOBAL_TEXT_SNAKE2 then
+     Result := 'Pauză';
   // FavoritesForm
   //----------------------------------------------------------------------------
   if StringID  = LNK_CPTN_MENUITEM_GEN_N1 then

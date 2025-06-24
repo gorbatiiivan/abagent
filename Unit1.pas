@@ -13,7 +13,7 @@ const
   TIMER2 = 2;
   MSG_ClearDPS = WM_USER;
 
-  ReleaseDate = '24.05.2025';
+  ReleaseDate = '24.06.2025';
 
 type
   TMainForm = class(TForm)
@@ -30,7 +30,6 @@ type
     Main_GrpBox6: TGroupBox;
     Main_GrpBox4: TGroupBox;
     Main_CHKBOX6: TCheckBox;
-    Main_CHKBOX2: TCheckBox;
     Main_CHKBOX8: TCheckBox;
     Main_BTN10: TButton;
     TitleBarPanel1: TTitleBarPanel;
@@ -115,7 +114,6 @@ type
     procedure Main_LBL5MouseEnter(Sender: TObject);
     procedure Main_LBL5MouseLeave(Sender: TObject);
     procedure Main_CHKBOX9Click(Sender: TObject);
-    procedure Main_CHKBOX2Click(Sender: TObject);
     procedure Main_CHKBOX3Click(Sender: TObject);
     procedure Main_RADGrp1Click(Sender: TObject);
     procedure Main_CHKBOX7Click(Sender: TObject);
@@ -157,7 +155,7 @@ var
 implementation
 
 uses ShutdownUnit, lnkForm, HotKeyChanger, Help, Processes,
-     Translation, LNK_Properties;
+     Translation, LNK_Properties, Log;
 
 {$R *.dfm}
 
@@ -212,7 +210,6 @@ with MainForm do
   TimerImg.Hint := _(GLOBAL_HINT_IMG_TimerImg, aLanguageID);
   FavImg.Hint := _(GLOBAL_HINT_IMG_FavImg, aLanguageID);
   Main_CHKBOX1.Caption := _(GLOBAL_CPTN_CHKBOX_CHKBOX1, aLanguageID);
-  Main_CHKBOX2.Caption := _(GLOBAL_CPTN_CHKBOX_CHKBOX2, aLanguageID);
   Main_CHKBOX3.Caption := _(GLOBAL_CPTN_CHKBOX_CHKBOX3, aLanguageID);
   Main_GrpBox1.Caption := _(GLOBAL_CPTN_GRPBOX_GrpBox1, aLanguageID);
   //Load items and read itemindex to ComboBox
@@ -308,6 +305,7 @@ if FirstRun = True then
   FConfig.WriteString('General','LNKForm_Favorites_Key','');
   FConfig.WriteBool('General','LNKForm_FavoriteInTray',False);
   FConfig.WriteBool('General','LNK_Form_MouseTrayEvent', False);
+  FConfig.WriteString('General','LogForm_Log_Key','');
   FConfig.WriteString('General','Language',EN_US);
 
   FConfig.WriteString('0','Name',Encode(ExtractFileName(GetNotepad),'N90fL6FF9SXx+S'));
@@ -335,7 +333,6 @@ if Write = true then
   FConfig.WriteBool('General', 'AutoCloseAPP', Main_CHKBOX5.Checked);
   FConfig.WriteBool('General', 'KillSelfFromTask', Main_CHKBOX11.Checked);
   FConfig.WriteBool('General', 'Mute', Main_CHKBOX3.Checked);
-  FConfig.WriteBool('General', 'EnabledLogFile', Main_CHKBOX2.Checked);
   FConfig.WriteBool('General', 'Ethernet_Task', Main_CHKBOX7.Checked);
   FConfig.WriteBool('General', 'BossClearEthernetData', Main_CHKBOX8.Checked);
   FConfig.WriteBool('General', 'BossCheckBox', Main_CHKBOX6.Checked);
@@ -391,6 +388,7 @@ if Write = true then
   HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','ClearData_Key', ''),True));
   HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','LNKForm_Favorites_Key',''),True));
   HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','TimerForm_Timer_Key',''),True));
+  HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','LogForm_Log_Key',''),True));
   HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','MainKey', 'Shift+Ctrl+Alt+F12'),True));
 
   Main_CHKBOX1.Checked := CheckRunAtStartupByScheduledTask(ExtractFileName(ChangeFileExt(ParamStr(0),'')));
@@ -416,11 +414,8 @@ if Write = true then
    Main_CHKBOX11.Checked := FConfig.ReadBool('General', 'KillSelfFromTask', False);
 
   //Log file
-  if FConfig.ReadBool('General', 'EnabledLogFile', Main_CHKBOX2.Checked) then
-   begin
-    Main_CHKBOX2.Checked := True;
-    LogWrite('User: ' + CurrentUserName, 'asAdmin: '+ABBoolToStr(HasAdministratorRights()), 'Open');
-   end else Main_CHKBOX2.Checked := False;
+  if FConfig.ReadBool('General', 'EnabledLogFile', False) then
+    LogWrite('User: '+CurrentUserName,'asAdmin: '+ABBoolToStr(HasAdministratorRights()),'Open');
 
   Main_CHKBOX3.Checked := FConfig.ReadBool('General', 'Mute', Main_CHKBOX3.Checked);
 
@@ -513,8 +508,8 @@ end;
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
 //Write logfile
-if FConfig.ReadBool('General', 'EnabledLogFile', Main_CHKBOX2.Checked) then
-LogWrite('User: ' + CurrentUserName, 'asAdmin: '+ABBoolToStr(HasAdministratorRights()), 'Close');
+if FConfig.ReadBool('General', 'EnabledLogFile', False) then
+LogWrite('User: '+CurrentUserName,'asAdmin: '+ABBoolToStr(HasAdministratorRights()),'Close');
 FConfig.Free;
 //Clear all hotkeys
 HotKeyManager.ClearHotKeys;
@@ -582,6 +577,13 @@ if TextToHotKey(FConfig.ReadString('General','MainKey','Shift+Ctrl+Alt+F12'),Tru
   SetForegroundWindow(Handle);
  end;
 
+//Get LogForm HotKey
+if TextToHotKey(FConfig.ReadString('General','LogForm_Log_Key',''),True) = HotKey then
+   if (LogForm.Visible = True) and (LogForm.Active = False) then
+     begin
+      if LogForm.Active = False then SetForegroundWindow(LogForm.Handle);
+     end else LogImgClick(Self);
+
 //Get TimerForm HotKey
 if TextToHotKey(FConfig.ReadString('General','TimerForm_Timer_Key',''),True) = HotKey then
    if (ShutdownForm.Visible = True) and (ShutdownForm.Active = False) then
@@ -598,7 +600,6 @@ if TextToHotKey(FConfig.ReadString('General','BossKey', ''),True) = HotKey then
   EnableHotKey := not EnableHotKey;
   if FConfig.ReadInteger('General','BossProcState',0) = 0 then
   if not EnableHotKey then WithoutWMHotkey;
-
   //se inchide procesul daca se apasa pe boss_hotkey
   if FConfig.ReadInteger('General','BossProcState',0) = 1 then
   if not EnableHotKey then
@@ -610,7 +611,6 @@ if TextToHotKey(FConfig.ReadString('General','BossKey', ''),True) = HotKey then
     TerminateProcessById(GetProcessID_(AppName));
    end;
   end;
-
   //se inchdide toate procesele si abagent
   if FConfig.ReadInteger('General','BossProcState',0) = 2 then
   if not EnableHotKey then
@@ -638,8 +638,10 @@ if TextToHotKey(FConfig.ReadString('General','ClearData_Key', ''),True) = HotKey
    ClearAllData();
 
 //Run process per global key
-for I := 0 to PTab.Tabs.Count-1 do
+if not FConfig.ReadBool('General','EnableGlobalHotKey',False) then
 begin
+ for I := 0 to PTab.Tabs.Count-1 do
+ begin
   //Load information from ini
   AppName := Decode(FConfig.ReadString(IntToStr(I),'Name',''),'N90fL6FF9SXx+S');
   AppLocation := Decode(FConfig.ReadString(IntToStr(I),'Location',''),'N90fL6FF9SXx+S');
@@ -648,7 +650,7 @@ begin
   //Run only select process
  if TextToHotKey(FConfig.ReadString(IntToStr(I),'Key', ''),True) = HotKey then
  if EnableHotKey then
- begin
+  begin
   FirstRun := False;
   if not IsProcessRunning(AppName) and
   not FConfig.ReadBool(IntToStr(I), 'NoRunFile', False) and (AppLocation <> '') then
@@ -660,22 +662,22 @@ begin
       begin
        //Hide/Show
        WinManager.Toggle([AppName]);
-
        //Mute/Unmute
        if WinManager.IsProcessHidden(AppName) then
          MuteForProcess(FConfig, IntToStr(I), AppName, True, FAudioController)
        else
          MuteForProcess(FConfig, IntToStr(I), AppName, False, FAudioController);
-
        //Show window minimized is selected in Main_RADGrp1
        if FConfig.ReadInteger(IntToStr(I),'ProcState',0) = 1 then
        MinimizeWindowsForProcess(AppName);
       end;
- end;
+  end;
  FirstRun := False;
+ end;
 end;
 
 //Run all processes with one global key
+if FConfig.ReadBool('General','EnableGlobalHotKey',False) then
 if TextToHotKey(FConfig.ReadString('General','GlobalHotKey', ''),True) = HotKey then
 if EnableHotKey then
  begin
@@ -697,21 +699,18 @@ if EnableHotKey then
      FirstRun := True;
     end;
   end;
-
  //Hide/Show processes
  if not FirstRun then
   begin
    //Hide/Show
    WinManager.Toggle(StringListToArray(RunTempList));
-
    //Mute/Unmute
    for I := 0 to PTab.Tabs.Count-1 do
     begin
-       if WinManager.AreAllProcessesHidden then
-       MuteOn := True else MuteOn := False;
-       MuteForProcess(FConfig, IntToStr(I), AppName, MuteOn, FAudioController);
+     if WinManager.AreAllProcessesHidden then
+     MuteOn := True else MuteOn := False;
+     MuteForProcess(FConfig, IntToStr(I), AppName, MuteOn, FAudioController);
     end;
-
    //Show window minimized is selected in Main_RADGrp1
    for I := 0 to PTab.Tabs.Count-1 do
     begin
@@ -802,15 +801,6 @@ begin
 User := CurrentUserName;
 with Sender as TCheckBox do
 ScheduleRunAtStartup(Checked,ExtractFileName(ChangeFileExt(Application.ExeName,'')),Application.ExeName,User);
-end;
-
-procedure TMainForm.Main_CHKBOX2Click(Sender: TObject);
-begin
-with Sender as TCheckBox do
- begin
-  FConfig.WriteBool('General', 'EnabledLogFile', Checked);
-  FConfig.UpdateFile;
- end;
 end;
 
 procedure TMainForm.Main_CHKBOX3Click(Sender: TObject);
@@ -915,11 +905,9 @@ with Sender as TCheckBox do
    begin
     Main_BTN5.Caption := FConfig.ReadString('General','GlobalHotKey', '');
     Main_CHKBOX10.Enabled := False;
+    //Unregistered Multi HotKey
     for I := 0 to PTab.Tabs.Count-1 do
-    begin
-     //Unregistered Multi HotKey
-     HotKeyManager.RemoveHotKey(TextToHotKey(FConfig.ReadString(IntToStr(I),'Key', ''),True));
-    end;
+    HotKeyManager.RemoveHotKey(TextToHotKey(FConfig.ReadString(IntToStr(I),'Key', ''),True));
     //Registered One HotKey for process
     HotKeyManager.AddHotKey(TextToHotKey(FConfig.ReadString('General','GlobalHotKey', ''),True));
    end else
@@ -1168,14 +1156,13 @@ MainMenu.Popup(Mouse.CursorPos.X, Mouse.CursorPos.Y);
 end;
 
 procedure TMainForm.LogImgClick(Sender: TObject);
-var
- AFile: String;
 begin
-AFile := ExtractFilePath(Application.ExeName) + CurrentUserName + '.log';
-if FileExists(AFile) then
-RunApplication(AFile, '', PChar(ExtractFilePath(AFile)))
-else
-ShowMessage(_(GLOBAL_TEXT_MSG1, FConfig.ReadString('General','Language',EN_US)));
+with LogForm do
+if Visible then Close else
+ begin
+  Position := poDesktopCenter;
+  Show;
+ end;
 end;
 
 procedure TMainForm.TitleBarPanel1CustomButtons0Click(Sender: TObject);
@@ -1316,8 +1303,9 @@ with HelpForm do
   HELPFORM_LSTVIEW1.Items[0].SubItems.Insert(0,FConfig.ReadString('General','MainKey','Shift+Ctrl+Alt+F12'));
   HELPFORM_LSTVIEW1.Items[1].SubItems.Insert(0,FConfig.ReadString('General','ClearData_Key',''));
   HELPFORM_LSTVIEW1.Items[2].SubItems.Insert(0,FConfig.ReadString('General','BossKey',''));
-  HELPFORM_LSTVIEW1.Items[3].SubItems.Insert(0,FConfig.ReadString('General','TimerForm_Timer_Key',''));
-  HELPFORM_LSTVIEW1.Items[4].SubItems.Insert(0,FConfig.ReadString('General','LNKForm_Favorites_Key',''));
+  HELPFORM_LSTVIEW1.Items[3].SubItems.Insert(0,FConfig.ReadString('General','LogForm_Log_Key',''));
+  HELPFORM_LSTVIEW1.Items[4].SubItems.Insert(0,FConfig.ReadString('General','TimerForm_Timer_Key',''));
+  HELPFORM_LSTVIEW1.Items[5].SubItems.Insert(0,FConfig.ReadString('General','LNKForm_Favorites_Key',''));
   Show;
  end;
 end;
@@ -1347,6 +1335,7 @@ var
 begin
  ACaption := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
  Translate(ACaption);
+ LogForm.Translate(ACaption);
  HelpForm.Translate(ACaption);
  HotKeyForm.Translate(ACaption);
  LNK_Form.Translate(ACaption);

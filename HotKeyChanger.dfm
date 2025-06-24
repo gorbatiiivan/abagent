@@ -12,13 +12,13 @@ object HotKeyForm: THotKeyForm
   Font.Style = []
   Position = poDesktopCenter
   OnCreate = FormCreate
+  OnShow = FormShow
   TextHeight = 13
   object chWin: TCheckBox
     Left = 90
     Top = 63
     Width = 55
     Height = 17
-    Cursor = crHandPoint
     Caption = 'Win'
     TabOrder = 2
     OnClick = chWinClick
@@ -28,7 +28,6 @@ object HotKeyForm: THotKeyForm
     Top = 63
     Width = 55
     Height = 17
-    Cursor = crHandPoint
     Caption = 'Alt'
     TabOrder = 3
     OnClick = chAltClick
@@ -38,7 +37,6 @@ object HotKeyForm: THotKeyForm
     Top = 20
     Width = 55
     Height = 17
-    Cursor = crHandPoint
     Caption = 'Shift'
     TabOrder = 0
     OnClick = chShiftClick
@@ -48,7 +46,6 @@ object HotKeyForm: THotKeyForm
     Top = 63
     Width = 55
     Height = 17
-    Cursor = crHandPoint
     Caption = 'Ctrl'
     TabOrder = 1
     OnClick = chCtrlClick
@@ -58,7 +55,6 @@ object HotKeyForm: THotKeyForm
     Top = 16
     Width = 145
     Height = 21
-    Cursor = crHandPoint
     Style = csDropDownList
     DropDownCount = 33
     TabOrder = 4
@@ -193,7 +189,7 @@ object HotKeyForm: THotKeyForm
   end
   object HOTKEYCHANGER_BTN1: TButton
     Left = 226
-    Top = 102
+    Top = 100
     Width = 71
     Height = 28
     Caption = 'Clear'

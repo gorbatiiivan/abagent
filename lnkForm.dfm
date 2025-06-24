@@ -86,76 +86,58 @@ object LNK_Form: TLNK_Form
       ParentFont = False
       OnClick = LNK_SPD_BTN3Click
     end
-    object Bevel1: TBevel
-      Left = 42
-      Top = 2
-      Width = 9
-      Height = 28
-      Shape = bsLeftLine
-    end
     object Bevel2: TBevel
-      Left = 230
-      Top = 2
+      Left = 183
+      Top = 5
       Width = 9
       Height = 28
       Shape = bsLeftLine
-    end
-    object LNK_SPD_BTN1: TSpeedButton
-      Left = 4
-      Top = 0
-      Width = 34
-      Height = 32
-      Hint = 'Timer'
-      ImageIndex = 11
-      Images = ImageList1
-      Flat = True
-      OnClick = LNK_SPD_BTN1Click
     end
     object LNK_BTN1: TButton
-      Left = 50
-      Top = 0
+      Left = 3
+      Top = 3
       Width = 54
       Height = 32
       Hint = 'My Computer'
       ImageIndex = 0
       Images = ImageList1
       Style = bsSplitButton
-      TabOrder = 1
+      TabOrder = 0
       OnClick = LNK_BTN1Click
       OnDropDownClick = LNK_BTN1DropDownClick
     end
     object LNK_BTN2: TButton
       Tag = 1
-      Left = 110
-      Top = 0
+      Left = 63
+      Top = 3
       Width = 54
       Height = 32
       Hint = 'Settings'
       ImageIndex = 1
       Images = ImageList1
       Style = bsSplitButton
-      TabOrder = 0
+      TabOrder = 1
       OnClick = LNK_BTN2Click
       OnDropDownClick = LNK_BTN2DropDownClick
     end
     object FindEdit: TEdit
-      Left = 238
-      Top = 5
+      Left = 191
+      Top = 8
       Width = 135
       Height = 21
-      TabOrder = 2
+      TabOrder = 3
       OnChange = FindEditChange
     end
     object LNK_BTN3: TButton
-      Left = 170
-      Top = 0
+      Left = 123
+      Top = 3
       Width = 54
       Height = 32
       Hint = 'My Computer'
       ImageIndex = 2
       Images = ImageList1
       Style = bsSplitButton
-      TabOrder = 3
+      TabOrder = 2
       OnClick = LNK_BTN3Click
       OnDropDownClick = LNK_BTN3DropDownClick
     end

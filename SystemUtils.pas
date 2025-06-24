@@ -5,7 +5,8 @@ interface
 uses MMDevApi, Windows, Classes, Registry, SysUtils, ActiveX, TlHelp32, ShlObj,
      MMSystem, WinInet, ShellApi, Messages, Variants, Generics.Collections,
      ComCtrls, WinSvc, IniFiles, Forms, ComObj, StdCtrls, Types, IOUtils,
-     Controls, PngImage, Graphics, Menus, CommCtrl, ExtCtrls, AudioProcessController;
+     Controls, PngImage, Graphics, Menus, CommCtrl, ExtCtrls, DateUtils,
+     AudioProcessController;
 
 // ---------------------------------------------------------------------------
 // GetWinHandleFromProcId
@@ -159,7 +160,6 @@ function MinimizeWindowsForProcess(ProcessExeFilename: String): Integer;
 function EnumWindowsProcMatchPID(WHdl: HWND; EData: PEnumData): bool; stdcall;
 function GetWinHandleFromProcId(ProcId: DWORD): HWND;
 function IsProcessRunning(const AFileName: string): Boolean;
-function IsUWPProcess(const ExeName: string): Boolean;
 // ---------------------------------------------------------------------------
 
 // SOUND CONTROL FUNCTIONS
@@ -198,6 +198,7 @@ procedure DeleteItemByName(ListView: TListView; const ItemName: string);
 function ReadDirectory(List : TStrings; Config: TMemIniFile): Integer;
 procedure DeleteAt(cbActive: TTabControl;idx: Integer);
 procedure AddMenuItem(Menu: TMenuItem; Tabs: TTabControl; OnClick: TNotifyEvent);
+procedure DisableAllPopupMenuItems(PopupMenu: TPopupMenu);
 procedure ChangeToNextTab(TabControl: TTabControl);
 procedure AddButtonToToolbar(OnClick: TNotifyEvent; var bar: TToolBar; hint: string;
   caption: string; imageindex: Integer; addafteridx: integer = -1);
@@ -214,6 +215,7 @@ procedure DeleteToolButton(ToolBar: TToolBar; Hint: string; Config: TMemIniFile;
 procedure AddItemToButtonPopup(ToolBar: TToolBar; Config: TMemIniFile; Form: TForm;
    OnButtonClick: TNotifyEvent);
 procedure FlashWindow(FormHandle: HWND);
+function SortListView(Item1, Item2: TListItem; Param: Integer): Integer; stdcall;
 // ---------------------------------------------------------------------------
 
 // DRIVE FUNCTIONS
@@ -246,6 +248,8 @@ function RunApplication(const AExecutableFile, AParameters, AWorkingDir : string
 procedure OpenFileLocation(FileName: TFileName);
 function OpenFileDialog(Title,FileName,OKName: LPCWSTR; const isFile: Boolean; var sFileName: string; const sDefaultDir: String = ''): Boolean;
 procedure LogWrite(LogType: String; LogFrom: String; LogMessage: String);
+procedure LoadFileEventLog(ListView: TListView);
+procedure LoadSystemEventLog(ListView: TListView; const EventDescriptions: TDictionary<DWORD, string>);
 function ABBoolToStr(B: Boolean; UseBoolStrs: Boolean = False): string;
 function RenameSection(IniFile:TCustomIniFile; FromName,ToName:string):boolean;
 procedure ScanProcessListFromIni(Config: TMemIniFile; TabList: TTabControl);
@@ -276,7 +280,6 @@ function GetImageListSH(SHIL_FLAG:Cardinal): HIMAGELIST;
 procedure AddIconsToList(IconPath: String; ImageList: TImageList; CurrentIconSize: Integer);
 procedure GetIconFromFile( aFile: string; var aIcon: TIcon;SHIL_FLAG: Cardinal );
 function GetIconIndex(const AFile: string; Attrs: DWORD): integer;
-procedure LoadPngFromRes(PngName: String; ImageList: TImageList);
 function LoadImageResource(const ResName: string): TPngImage;
 procedure AddIconsToImgList(ImageList: TImageList);
 procedure DrawIconToPaintBox(PaintBox: TPaintBox; Icon: TIcon; X, Y: Integer);
@@ -720,47 +723,6 @@ begin
     until not Process32Next(Snapshot, ProcessEntry);
   end;
   CloseHandle(Snapshot);
-end;
-// ---------------------------------------------------------------------------
-{ **
- * Function for check if is UWP apps
- * }
-function GetPackageFullName(hProcess: THandle; var packageFullNameLength: ULONG;
-  packageFullName: PWideChar): Longint; stdcall; external 'kernel32.dll';
-
-function IsUWPProcess(const ExeName: string): Boolean;
-const
-  PROCESS_QUERY_LIMITED_INFORMATION = $1000;
-var
-  hSnapshot: THandle;
-  pe: TProcessEntry32;
-  hProcess: THandle;
-  buffer: array[0..1023] of Char;
-  len: ULONG;
-begin
-  Result := False;
-  hSnapshot := CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-  if hSnapshot = INVALID_HANDLE_VALUE then Exit;
-
-  pe.dwSize := SizeOf(pe);
-  if Process32First(hSnapshot, pe) then
-  begin
-    repeat
-      if SameText(pe.szExeFile, ExeName) then
-      begin
-        hProcess := OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pe.th32ProcessID);
-        if hProcess <> 0 then
-        begin
-          len := Length(buffer);
-          if GetPackageFullName(hProcess, len, buffer) = ERROR_SUCCESS then
-            Result := True;
-          CloseHandle(hProcess);
-        end;
-        Break;
-      end;
-    until not Process32Next(hSnapshot, pe);
-  end;
-  CloseHandle(hSnapshot);
 end;
 // ---------------------------------------------------------------------------
 
@@ -1441,6 +1403,19 @@ for I := 0 to tabs.Tabs.Count-1 do
 end;
 // ---------------------------------------------------------------------------
 { **
+ * Function to disable all items from PopupMenu
+ * }
+procedure DisableAllPopupMenuItems(PopupMenu: TPopupMenu);
+var
+  I: Integer;
+begin
+  for I := 0 to PopupMenu.Items.Count - 1 do
+  begin
+    PopupMenu.Items[I].Enabled := False;
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
  * Function to change to next tab
  * }
 procedure ChangeToNextTab(TabControl: TTabControl);
@@ -1814,6 +1789,67 @@ begin
   Sleep(100); // allow Z-order update
   SetWindowPos(FormHandle, HWND_NOTOPMOST, 0, 0, 0, 0,
     SWP_NOMOVE or SWP_NOSIZE or SWP_SHOWWINDOW);
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to sort date in ListView
+ * Example: ListView1.CustomSort(@SortListView, FSortColumn or ($100 * Ord(not FAscendingOrder)));
+ * }
+function SortListView(Item1, Item2: TListItem; Param: Integer): Integer; stdcall;
+var
+  Date1, Date2: TDateTime;
+  Text1, Text2: string;
+  SortColumn: Integer;
+  AscendingOrder: Boolean;
+begin
+  SortColumn := Param and $FF;
+  AscendingOrder := (Param and $100) = 0;
+
+  Result := 0;
+
+  try
+    if SortColumn = 0 then
+    begin
+      Text1 := Item1.Caption;
+      Text2 := Item2.Caption;
+    end
+    else
+    begin
+      if (SortColumn - 1) < Item1.SubItems.Count then
+        Text1 := Item1.SubItems[SortColumn - 1]
+      else
+        Text1 := '';
+
+      if (SortColumn - 1) < Item2.SubItems.Count then
+        Text2 := Item2.SubItems[SortColumn - 1]
+      else
+        Text2 := '';
+    end;
+
+    // Try to parse as dates first (for date column)
+    if SortColumn = 0 then
+    begin
+      if TryStrToDateTime(Text1, Date1) and TryStrToDateTime(Text2, Date2) then
+      begin
+        if Date1 < Date2 then
+          Result := -1
+        else if Date1 > Date2 then
+          Result := 1
+        else
+          Result := 0;
+      end
+      else
+        Result := CompareText(Text1, Text2);
+    end
+    else
+      Result := CompareText(Text1, Text2);
+
+    // Reverse result if descending order is selected
+    if not AscendingOrder then
+      Result := -Result;
+  except
+    Result := 0;
+  end;
 end;
 // ---------------------------------------------------------------------------
 
@@ -2202,7 +2238,7 @@ var
   FileName: string;
   LogFile: TextFile;
 begin
-  Filename:= ExtractFilePath(Application.ExeName) + CurrentUserName + '.log';
+  Filename:= ExtractFilePath(Application.ExeName) + 'Events.log';
   AssignFile (LogFile, Filename);
   if FileExists (FileName) then
    Append (LogFile) // open existing file
@@ -2215,6 +2251,233 @@ begin
      // close the file
      CloseFile (LogFile);
     end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to read log file to ListView
+ * }
+procedure LoadFileEventLog(ListView: TListView);
+var
+  FileName: string;
+  LogFile: TextFile;
+  LogLine: string;
+  LogParts: TStringList;
+  LogDateTime, LogType, LogFrom, LogMessage: string;
+  ListItem: TListItem;
+  QuotePos: Integer;
+begin
+  FileName := ExtractFilePath(Application.ExeName) + 'Events.log';
+
+  // Проверяем существование файла
+  if not FileExists(FileName) then Exit;
+
+  ListView.Clear;
+  ListView.Items.BeginUpdate;
+
+  try
+    AssignFile(LogFile, FileName);
+    Reset(LogFile);
+
+    LogParts := TStringList.Create;
+    try
+      LogParts.Delimiter := ',';
+      LogParts.StrictDelimiter := True;
+
+      while not Eof(LogFile) do
+      begin
+        Readln(LogFile, LogLine);
+
+        // Пропускаем пустые строки
+        if Trim(LogLine) = '' then
+          Continue;
+
+        try
+          // Парсим строку лога
+          // Формат: DateTime, LogType, LogFrom, "LogMessage"
+          LogParts.DelimitedText := LogLine;
+
+          if LogParts.Count >= 4 then
+          begin
+            LogDateTime := Trim(LogParts[0]);
+            LogType := Trim(LogParts[1]);
+            LogFrom := Trim(LogParts[2]);
+
+            // Обрабатываем сообщение (может содержать запятые внутри кавычек)
+            LogMessage := Trim(LogParts[3]);
+
+            // Собираем остальные части, если сообщение было разбито из-за запятых
+            if LogParts.Count > 4 then
+            begin
+              for var i := 4 to LogParts.Count - 1 do
+                LogMessage := LogMessage + ',' + Trim(LogParts[i]);
+            end;
+
+            // Убираем кавычки из сообщения
+            if (Length(LogMessage) >= 2) and
+               (LogMessage[1] = '"') and
+               (LogMessage[Length(LogMessage)] = '"') then
+            begin
+              LogMessage := Copy(LogMessage, 2, Length(LogMessage) - 2);
+            end;
+
+            // Добавляем запись в ListView
+            ListItem := ListView.Items.Add;
+            ListItem.Caption := LogDateTime;
+            ListItem.SubItems.Add(LogType + ', ' + LogMessage);
+            ListItem.SubItems.Add(LogFrom);
+          end;
+        except
+          on E: Exception do
+          begin
+           //
+          end;
+        end;
+      end;
+
+    finally
+      LogParts.Free;
+      CloseFile(LogFile);
+    end;
+
+  finally
+    ListView.Items.EndUpdate;
+  end;
+end;
+// ---------------------------------------------------------------------------
+{ **
+ * Function to read log from System Events to ListView
+ * }
+procedure LoadSystemEventLog(ListView: TListView; const EventDescriptions: TDictionary<DWORD, string>);
+const
+  EVENTLOG_SEQUENTIAL_READ = $0001;
+  EVENTLOG_BACKWARDS_READ = $0008;
+  ERROR_HANDLE_EOF = 38;
+  INITIAL_BUFFER_SIZE = 65536;
+  MAX_BUFFER_SIZE = 1024 * 1024; // 1 MB max to prevent excessive memory usage
+
+type
+  TEventLogRecord = record
+    Length: DWORD;
+    Reserved: DWORD;
+    RecordNumber: DWORD;
+    TimeGenerated: DWORD;
+    TimeWritten: DWORD;
+    EventID: DWORD;
+    EventType: Word;
+    NumStrings: Word;
+    EventCategory: Word;
+    ReservedFlags: Word;
+    ClosingRecordNumber: DWORD;
+    StringOffset: DWORD;
+    UserSidLength: DWORD;
+    UserSidOffset: DWORD;
+    DataLength: DWORD;
+    DataOffset: DWORD;
+  end;
+  PEventLogRecord = ^TEventLogRecord;
+
+var
+  hEventLog: THandle;
+  Buffer: TArray<Byte>;
+  BufferSize: DWORD;
+  BytesRead, BytesNeeded: DWORD;
+  EventRec: PEventLogRecord;
+  SourceName, EventTypeStr: string;
+  TimeGenerated: TDateTime;
+  Offset: DWORD;
+  SrcPtr: PChar;
+  LastError: DWORD;
+  ListItem: TListItem;
+
+  function GetEventString(Index: Integer): string;
+  var
+    CurrentPtr: PChar;
+    StringIndex: Integer;
+  begin
+    Result := '';
+    if (Index >= EventRec^.NumStrings) or (EventRec^.StringOffset = 0) then
+      Exit;
+    CurrentPtr := PChar(@Buffer[Offset + EventRec^.StringOffset]);
+    for StringIndex := 0 to Index - 1 do
+    begin
+      while CurrentPtr^ <> #0 do
+        Inc(CurrentPtr);
+      Inc(CurrentPtr); // Skip null terminator
+    end;
+    Result := CurrentPtr;
+  end;
+
+begin
+  ListView.Clear;
+  hEventLog := OpenEventLog(nil, 'System');
+  if hEventLog = 0 then Exit;
+
+  try
+    BufferSize := INITIAL_BUFFER_SIZE;
+    SetLength(Buffer, BufferSize);
+    ListView.Items.BeginUpdate;
+    try
+      while True do
+      begin
+        if not ReadEventLog(hEventLog, EVENTLOG_SEQUENTIAL_READ or EVENTLOG_BACKWARDS_READ,
+                            0, @Buffer[0], BufferSize, BytesRead, BytesNeeded) then
+        begin
+          LastError := GetLastError;
+          if LastError = ERROR_HANDLE_EOF then
+            Break; // End of log reached
+          if LastError = ERROR_INSUFFICIENT_BUFFER then
+          begin
+            // Resize buffer if needed, up to max size
+            BufferSize := BytesNeeded;
+            SetLength(Buffer, BufferSize);
+            Continue;
+          end;
+        end;
+
+        Offset := 0;
+        while Offset < BytesRead do
+        begin
+          EventRec := PEventLogRecord(@Buffer[Offset]);
+          if (EventRec^.Length < SizeOf(TEventLogRecord)) or
+             (EventRec^.Length > BytesRead - Offset) then
+          begin
+            Inc(Offset, 4); // Skip to next potential record
+            Continue;
+          end;
+
+          SrcPtr := PChar(@Buffer[Offset + SizeOf(TEventLogRecord)]);
+          SourceName := SrcPtr;
+
+          // Check if EventID is in the provided dictionary
+          if EventDescriptions.TryGetValue(EventRec^.EventID, EventTypeStr) then
+          begin
+            // Convert Unix timestamp to local time
+            try
+              if EventRec^.TimeGenerated = 0 then
+                TimeGenerated := 0
+              else
+                TimeGenerated := TTimeZone.Local.ToLocalTime(UnixToDateTime(EventRec^.TimeGenerated));
+            except
+              TimeGenerated := 0; // Fallback for invalid timestamps
+            end;
+
+            ListItem := ListView.Items.Add;
+            ListItem.Caption := DateTimeToStr(TimeGenerated);
+            ListItem.SubItems.Add(EventTypeStr);
+            ListItem.SubItems.Add(SourceName);
+            ListItem.SubItems.Add(IntToStr(EventRec^.EventID));
+            ListItem.SubItems.Add(GetEventString(0));
+          end;
+
+          Inc(Offset, EventRec^.Length);
+        end;
+      end;
+    finally
+      ListView.Items.EndUpdate;
+    end;
+  finally
+    CloseEventLog(hEventLog);
+  end;
 end;
 // ---------------------------------------------------------------------------
 { **
@@ -2884,27 +3147,6 @@ begin
 end;
 // ---------------------------------------------------------------------------
 { **
- * Function to load PNG from resource and put to ImageList
- * }
-procedure LoadPngFromRes(PngName: String; ImageList: TImageList);
-var
- png: TPngImage;
- bmp: TBitmap;
-begin
-png := TPngImage.Create;
-bmp := TBitmap.Create;
- try
-  png.LoadFromResourceName(hInstance,PngName);
-  bmp.Assign(png);
-  bmp.AlphaFormat := afIgnored;
-  ImageList.Add(bmp,nil);
- finally
-  png.Free;
-  bmp.Free;
- end;
-end;
-// ---------------------------------------------------------------------------
-{ **
  * Function to load PNG image from resource
  * }
 function LoadImageResource(const ResName: string): TPngImage;
@@ -2957,9 +3199,6 @@ begin
   ImageList.AddIcon(Icon);
   Icon.Handle := ExtractIcon(hInstance,PChar(GetSpecialFolderLocation(-1, FOLDERID_System)+'imageres.dll'),178);
   ImageList.AddIcon(Icon);
-
-  //Extract TimerIcon 32 from resource
-  LoadPngFromRes('time32',ImageList);
  finally
   Icon.Free;
 end;

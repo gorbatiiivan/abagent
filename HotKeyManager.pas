@@ -1,14 +1,3 @@
-{*****************************************************************}
-{ HotKeyManager is a component that allows you to add system-wide }
-{ hotkeys to your application.                                    }
-{                                                                 }
-{ The component is freeware. Feel free to use and improve it.     }
-{ I would be pleased to hear what you think.                      }
-{                                                                 }
-{ Troels Jakobsen - delphihacker@get2net.dk                       }
-{ Copyright (c) 2003                                              }
-{*****************************************************************}
-
 unit HotKeyManager;
 
 {$IFDEF VER140} {$DEFINE DELPHI_6} {$ENDIF}

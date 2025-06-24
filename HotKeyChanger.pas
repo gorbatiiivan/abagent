@@ -20,40 +20,41 @@ type
     procedure Edit1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure Edit1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure ComboBox1Change(Sender: TObject);
-    procedure ComboBox1KeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure ComboBox1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure chWinClick(Sender: TObject);
     procedure chCtrlClick(Sender: TObject);
     procedure chShiftClick(Sender: TObject);
     procedure chAltClick(Sender: TObject);
     procedure HOTKEYCHANGER_BTN1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
-    { Private declarations }
-    _KeyDown: Boolean;
-    procedure ModToCheckBox(const ModStr: string = '');
+    FKeyDown: Boolean;
+    procedure UpdateModifierCheckBoxes(const ModStr: string = '');
+    procedure UpdateEditText;
+    function GetCurrentModifiers: Word;
+    procedure ClearAll;
   public
-    { Public declarations }
     procedure Translate(aLanguageID: String);
+    function GetHotKeyString: string;
+    procedure SetHotKeyString(const Value: string);
   end;
 
 var
   HotKeyForm: THotKeyForm;
 
-function kuHotKeyEditorExecute: Boolean;
+// Public functions
+function CreateHotKeyEditor: Boolean;
+function ModifierToString(aMod: Word): string;
+function KeyToString(aKey: Word): string;
+procedure StringToKeyModifier(const ShortcutStr: string; out vKey, vMod: Word);
 
-//Key ~ Mod ~ Str
-function  ModToStr: string; overload;
-function  ModToStr(sMod: word): string; overload;
-function  KeyToStr(Key: word): string;
-procedure StrToKeyMod(ShortcutStr: string; var vKey, vMod: word);
-
-//Key Down
-function KeyDownly(Key: integer): Boolean;
-function CtrlDown: Boolean;
-function ShiftDown: Boolean;
-function AltDown: Boolean;
-function WinDown: Boolean;
+// Key state functions
+function IsKeyPressed(Key: Integer): Boolean;
+function IsCtrlPressed: Boolean;
+function IsShiftPressed: Boolean;
+function IsAltPressed: Boolean;
+function IsWinPressed: Boolean;
 
 implementation
 
@@ -61,9 +62,13 @@ uses Translation, Unit1;
 
 {$R *.dfm}
 
+const
+  // Modifier constants for better readability
+  MOD_NONE = 0;
+
+{ THotKeyForm }
+
 procedure THotKeyForm.Translate(aLanguageID: String);
-var
- TempInteger: Integer;
 begin
   Caption := _(HOTKEYCHANGER_CPTN, aLanguageID);
   HOTKEYCHANGER_BTN1.Caption := _(HOTKEYCHANGER_CPTN_BTN_BTN1, aLanguageID);
@@ -73,384 +78,321 @@ end;
 
 procedure THotKeyForm.FormCreate(Sender: TObject);
 begin
-Translate(MainForm.FConfig.ReadString('General','Language',EN_US));
+  Translate(MainForm.FConfig.ReadString('General', 'Language', EN_US));
 end;
 
-//============================================================================== kuHotKeyEditorExecute
-function kuHotKeyEditorExecute: Boolean;
+procedure THotKeyForm.FormShow(Sender: TObject);
+var
+  sKey, sMod: Word;
 begin
-if Application.FindComponent('FormHotKeys') = nil then
-  Application.CreateForm(THotKeyForm, HotKeyForm);
+  UpdateModifierCheckBoxes(Edit1.Text);
+  StringToKeyModifier(Edit1.Text, sKey, sMod);
+  ComboBox1.ItemIndex:= ComboBox1.Items.IndexOf(KeyToString(sKey));
 end;
 
-{$REGION ' Form '}
-
-procedure THotKeyForm.Edit1KeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure THotKeyForm.Edit1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
   sMod, sKey: string;
 begin
-//if (Key = 9) and (ActiveControl = Self) then begin
-//  //не работает!
-//  Perform(CM_DialogKey, VK_TAB, 0);
-//  ActiveControl := Self;
-//  Self.SetFocus;
-//end;
-sMod := ModToStr;
-sKey := KeyToStr(Key);
-_KeyDown := sKey <> '';
-Edit1.text := sMod + sKey;
-ModToCheckBox;
-HotKeyForm.ComboBox1.ItemIndex := HotKeyForm.ComboBox1.Items.IndexOf(sKey);
+  sMod := ModifierToString(GetCurrentModifiers);
+  sKey := KeyToString(Key);
+  FKeyDown := sKey <> '';
+
+  Edit1.Text := sMod + sKey;
+  UpdateModifierCheckBoxes;
+  ComboBox1.ItemIndex := ComboBox1.Items.IndexOf(sKey);
 end;
 
-//------------------------------------------------------------------------------ Edit1 Key Up
-procedure THotKeyForm.Edit1KeyUp(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure THotKeyForm.Edit1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
-if not _KeyDown then begin
-  ModToCheckBox('');
-  Edit1.text := '';
+  if not FKeyDown then
+  begin
+    UpdateModifierCheckBoxes('');
+    Edit1.Text := '';
+  end;
 end;
-//if (KeyToStr(Key) = '') and (ModToStr = '') then
-end;
-
-//------------------------------------------------------------------------------ ComboBox Change
 
 procedure THotKeyForm.ComboBox1Change(Sender: TObject);
 var
- p: integer;
- s: string;
- sKey, sMod: word;
+  sKey, sMod: Word;
 begin
- StrToKeyMod(Edit1.Text, sKey, sMod);
- Edit1.Text := ModToStr(sMod) + ComboBox1.Text;
+  StringToKeyModifier(Edit1.Text, sKey, sMod);
+  Edit1.Text := ModifierToString(sMod) + ComboBox1.Text;
 end;
 
-//------------------------------------------------------------------------------ ComboBox KeyDown
-procedure THotKeyForm.ComboBox1KeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure THotKeyForm.ComboBox1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
- s: string;
- //k: Word;
+  sKeyStr: string;
 begin
- s := KeyToStr(Key);
- //k := Key;
- ComboBox1.ItemIndex := ComboBox1.Items.IndexOf(s);
- //if Key = VK_TAB then ActiveControl := ComboBox1; //не работает
- Key := 0; //чтобы не обрабатывать клавиши Up, Down, Left, Right, Home, End, PgUp, PgDown,
+  sKeyStr := KeyToString(Key);
+  ComboBox1.ItemIndex := ComboBox1.Items.IndexOf(sKeyStr);
+  Key := 0; // Prevent default handling of navigation keys
 end;
 
-//------------------------------------------------------------------------------ chCtrl
 procedure THotKeyForm.chCtrlClick(Sender: TObject);
-var
- p: integer;
- s: string;
- sKey, sMod: word;
 begin
-if chCtrl.Checked then
- begin
-  StrToKeyMod(Edit1.Text, sKey, sMod);
-  sMod := MOD_CONTROL xor sMod;
-  Edit1.Text := ModToStr(sMod) + KeyToStr(sKey);
- end else
- begin
-  s := Edit1.Text;
-  p := pos('Ctrl+', Edit1.Text);
-  if p <> 0 then Delete(s, p, 5);
-  Edit1.Text := s;
- end;
+  UpdateEditText;
 end;
 
-//------------------------------------------------------------------------------ chWin
 procedure THotKeyForm.chWinClick(Sender: TObject);
-var
- p: integer;
- s: string;
- sKey, sMod: word;
 begin
- if chWin.Checked then
- begin
-  StrToKeyMod(Edit1.Text, sKey, sMod);
-  sMod := MOD_WIN xor sMod;
-  Edit1.Text := ModToStr(sMod) + KeyToStr(sKey);
- end else
- begin
-  s := Edit1.Text;
-  p := pos('Win+', Edit1.Text);
-  if p <> 0 then Delete(s, p, 4);
-  Edit1.Text := s;
- end;
+  UpdateEditText;
 end;
 
-//------------------------------------------------------------------------------ chShift
 procedure THotKeyForm.chShiftClick(Sender: TObject);
-var
- p: integer;
- s: string;
- sKey, sMod: word;
 begin
-if chShift.Checked then
- begin
-  StrToKeyMod(Edit1.Text, sKey, sMod);
-  sMod := MOD_SHIFT xor sMod;
-  Edit1.Text := ModToStr(sMod) + KeyToStr(sKey);
- end else
- begin
-  s := Edit1.Text;
-  p := pos('Shift+', Edit1.Text);
-  if p <> 0 then Delete(s, p, 6);
-  Edit1.Text := s;
- end;
+  UpdateEditText;
 end;
-
-//------------------------------------------------------------------------------ chAlt
 
 procedure THotKeyForm.chAltClick(Sender: TObject);
-var
- p: integer;
- s: string;
- sKey, sMod: word;
 begin
-if chAlt.Checked then
- begin
-  StrToKeyMod(Edit1.Text, sKey, sMod);
-  sMod := MOD_ALT xor sMod;
-  //FormHotKeys.Caption := ModToStr(sMod) + '|||' + KeyToStr(sKey);
-  Edit1.Text := ModToStr(sMod) + KeyToStr(sKey);
- end else
- begin
-  s := Edit1.Text;
-  p := pos('Alt+', Edit1.Text);
-  if p <> 0 then Delete(s, p, 4);
-  Edit1.Text := s;
- end;
-end;
-
-//------------------------------------------------------------------------------ Moding To CheckBox
-procedure THotKeyForm.ModToCheckBox(const ModStr: string = '');
-begin
-if ModStr <> '' then begin
-  chCtrl.Checked  := pos('Ctrl',  ModStr) <> 0;
-  chShift.Checked := pos('Shift', ModStr) <> 0;
-  chAlt.Checked   := pos('Ctrl',  ModStr) <> 0;
-  chWin.Checked   := pos('Win',   ModStr) <> 0;
-  exit;
-end;
-chCtrl.Checked  := CtrlDown;
-chShift.Checked := ShiftDown;
-chAlt.Checked   := AltDown;
-chWin.Checked   := WinDown;
+  UpdateEditText;
 end;
 
 procedure THotKeyForm.HOTKEYCHANGER_BTN1Click(Sender: TObject);
 begin
-Edit1.Text := '';
-ComboBox1.ItemIndex := -1;
-chShift.Checked := False;
-chCtrl.Checked := False;
-chWin.Checked := False;
-chAlt.Checked := False;
+  ClearAll;
 end;
 
-{$ENDREGION}
-{$REGION '  Uni  Key ~ Mod ~ Str  '}
-{
-Key - клавиша
-Mod - клавиша модификатор Ctrl, Shift, Alt, Win
-ShiftState - набор модификаторов ssCtrl, ssShift, ssAlt. БЕЗ клавиши Win
+// Private methods
 
-ShortCutToText - uses Vcl.Menus
-GetKeyNameText - uese Winapi.Windows
-}
-
-//------------------------------------------------------------------------------ Str To KeyMod
-procedure StrToKeyMod(ShortcutStr: string; var vKey, vMod: word);
-var k:word;
+procedure THotKeyForm.UpdateModifierCheckBoxes(const ModStr: string);
 begin
- vMod := 0;
- if pos('Win+',  ShortcutStr)<>0 then vMod :=MOD_WIN or vMod;
- if pos('Shift+',ShortcutStr)<>0 then vMod :=MOD_SHIFT or vMod;
- if pos('Ctrl+', ShortcutStr)<>0 then vMod :=MOD_CONTROL or vMod;
- if pos('Alt+',  ShortcutStr)<>0 then vMod :=MOD_ALT or vMod;
-
-if vMod <> 0 then
-begin
-  if pos('Win+',  ShortcutStr)<>0 then Delete(ShortcutStr, pos('Win+',  ShortcutStr),4);
-  if pos('Shift+',ShortcutStr)<>0 then Delete(ShortcutStr, pos('Shift+',ShortcutStr),6);
-  if pos('Ctrl+', ShortcutStr)<>0 then Delete(ShortcutStr, pos('Ctrl+', ShortcutStr),5);
-  if pos('Alt+',  ShortcutStr)<>0 then Delete(ShortcutStr, pos('Alt+',  ShortcutStr),4);
-end;
-
-for k := 3 to 226 do
-  if pos(ShortcutStr, KeyToStr(k)) <> 0 then begin
-   vKey := k;
-  //yy(ShortcutString+'|||'+Chr(vkey));
-   break;
+  if ModStr <> '' then
+  begin
+    chCtrl.Checked := Pos('Ctrl', ModStr) > 0;
+    chShift.Checked := Pos('Shift', ModStr) > 0;
+    chAlt.Checked := Pos('Alt', ModStr) > 0;
+    chWin.Checked := Pos('Win', ModStr) > 0;
+  end
+  else
+  begin
+    chCtrl.Checked := IsCtrlPressed;
+    chShift.Checked := IsShiftPressed;
+    chAlt.Checked := IsAltPressed;
+    chWin.Checked := IsWinPressed;
   end;
 end;
 
-//------------------------------------------------------------------------------ Key To Str
-function KeyToStr(Key: word): string;
-//спасибо n0wheremany
-var sKey: String;
-begin
-case key of
-     3:sKey:='Scroll Lock';
-     8:sKey:='BackSpace';
-     9:sKey:='Tab';
-    12:sKey:='Num 5';
-    13:sKey:='Enter';
-
-    20:sKey:='Caps Lock';
-    27:sKey:='Esc';
-    32:sKey:='Space';
-    33:sKey:='PgUp';
-    34:sKey:='PgDn';
-    35:sKey:='End';
-    36:sKey:='Home';
-    37:sKey:='Left';
-    38:sKey:='Up';
-    39:sKey:='Right';
-    40:sKey:='Down';
-    44:sKey:='PrintScreen';
-    45:sKey:='Ins';
-    46:sKey:='Del';
-
-    48..57,
-    65..90 :sKey:=Chr(key);
-
-    96..105:sKey:='Num '+inttostr(key-96);
-
-   106:sKey:='Num *';
-   107:sKey:='Num +';
-   109:sKey:='Num -';
-   110:sKey:='Num Del';
-   111:sKey:='Num /';
-
-   112..135:sKey:='F'+inttostr(key-111);
-
-   144:sKey:='PauseBreak';
-   145:sKey:='ScrollLock';
-
-   172:sKey:='M';
-   173:sKey:='D';
-   174:sKey:='C';
-   175:sKey:='B';
-   176:sKey:='P';
-   177:sKey:='Q';
-   178:sKey:='J';
-   179:sKey:='G';
-   183:sKey:='F';
-
-   186:sKey:=';';
-   187:sKey:='=';
-   188:sKey:='<';
-   190:sKey:='>';
-   189:sKey:='-';
-   192:sKey:='~';
-   194:sKey:='F15';
-   219:sKey:='[';
-   221:sKey:=']';
-   222:sKey:='''';
-
-   191:sKey:='/';
-   220:sKey:='\';
-   226:sKey:='\';
-
-   else
-   begin
-     sKey:='';
-//     exit;
-   end;
-end;
-Result := sKey;
-end;
-
-//------------------------------------------------------------------------------ Mod To Str
-function ModToStr: string; overload;
-var s: String;
-begin
-Result := '';
-
-//if ((HiWord(GetKeyState(VK_LWIN))<>0) or (HiWord(GetKeyState(VK_RWIN))<>0)) then Result := 'Win+';
-//if HiWord(GetKeyState(VK_CONTROL))<>0 then Result := Result + 'Ctrl+';
-//if HiWord(GetKeyState(VK_SHIFT))<>0   then Result := Result + 'Shift+';
-//if HiWord(GetKeyState(VK_MENU))<>0    then Result := Result + 'Alt+';
-
-if WinDown   then Result := 'Win+';
-if CtrlDown  then Result := Result + 'Ctrl+';
-if ShiftDown then Result := Result + 'Shift+';
-if AltDown   then Result := Result + 'Alt+';
-end;
-
-//------------------------------------------------------------------------------ Mod To Str
-function ModToStr(sMod: word): string; overload;
-begin
-Result := '';
-if (sMod = MOD_WIN or sMod)     then Result := 'Win+';
-if (sMod = MOD_CONTROL or sMod) then Result := Result + 'Ctrl+';
-if (sMod = MOD_SHIFT or sMod)   then Result := Result + 'Shift+';
-if (sMod = MOD_ALT or sMod)     then Result := Result + 'Alt+';
-end;
-
-{$ENDREGION}
-{$REGION '  Uni Key Down  '}
-
-//------------------------------------------------------------------------------ Key Downly
-function KeyDownly(Key: integer): Boolean;
-{
-вжата ли клавиша?
-Ctrl  = VK_Control
-Shift = VK_Shift
-Alt   = VK_Menu
-MouseRight = VK_RBUTTON
-}
+procedure THotKeyForm.UpdateEditText;
 var
- State : TKeyboardState;
+  ModStr, KeyStr: string;
+  sKey, sMod: Word;
 begin
-GetKeyboardState(State);
-Result := ( (State[Key] and 128) <> 0 );
-//Result := HiWord(GetKeyState(Key)) <> 0 ;
+  // Get current modifier state from checkboxes
+  sMod := MOD_NONE;
+  if chCtrl.Checked then sMod := sMod or MOD_CONTROL;
+  if chShift.Checked then sMod := sMod or MOD_SHIFT;
+  if chAlt.Checked then sMod := sMod or MOD_ALT;
+  if chWin.Checked then sMod := sMod or MOD_WIN;
+
+  ModStr := ModifierToString(sMod);
+
+  // Get key from ComboBox if selected
+  if ComboBox1.ItemIndex >= 0 then
+    KeyStr := ComboBox1.Text
+  else
+  begin
+    StringToKeyModifier(Edit1.Text, sKey, sMod);
+    KeyStr := KeyToString(sKey);
+  end;
+
+  Edit1.Text := ModStr + KeyStr;
 end;
 
-//------------------------------------------------------------------------------ Ctrl
-function CtrlDown: Boolean;
-//вжата ли клавиша Ctrl?
+function THotKeyForm.GetCurrentModifiers: Word;
 begin
-Result := KeyDownly(VK_CONTROL);
+  Result := MOD_NONE;
+  if IsCtrlPressed then Result := Result or MOD_CONTROL;
+  if IsShiftPressed then Result := Result or MOD_SHIFT;
+  if IsAltPressed then Result := Result or MOD_ALT;
+  if IsWinPressed then Result := Result or MOD_WIN;
 end;
 
-//------------------------------------------------------------------------------ Shift
-function ShiftDown: Boolean;
-//вжата ли клавиша Shift?
+procedure THotKeyForm.ClearAll;
 begin
-Result := KeyDownly(VK_SHIFT);
+  Edit1.Text := '';
+  ComboBox1.ItemIndex := -1;
+  chShift.Checked := False;
+  chCtrl.Checked := False;
+  chWin.Checked := False;
+  chAlt.Checked := False;
 end;
 
-//------------------------------------------------------------------------------ Alt
-function AltDown: Boolean;
-//вжата ли клавиша Alt?
+// Public methods
+
+function THotKeyForm.GetHotKeyString: string;
 begin
-Result := KeyDownly(VK_MENU);
+  Result := Edit1.Text;
 end;
 
-//------------------------------------------------------------------------------ Win
-function WinDown: Boolean;
-//вжата ли клавиша Alt?
+procedure THotKeyForm.SetHotKeyString(const Value: string);
+var
+  vKey, vMod: Word;
 begin
-Result := KeyDownly(VK_LWIN) or KeyDownly(VK_RWIN);
+  StringToKeyModifier(Value, vKey, vMod);
+
+  chCtrl.Checked := (vMod and MOD_CONTROL) <> 0;
+  chShift.Checked := (vMod and MOD_SHIFT) <> 0;
+  chAlt.Checked := (vMod and MOD_ALT) <> 0;
+  chWin.Checked := (vMod and MOD_WIN) <> 0;
+
+  Edit1.Text := Value;
+  ComboBox1.ItemIndex := ComboBox1.Items.IndexOf(KeyToString(vKey));
 end;
 
-//------------------------------------------------------------------------------ KeyDownEmulate
-procedure KeyDownEmulate(Component: TComponent;  Key: Word; Shift: TShiftState = []);
-var k: word;
+// Global functions
+
+function CreateHotKeyEditor: Boolean;
 begin
-//эмулируем нажатие клавиши чтоб всё сработало точно также как и в kuShellListView.pas
-k := Key;
-//LVS.KeyDown(k, []);
+  if Application.FindComponent('HotKeyForm') = nil then
+    Application.CreateForm(THotKeyForm, HotKeyForm);
+  Result := True;
 end;
 
-{$ENDREGION}
+procedure StringToKeyModifier(const ShortcutStr: string; out vKey, vMod: Word);
+var
+  TempStr: string;
+  k: Word;
+begin
+  TempStr := ShortcutStr;
+  vKey := 0;
+  vMod := MOD_NONE;
+
+  // Parse modifiers - order matters for proper deletion
+  if Pos('Shift+', TempStr) > 0 then
+  begin
+    vMod := vMod or MOD_SHIFT;
+    Delete(TempStr, Pos('Shift+', TempStr), 6);
+  end;
+
+  if Pos('Ctrl+', TempStr) > 0 then
+  begin
+    vMod := vMod or MOD_CONTROL;
+    Delete(TempStr, Pos('Ctrl+', TempStr), 5);
+  end;
+
+  if Pos('Win+', TempStr) > 0 then
+  begin
+    vMod := vMod or MOD_WIN;
+    Delete(TempStr, Pos('Win+', TempStr), 4);
+  end;
+
+  if Pos('Alt+', TempStr) > 0 then
+  begin
+    vMod := vMod or MOD_ALT;
+    Delete(TempStr, Pos('Alt+', TempStr), 4);
+  end;
+
+  // Find the key
+  if TempStr <> '' then
+  begin
+    for k := 3 to 226 do
+    begin
+      if SameText(TempStr, KeyToString(k)) then
+      begin
+        vKey := k;
+        Break;
+      end;
+    end;
+  end;
+end;
+
+function KeyToString(aKey: Word): string;
+begin
+  case aKey of
+    3: Result := 'Scroll Lock';
+    8: Result := 'BackSpace';
+    9: Result := 'Tab';
+    12: Result := 'Num 5';
+    13: Result := 'Enter';
+    20: Result := 'Caps Lock';
+    27: Result := 'Esc';
+    32: Result := 'Space';
+    33: Result := 'PgUp';
+    34: Result := 'PgDn';
+    35: Result := 'End';
+    36: Result := 'Home';
+    37: Result := 'Left';
+    38: Result := 'Up';
+    39: Result := 'Right';
+    40: Result := 'Down';
+    44: Result := 'PrintScreen';
+    45: Result := 'Ins';
+    46: Result := 'Del';
+    48..57, 65..90: Result := Chr(aKey);
+    96..105: Result := 'Num ' + IntToStr(aKey - 96);
+    106: Result := 'Num *';
+    107: Result := 'Num +';
+    109: Result := 'Num -';
+    110: Result := 'Num Del';
+    111: Result := 'Num /';
+    112..135: Result := 'F' + IntToStr(aKey - 111); // F1=112, so 112-111=1
+    144: Result := 'PauseBreak';
+    145: Result := 'ScrollLock';
+    172: Result := 'M';
+    173: Result := 'D';
+    174: Result := 'C';
+    175: Result := 'B';
+    176: Result := 'P';
+    177: Result := 'Q';
+    178: Result := 'J';
+    179: Result := 'G';
+    183: Result := 'F';
+    186: Result := ';';
+    187: Result := '=';
+    188: Result := '<';
+    189: Result := '-';
+    190: Result := '>';
+    191: Result := '/';
+    192: Result := '~';
+    194: Result := 'F15';
+    219: Result := '[';
+    220, 226: Result := '\';
+    221: Result := ']';
+    222: Result := '''';
+  else
+    Result := '';
+  end;
+end;
+
+function ModifierToString(aMod: Word): string;
+begin
+  Result := '';
+  if (aMod and MOD_WIN) <> 0 then Result := Result + 'Win+';
+  if (aMod and MOD_CONTROL) <> 0 then Result := Result + 'Ctrl+';
+  if (aMod and MOD_SHIFT) <> 0 then Result := Result + 'Shift+';
+  if (aMod and MOD_ALT) <> 0 then Result := Result + 'Alt+';
+end;
+
+// Key state functions
+
+function IsKeyPressed(Key: Integer): Boolean;
+var
+  State: TKeyboardState;
+begin
+  GetKeyboardState(State);
+  Result := (State[Key] and $80) <> 0;
+end;
+
+function IsCtrlPressed: Boolean;
+begin
+  Result := IsKeyPressed(VK_CONTROL);
+end;
+
+function IsShiftPressed: Boolean;
+begin
+  Result := IsKeyPressed(VK_SHIFT);
+end;
+
+function IsAltPressed: Boolean;
+begin
+  Result := IsKeyPressed(VK_MENU);
+end;
+
+function IsWinPressed: Boolean;
+begin
+  Result := IsKeyPressed(VK_LWIN) or IsKeyPressed(VK_RWIN);
+end;
 
 end.

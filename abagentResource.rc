@@ -1,6 +1,5 @@
 log24 RCDATA "images\\log\\log24.png"
 star24 RCDATA "images\\star\\star24.png"
-time32 RCDATA "images\\time\\time32.png"
 time24 RCDATA "images\\time\\time24.png"
 main24 RCDATA "abagent.Artwork\\Windows\\main24.png"
 lng_romania RCDATA "images\\lang\\lng_romania.png"

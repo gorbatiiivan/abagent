@@ -3,12 +3,8 @@ unit WindowManagerUnit;
 interface
 
 uses
-  Winapi.Windows,
-  System.Classes,
-  Winapi.PsAPI,
-  System.SysUtils,
-  System.Generics.Collections,
-  SystemUtils;
+  Winapi.Windows, System.Classes, Winapi.PsAPI, System.SysUtils,
+  System.Generics.Collections, SystemUtils;
 
 type
   TProcessWindowInfo = record
